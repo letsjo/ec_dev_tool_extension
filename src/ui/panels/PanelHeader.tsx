@@ -1,4 +1,5 @@
 import React from "react";
+import { IconButton, PanelSubtitle } from "../components";
 
 /** 패널 상단 툴바/상태 영역 */
 export function PanelHeader() {
@@ -6,15 +7,14 @@ export function PanelHeader() {
     <header className="panel-header">
       <div className="toolbar">
         <div className="toolbar-left">
-          <button
+          <IconButton
             id="selectElementBtn"
             className="icon-button"
-            type="button"
             aria-label="Select element"
             title="요소 선택 모드 시작"
           >
             <span aria-hidden="true">⌖</span>
-          </button>
+          </IconButton>
           <input
             id="componentSearchInput"
             className="tree-search-input"
@@ -24,9 +24,9 @@ export function PanelHeader() {
         </div>
       </div>
 
-      <div id="reactStatus" className="react-status empty">
+      <PanelSubtitle id="reactStatus" className="react-status empty">
         요소를 선택하면 컴포넌트 트리를 불러옵니다.
-      </div>
+      </PanelSubtitle>
     </header>
   );
 }

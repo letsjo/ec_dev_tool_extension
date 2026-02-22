@@ -2,7 +2,8 @@ import React from "react";
 import {
   WORKSPACE_PANEL_CONFIG,
   type WorkspacePanelId,
-} from "../../../features/panel/workspacePanels";
+} from "../../features/panel/workspacePanels";
+import { PanelActionButton } from "./PanelActionButton";
 
 interface WorkspacePanelProps {
   panelId: WorkspacePanelId;
@@ -18,24 +19,22 @@ export function WorkspacePanel({ panelId, children }: WorkspacePanelProps) {
       <summary draggable className="workspace-panel-summary">
         <span className="workspace-panel-title">{panelConfig.title}</span>
         <span className="workspace-panel-actions">
-          <button
-            type="button"
+          <PanelActionButton
             className="workspace-panel-action"
             data-panel-action="toggle"
             data-panel-target={panelId}
             title="접기/펼치기"
           >
             −
-          </button>
-          <button
-            type="button"
+          </PanelActionButton>
+          <PanelActionButton
             className="workspace-panel-action"
             data-panel-action="close"
             data-panel-target={panelId}
             title="패널 닫기"
           >
             ×
-          </button>
+          </PanelActionButton>
         </span>
       </summary>
       {children}

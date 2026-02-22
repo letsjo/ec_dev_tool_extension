@@ -1,5 +1,5 @@
 import React from "react";
-import { WorkspacePanel } from "../WorkspacePanel";
+import { WorkspacePanel } from "../../components";
 
 /** Selected Element 패널 */
 export function SelectedElementPanel() {

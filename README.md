@@ -69,10 +69,9 @@ npm run build
 │   │   └── readers/
 │   │       └── string.ts                 # 안전한 문자열 리더
 │   ├── ui/
-│   │   └── panel/
-│   │       ├── PanelView.tsx             # 패널 최상위 조립 컴포넌트
-│   │       └── components/               # 헤더/워크스페이스/패널 단위 UI 컴포넌트
-│   │           └── panels/               # 개별 패널 컴포넌트 파일
+│   │   ├── components/                   # 작은 단위 UI 컴포넌트(버튼/서브타이틀/패널 래퍼)
+│   │   └── panels/                       # 패널 조립 단위
+│   │       └── sections/                 # 데이터 placeholder를 포함한 패널 완성 컴포넌트
 └── dist/               # 빌드 결과 (devtools.global.js, panel.global.js)
 ```
 

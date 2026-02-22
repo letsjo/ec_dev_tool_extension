@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/ui/panel/PanelView.tsx`, `src/ui/panel/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/ui/panels/PanelView.tsx`, `src/ui/components/**`, `src/ui/panels/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -144,14 +144,21 @@
 
 ## 8. 주요 UI 구성 파일 역할
 
-- `src/ui/panel/PanelView.tsx`
+- `src/ui/panels/PanelView.tsx`
   - UI 조립 전용 최상위 컴포넌트
   - `PanelHeader`, `PanelWorkspace`를 조합해 패널 골격을 구성
 
-- `src/ui/panel/components/**`
-  - 헤더/워크스페이스/푸터/개별 패널을 파일 단위로 분리
+- `src/ui/components/**`
+  - 재사용 가능한 작은 단위 컴포넌트
+  - 버튼/서브타이틀/패널 래퍼처럼 데이터 조회 없이 UI 표현만 담당
+
+- `src/ui/panels/**`
+  - 패널 화면 조립 전용 컴포넌트
+  - `PanelHeader`, `PanelWorkspace`, `WorkspaceCanvas`, `WorkspacePanels`로 계층 구성
+
+- `src/ui/panels/sections/**`
+  - `ComponentsInspectorPanel`처럼 placeholder/DOM id를 포함해 패널 1개를 완성하는 조립 컴포넌트
   - `WorkspacePanel` 공통 래퍼로 `details/summary/actions` 구조를 재사용
-  - `components/panels/**`에서 개별 패널 컴포넌트를 분리 관리
   - `WorkspacePanels`에서 패널 등록 순서와 본문 DOM id를 일관되게 유지
 
 - `panel.html`
@@ -219,9 +226,9 @@
 ### 새 워크스페이스 패널 추가
 
 1. `src/features/panel/workspacePanels.ts`에 panel id/config 추가
-2. `src/ui/panel/components/panels/`에 새 패널 컴포넌트 파일 추가
-3. `src/ui/panel/components/panels/index.ts` export 등록
-4. `src/ui/panel/components/WorkspacePanels.tsx` 조립 목록에 추가
+2. `src/ui/panels/sections/`에 새 패널 컴포넌트 파일 추가
+3. `src/ui/panels/sections/index.ts` export 등록
+4. `src/ui/panels/WorkspacePanels.tsx` 조립 목록에 추가
 5. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
 6. `panel.html`에서 필요 스타일 추가
 
@@ -237,10 +244,10 @@
 관련 파일 바로가기:
 
 - `src/features/panel/controller.ts`
-- `src/ui/panel/PanelView.tsx`
-- `src/ui/panel/components/WorkspacePanels.tsx`
-- `src/ui/panel/components/WorkspacePanel.tsx`
-- `src/ui/panel/components/panels/index.ts`
+- `src/ui/panels/PanelView.tsx`
+- `src/ui/panels/WorkspacePanels.tsx`
+- `src/ui/components/WorkspacePanel.tsx`
+- `src/ui/panels/sections/index.ts`
 - `src/features/panel/workspacePanels.ts`
 - `src/content/elementPicker.ts`
 - `src/content/pageAgent.ts`

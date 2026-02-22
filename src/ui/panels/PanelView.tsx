@@ -1,5 +1,6 @@
 import React from "react";
-import { PanelHeader, PanelWorkspace } from "./components";
+import { PanelHeader } from "./PanelHeader";
+import { PanelWorkspace } from "./PanelWorkspace";
 
 /** 해당 기능 흐름을 처리 */
 export function PanelView() {

@@ -39,7 +39,7 @@ import type {
   ReactComponentInfo,
   ReactInspectResult,
 } from '../../shared/inspector/types';
-import { PanelView } from '../../ui/panel/PanelView';
+import { PanelView } from '../../ui/panels/PanelView';
 import { isWorkspacePanelId, WORKSPACE_PANEL_IDS, type WorkspacePanelId } from './workspacePanels';
 
 let outputEl!: HTMLDivElement;
