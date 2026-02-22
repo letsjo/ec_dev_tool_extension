@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "EC Dev Tool",
+  "version": "0.1.0",
+  "description": "DevTools panel for ec_dev_manager and other dev objects",
+  "devtools_page": "devtools.html",
+  "background": {
+    "service_worker": "dist/background.global.js"
+  },
+  "permissions": ["scripting"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.global.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dist/reactRuntimeHook.global.js", "dist/pageAgent.global.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
