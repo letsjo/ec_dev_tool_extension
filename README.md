@@ -70,12 +70,18 @@ npm run build
 │   │       └── string.ts                 # 안전한 문자열 리더
 │   ├── ui/
 │   │   ├── components/                   # 작은 단위 UI 컴포넌트(버튼/서브타이틀/패널 래퍼)
-│   │   └── panels/                       # 패널 조립 단위
-│   │       └── sections/                 # 데이터 placeholder를 포함한 패널 완성 컴포넌트
+│   │   ├── panels/                       # 단독 사용 가능한 완성 패널 컴포넌트
+│   │   └── sections/                     # 화면 조립 섹션(헤더/푸터/워크스페이스)
 └── dist/               # 빌드 결과 (devtools.global.js, panel.global.js)
 ```
 
 추가로 컴포넌트 트리 탐색 고도화(검색/필터, 상위-하위 이동, live update)를 확장할 수 있습니다.
+
+## UI 디렉터리 규칙
+
+- `src/ui/components`: 버튼/라벨/공통 래퍼 같은 최소 단위 UI 컴포넌트
+- `src/ui/panels`: 단독으로 렌더 가능한 "완성 패널" 컴포넌트
+- `src/ui/sections`: 여러 패널/컴포넌트를 조합하는 레이아웃 섹션 컴포넌트
 
 ## 인수인계 문서
 
