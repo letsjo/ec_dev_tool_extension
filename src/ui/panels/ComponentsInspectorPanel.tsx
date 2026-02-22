@@ -1,5 +1,5 @@
 import React from "react";
-import { WorkspacePanel } from "../../components";
+import { WorkspacePanel } from "../components";
 
 /** Components Inspector 패널 */
 export function ComponentsInspectorPanel() {

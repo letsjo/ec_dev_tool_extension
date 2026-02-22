@@ -1,5 +1,5 @@
 import React from "react";
-import { WorkspacePanel } from "../../components";
+import { WorkspacePanel } from "../components";
 
 /** DOM Path 패널 */
 export function SelectedElementPathPanel() {

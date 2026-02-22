@@ -6,10 +6,10 @@ import {
   SelectedElementDomPanel,
   SelectedElementPanel,
   SelectedElementPathPanel,
-} from "./sections";
+} from "../panels";
 
 /** 워크스페이스 내 기본 패널 집합 */
-export function WorkspacePanels() {
+export function WorkspacePanelsSection() {
   return (
     <>
       <ComponentsTreePanel />

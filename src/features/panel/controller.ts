@@ -2,7 +2,7 @@
  * DevTools Panel 핵심 컨트롤러.
  *
  * 흐름 요약:
- * 1. PanelView(정적 골격)를 마운트하고 DOM 참조를 연결한다.
+ * 1. PanelViewSection(정적 골격)를 마운트하고 DOM 참조를 연결한다.
  * 2. background/content/pageAgent와 통신해 React/DOM 데이터를 조회한다.
  * 3. Components Tree, Inspector, Selected Element/DOM Path/DOM Tree, Raw Result를 렌더링한다.
  * 4. 스플릿/검색/선택/하이라이트/런타임 갱신 상태를 동기화한다.
@@ -39,7 +39,7 @@ import type {
   ReactComponentInfo,
   ReactInspectResult,
 } from '../../shared/inspector/types';
-import { PanelView } from '../../ui/panels/PanelView';
+import { PanelViewSection } from '../../ui/sections';
 import { isWorkspacePanelId, WORKSPACE_PANEL_IDS, type WorkspacePanelId } from './workspacePanels';
 
 let outputEl!: HTMLDivElement;
@@ -273,7 +273,7 @@ function mountPanelView() {
   const rootElement = getRequiredElement<HTMLDivElement>('root');
   const root = createRoot(rootElement);
   flushSync(() => {
-    root.render(React.createElement(PanelView));
+    root.render(React.createElement(PanelViewSection));
   });
 }
 

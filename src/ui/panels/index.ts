@@ -1,7 +1,6 @@
-export { PanelView } from "./PanelView";
-export { PanelHeader } from "./PanelHeader";
-export { PanelWorkspace } from "./PanelWorkspace";
-export { PanelFooter } from "./PanelFooter";
-export { WorkspaceCanvas } from "./WorkspaceCanvas";
-export { WorkspacePanels } from "./WorkspacePanels";
-export * from "./sections";
+export { ComponentsTreePanel } from "./ComponentsTreePanel";
+export { ComponentsInspectorPanel } from "./ComponentsInspectorPanel";
+export { SelectedElementPanel } from "./SelectedElementPanel";
+export { SelectedElementPathPanel } from "./SelectedElementPathPanel";
+export { SelectedElementDomPanel } from "./SelectedElementDomPanel";
+export { RawResultPanel } from "./RawResultPanel";

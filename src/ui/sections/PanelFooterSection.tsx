@@ -6,7 +6,7 @@ import {
 import { PanelActionButton } from "../components";
 
 /** 패널 하단 토글 바 */
-export function PanelFooter() {
+export function PanelFooterSection() {
   return (
     <footer id="panelFooter" className="workspace-footer">
       <div className="workspace-footer-title">Panels</div>
