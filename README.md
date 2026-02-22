@@ -70,7 +70,8 @@ npm run build
 │   │       └── string.ts                 # 안전한 문자열 리더
 │   ├── ui/
 │   │   └── panel/
-│   │       └── PanelView.tsx             # 패널 UI (header/content/footer)
+│   │       ├── PanelView.tsx             # 패널 최상위 조립 컴포넌트
+│   │       └── components/               # 헤더/워크스페이스/패널 단위 UI 컴포넌트
 └── dist/               # 빌드 결과 (devtools.global.js, panel.global.js)
 ```
 

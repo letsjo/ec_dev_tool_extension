@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/ui/panel/PanelView.tsx`
+- 파일: `src/features/panel/controller.ts`, `src/ui/panel/PanelView.tsx`, `src/ui/panel/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -145,8 +145,13 @@
 ## 8. 주요 UI 구성 파일 역할
 
 - `src/ui/panel/PanelView.tsx`
-  - 정적 골격(헤더/워크스페이스/푸터)과 기본 패널 DOM 제공
-  - 패널 토글 버튼 목록을 `WORKSPACE_PANEL_CONFIG`로 생성
+  - UI 조립 전용 최상위 컴포넌트
+  - `PanelHeader`, `PanelWorkspace`를 조합해 패널 골격을 구성
+
+- `src/ui/panel/components/**`
+  - 헤더/워크스페이스/푸터/개별 패널을 파일 단위로 분리
+  - `WorkspacePanel` 공통 래퍼로 `details/summary/actions` 구조를 재사용
+  - `WorkspacePanels`에서 패널별 본문 DOM id를 일관되게 유지
 
 - `panel.html`
   - 모든 스타일 정의
@@ -213,7 +218,7 @@
 ### 새 워크스페이스 패널 추가
 
 1. `src/features/panel/workspacePanels.ts`에 panel id/config 추가
-2. `src/ui/panel/PanelView.tsx`에 `<WorkspacePanel panelId="...">` 블록 추가
+2. `src/ui/panel/components/WorkspacePanels.tsx`에 패널 컴포넌트 추가
 3. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
 4. `panel.html`에서 필요 스타일 추가
 
@@ -230,6 +235,8 @@
 
 - `src/features/panel/controller.ts`
 - `src/ui/panel/PanelView.tsx`
+- `src/ui/panel/components/WorkspacePanels.tsx`
+- `src/ui/panel/components/WorkspacePanel.tsx`
 - `src/features/panel/workspacePanels.ts`
 - `src/content/elementPicker.ts`
 - `src/content/pageAgent.ts`
