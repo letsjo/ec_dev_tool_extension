@@ -72,6 +72,7 @@ npm run build
 │   │   └── panel/
 │   │       ├── PanelView.tsx             # 패널 최상위 조립 컴포넌트
 │   │       └── components/               # 헤더/워크스페이스/패널 단위 UI 컴포넌트
+│   │           └── panels/               # 개별 패널 컴포넌트 파일
 └── dist/               # 빌드 결과 (devtools.global.js, panel.global.js)
 ```
 

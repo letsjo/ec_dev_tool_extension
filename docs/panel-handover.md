@@ -151,7 +151,8 @@
 - `src/ui/panel/components/**`
   - 헤더/워크스페이스/푸터/개별 패널을 파일 단위로 분리
   - `WorkspacePanel` 공통 래퍼로 `details/summary/actions` 구조를 재사용
-  - `WorkspacePanels`에서 패널별 본문 DOM id를 일관되게 유지
+  - `components/panels/**`에서 개별 패널 컴포넌트를 분리 관리
+  - `WorkspacePanels`에서 패널 등록 순서와 본문 DOM id를 일관되게 유지
 
 - `panel.html`
   - 모든 스타일 정의
@@ -218,9 +219,11 @@
 ### 새 워크스페이스 패널 추가
 
 1. `src/features/panel/workspacePanels.ts`에 panel id/config 추가
-2. `src/ui/panel/components/WorkspacePanels.tsx`에 패널 컴포넌트 추가
-3. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
-4. `panel.html`에서 필요 스타일 추가
+2. `src/ui/panel/components/panels/`에 새 패널 컴포넌트 파일 추가
+3. `src/ui/panel/components/panels/index.ts` export 등록
+4. `src/ui/panel/components/WorkspacePanels.tsx` 조립 목록에 추가
+5. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
+6. `panel.html`에서 필요 스타일 추가
 
 ### 새 pageAgent 메서드 추가
 
@@ -237,6 +240,7 @@
 - `src/ui/panel/PanelView.tsx`
 - `src/ui/panel/components/WorkspacePanels.tsx`
 - `src/ui/panel/components/WorkspacePanel.tsx`
+- `src/ui/panel/components/panels/index.ts`
 - `src/features/panel/workspacePanels.ts`
 - `src/content/elementPicker.ts`
 - `src/content/pageAgent.ts`
