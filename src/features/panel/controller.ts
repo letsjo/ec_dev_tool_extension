@@ -63,8 +63,12 @@ import {
   ELEMENT_SELECTION_FETCH_OPTIONS,
   resolveSelectedComponentIdForScript as resolveSelectedComponentIdForScriptValue,
   type FetchReactInfoOptions,
-  type RuntimeRefreshLookup,
 } from './reactInspector/fetchOptions';
+import {
+  resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
+  resolveStoredLookup as resolveStoredLookupValue,
+  type RuntimeRefreshLookup,
+} from './reactInspector/lookup';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -999,6 +1003,66 @@ function applyReactInspectResult(
   applyReactInspectRenderStage(applyOptions, nextSelection);
 }
 
+interface ReactFetchRequestStageResult {
+  lightweight: boolean;
+  selectedComponentIdForScript: string | null;
+}
+
+/** fetch 파이프라인 request 단계: lookup/로딩 상태를 반영하고 request args를 계산한다. */
+function applyReactFetchRequestStage(
+  selector: string,
+  pickPoint: PickPoint | undefined,
+  options: FetchReactInfoOptions,
+): ReactFetchRequestStageResult {
+  const background = options.background === true;
+  const lightweight = options.lightweight === true;
+
+  clearPageHoverPreview();
+  if (!background) {
+    clearPageComponentHighlight();
+  }
+  lastReactLookup = resolveStoredLookupValue(
+    lastReactLookup,
+    { selector, pickPoint },
+    options.keepLookup === true,
+  );
+  // background 새로고침이 아니거나 초기 상태일 때만 로딩 문구를 적극적으로 표시한다.
+  if (!background || reactComponents.length === 0) {
+    applyReactInspectorPaneStateValue(
+      reactInspectorPaneSetters,
+      buildReactInspectorLoadingPaneStateValue(),
+    );
+  }
+
+  const selectedComponentIdForScript = resolveSelectedComponentIdForScriptValue({
+    options,
+    selectedReactComponentIndex,
+    reactComponents,
+  });
+
+  return {
+    lightweight,
+    selectedComponentIdForScript,
+  };
+}
+
+/** fetch 파이프라인 response 단계: 공통 응답 처리 파이프라인으로 전달한다. */
+function applyReactFetchResponseStage(
+  response: unknown | null,
+  errorText: string | undefined,
+  options: FetchReactInfoOptions,
+  finish: () => void,
+) {
+  handleReactInspectAgentResponse({
+    response,
+    errorText,
+    applyOptions: buildReactInspectApplyOptionsValue(options),
+    resetReactInspector,
+    applyReactInspectResult,
+  });
+  finish();
+}
+
 /**
  * inspected page의 reactInspect를 호출하고 결과를 apply한다.
  * foreground/background, 경량 모드, 선택/접힘 보존 옵션을 모두 이 계층에서 조합한다.
@@ -1008,61 +1072,28 @@ function fetchReactInfo(
   pickPoint?: PickPoint,
   options: FetchReactInfoOptions = {},
 ) {
-  const background = options.background === true;
-  const lightweight = options.lightweight === true;
   const finish = () => {
     options.onDone?.();
   };
-
-  clearPageHoverPreview();
-  if (!background) {
-    clearPageComponentHighlight();
-  }
-  if (!options.keepLookup) {
-    lastReactLookup = { selector, pickPoint };
-  }
-  // background 새로고침이 아니거나 초기 상태일 때만 로딩 문구를 적극적으로 표시한다.
-  if (!background || reactComponents.length === 0) {
-    applyReactInspectorPaneStateValue(
-      reactInspectorPaneSetters,
-      buildReactInspectorLoadingPaneStateValue(),
-    );
-  }
-
-  // 경량 모드에서 선택 컴포넌트만 직렬화하도록 id를 전달해 payload를 줄인다.
-  const selectedComponentIdForScript = resolveSelectedComponentIdForScriptValue({
-    options,
-    selectedReactComponentIndex,
-    reactComponents,
-  });
+  const requestStage = applyReactFetchRequestStage(selector, pickPoint, options);
 
   callInspectedPageAgent(
     'reactInspect',
     {
       selector,
       pickPoint: pickPoint ?? null,
-      includeSerializedData: !lightweight,
-      selectedComponentId: selectedComponentIdForScript,
+      includeSerializedData: !requestStage.lightweight,
+      selectedComponentId: requestStage.selectedComponentIdForScript,
     },
     (res, errorText) => {
-      handleReactInspectAgentResponse({
-        response: res,
-        errorText: errorText ?? undefined,
-        applyOptions: buildReactInspectApplyOptionsValue(options),
-        resetReactInspector,
-        applyReactInspectResult,
-      });
-      finish();
+      applyReactFetchResponseStage(res, errorText ?? undefined, options, finish);
     },
   );
 }
 
 /** 필요한 값/상태를 계산해 반환 */
 function getLookupForRuntimeRefresh(): RuntimeRefreshLookup {
-  if (lastReactLookup && (lastReactLookup.selector || lastReactLookup.pickPoint)) {
-    return lastReactLookup;
-  }
-  return { selector: '' };
+  return resolveRuntimeRefreshLookupValue(lastReactLookup);
 }
 
 const runtimeRefreshScheduler = createRuntimeRefreshScheduler({

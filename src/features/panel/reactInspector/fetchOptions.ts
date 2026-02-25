@@ -1,4 +1,4 @@
-import type { PickPoint, ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector/types';
 import type { ReactInspectApplyOptions } from '../pageAgent/responsePipeline';
 
 export interface FetchReactInfoOptions extends ReactInspectApplyOptions {
@@ -79,9 +79,3 @@ export const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<FetchReactInfoOptions> = 
   serializeSelectedComponent: false,
   refreshDetail: true,
 };
-
-/** runtime refresh 스케줄러 lookup 타입을 공유한다. */
-export interface RuntimeRefreshLookup {
-  selector: string;
-  pickPoint?: PickPoint;
-}
