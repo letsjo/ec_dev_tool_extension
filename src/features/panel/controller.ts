@@ -51,13 +51,11 @@ import { createReactComponentListRenderFlow as createReactComponentListRenderFlo
 import { createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue } from './reactInspector/detailRenderFlow';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './reactInspector/searchInputBindingFlow';
+import { createReactComponentSelectionBindingFlow as createReactComponentSelectionBindingFlowValue } from './reactInspector/selectionBindingFlow';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
 import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './reactInspector/detailQueueFlow';
 import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './reactInspector/resetStateFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
-import {
-  createReactComponentSelector as createReactComponentSelectorValue,
-} from './reactInspector/selection';
 import {
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
 } from './reactInspector/searchStatus';
@@ -362,15 +360,6 @@ function renderReactComponentList() {
   renderReactComponentListFlow();
 }
 
-/** 해당 기능 흐름을 처리 */
-function scrollSelectedComponentIntoView() {
-  if (selectedReactComponentIndex < 0) return;
-  const selector = `.react-component-item[data-component-index="${selectedReactComponentIndex}"]`;
-  const activeItem = reactComponentListEl.querySelector<HTMLElement>(selector);
-  if (!activeItem) return;
-  activeItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-}
-
 const { detailFetchQueue } = createReactDetailQueueFlowValue({
   cooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
   callInspectedPageAgent,
@@ -387,13 +376,7 @@ const { detailFetchQueue } = createReactDetailQueueFlowValue({
   setReactDetailEmpty,
 });
 
-const scheduleScrollSelectedComponentIntoView = () => {
-  requestAnimationFrame(() => {
-    scrollSelectedComponentIntoView();
-  });
-};
-
-const selectReactComponent = createReactComponentSelectorValue({
+const { selectReactComponent } = createReactComponentSelectionBindingFlowValue({
   getReactComponents: () => reactComponents,
   setSelectedComponentIndex: (index) => {
     selectedReactComponentIndex = index;
@@ -401,7 +384,8 @@ const selectReactComponent = createReactComponentSelectorValue({
   clearPageHoverPreview,
   expandAncestorPaths,
   renderReactComponentList,
-  scheduleScrollSelectedComponentIntoView,
+  getReactComponentListEl: () => reactComponentListEl,
+  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
   renderReactComponentDetail,
   setReactDetailEmpty,
   highlightPageDomForComponent,

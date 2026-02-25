@@ -329,6 +329,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/searchInputBindingFlow.ts`: 검색 input DOM 값 읽기, query 상태 갱신, searchInputFlow 결선 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
 - `reactInspector/selection.ts`: 선택 옵션 정규화, 선택 index 적용 후 렌더/스크롤/상세 지연조회/DOM 하이라이트 시퀀스 전담
+- `reactInspector/selectionBindingFlow.ts`: selection handler 생성 시 scrollIntoView(requestAnimationFrame) 결선과 selector 의존성 주입 전담
 - `reactInspector/selectionModel.ts`: preserveSelection/selectedIndex/filterResult를 조합해 최종 선택 인덱스와 선택 변경 여부 계산 전담
 - `reactInspector/listTreeRenderer.ts`: Components Tree의 계층 구조 구성(parent/child), DOM 렌더, 접힘 토글, 스크롤 앵커 보정 전담
 - `reactInspector/detailRenderer.ts`: 선택 컴포넌트 상세 패널 DOM 렌더와 render signature 캐시 판정 전담
@@ -615,6 +616,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/listRenderFlow.test.ts`: `listRenderFlow.ts`의 empty/filter empty/signature skip/updated 강제 렌더 분기
   - `tests/reactInspector/detailRenderFlow.test.ts`: `detailRenderFlow.ts`의 detail cache read/write와 renderer 호출 결선 분기
   - `tests/reactInspector/detailQueueFlow.test.ts`: `detailQueueFlow.ts`의 detail 병합 상태 반영과 detailFetchQueue 결선(getSelected/findById/apply) 분기
+  - `tests/reactInspector/selectionBindingFlow.test.ts`: `selectionBindingFlow.ts`의 requestAnimationFrame 기반 선택 항목 scrollIntoView 결선 분기
   - `tests/reactInspector/searchInputBindingFlow.test.ts`: `searchInputBindingFlow.ts`의 query 갱신과 no-result/searchInputFlow 결선 분기
   - `tests/reactInspector/resetStateFlow.test.ts`: `resetStateFlow.ts`의 상태/캐시 초기화와 reset pane 상태 반영 분기
   - `tests/reactInspector/noResultStateFlow.test.ts`: `noResultStateFlow.ts`의 searchInput/inspectResult 문구와 hover-preview/하이라이트 처리 분기
