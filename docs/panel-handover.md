@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, 선택 element selector/path 정보 계산, main world 스크립트 주입, pageAgent 브리지, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -173,6 +173,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectPathValue.ts`: inspectPath path 순회와 special collection segment 해석 전담
 - `pageAgentInspectDomInfo.ts`: fiber -> host element 탐색 및 DOM selector/path/containsTarget 계산 전담
 - `pageAgentInspectTarget.ts`: selector/pickPoint 기준 target element/nearest/root 해석과 inspectPath 대상 fiber fallback 탐색 전담
+- `pageAgentInspectComponentWalk.ts`: root fiber DFS 순회와 component row payload 구성, target match 후보 인덱스 계산 전담
 - `pageAgentInspect.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
 
 ## 6.5 pageAgent Inspect 모듈 분리 규칙
@@ -181,7 +182,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectPathValue.ts`: `reactInspectPath` path 순회와 collection token 해석 전담
 - `pageAgentInspectDomInfo.ts`: host element 탐색 캐시/순환 방지와 DOM 메타데이터(selector/path/tag/containsTarget) 계산 전담
 - `pageAgentInspectTarget.ts`: target element/nearest/root resolution과 inspectPath targetFiber 조회 fallback 전담
-- `pageAgentInspect.ts`: `reactInspect`/`reactInspectPath` 오케스트레이션, 컴포넌트 트리 순회와 대상/응답 조립 전담
+- `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산 전담
+- `pageAgentInspect.ts`: `reactInspect`/`reactInspectPath` 오케스트레이션과 응답 조립 전담
 - `pageAgent.ts`: inspect 핸들러 팩토리 의존성 주입과 method executor 연결 전담
 
 ## 6.6 pageAgent Fiber Search 모듈 분리 규칙
@@ -558,6 +560,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentInspectPathValue.ts`
 - `src/content/pageAgentInspectDomInfo.ts`
 - `src/content/pageAgentInspectTarget.ts`
+- `src/content/pageAgentInspectComponentWalk.ts`
 - `src/content/pageAgentFiberSearch.ts`
 - `src/content/pageAgentFiberElement.ts`
 - `src/content/pageAgentFiberDescribe.ts`

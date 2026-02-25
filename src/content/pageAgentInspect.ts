@@ -7,6 +7,7 @@ import {
   resolveInspectPathTargetFiber,
   resolveInspectRootContext,
 } from "./pageAgentInspectTarget";
+import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
 
 type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
@@ -129,98 +130,34 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         }
       }
 
-      const components = [];
-      const idByFiber = new Map();
-      let targetMatchedIndex = -1;
-      let targetMatchedDepth = -1;
-
-      const stack = [{ fiber: rootFiber, depth: -1, parentId: null }];
-      let walkGuard = 0;
-
-      while (stack.length > 0 && walkGuard < maxTraversal && components.length < maxComponents) {
-        const item = stack.pop();
-        const node = item.fiber;
-        if (!node) {
-          walkGuard += 1;
-          continue;
-        }
-
-        let childDepth = item.depth;
-        let childParentId = item.parentId;
-
-        if (isInspectableTag(node.tag)) {
-          const domInfo = getDomInfoForFiber({
-            fiber: node,
+      const walked = walkInspectableComponents({
+        rootFiber,
+        targetEl,
+        includeSerializedData,
+        selectedComponentId,
+        maxTraversal,
+        maxComponents,
+        isInspectableTag,
+        getDomInfoForFiber(fiber) {
+          return getDomInfoForFiber({
+            fiber,
             hostCache,
             visiting,
             selectedEl: targetEl,
             buildCssSelector,
             getElementPath,
           });
-          const id = getStableFiberId(node, fiberIdMap) || String(components.length);
-          const componentDepth = item.depth + 1;
-          const shouldSerializeData = includeSerializedData || Boolean(selectedComponentId && id === selectedComponentId);
-
-          let serializedProps = null;
-          let serializedHooks = null;
-          let hookCount = 0;
-
-          if (shouldSerializeData) {
-            const hooksInfo = getHooksInfo(node);
-            serializedProps = serializePropsForFiber(
-              node,
-              makeSerializer({
-                maxSerializeCalls: 32000,
-                maxDepth: 2,
-                maxArrayLength: 80,
-                maxObjectKeys: 80,
-                maxMapEntries: 60,
-                maxSetEntries: 60,
-              }),
-            );
-            serializedHooks = hooksInfo.value;
-            hookCount = hooksInfo.count;
-          } else {
-            hookCount = getHooksCount(node);
-          }
-
-          if (domInfo.containsTarget && node.tag !== 5 && componentDepth >= targetMatchedDepth) {
-            targetMatchedDepth = componentDepth;
-            targetMatchedIndex = components.length;
-          }
-
-          components.push({
-            id,
-            parentId: item.parentId,
-            name: getFiberName(node),
-            kind: getFiberKind(node.tag),
-            depth: componentDepth,
-            props: serializedProps,
-            hooks: serializedHooks,
-            hookCount,
-            hasSerializedData: shouldSerializeData,
-            domSelector: domInfo.domSelector,
-            domPath: domInfo.domPath,
-            domTagName: domInfo.domTagName,
-          });
-
-          idByFiber.set(node, id);
-          if (node.alternate) {
-            idByFiber.set(node.alternate, id);
-          }
-          childDepth = item.depth + 1;
-          childParentId = id;
-        }
-
-        if (node.sibling) {
-          stack.push({ fiber: node.sibling, depth: item.depth, parentId: item.parentId });
-        }
-        if (node.child) {
-          stack.push({ fiber: node.child, depth: childDepth, parentId: childParentId });
-        }
-
-        walkGuard += 1;
-      }
+        },
+        getStableFiberId,
+        fiberIdMap,
+        getHooksInfo,
+        getHooksCount,
+        serializePropsForFiber,
+        makeSerializer,
+        getFiberName,
+        getFiberKind,
+      });
+      const { components, idByFiber, targetMatchedIndex } = walked;
 
       if (components.length === 0) {
         return { error: "분석 가능한 React 컴포넌트를 찾지 못했습니다.", selector };
