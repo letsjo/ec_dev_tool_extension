@@ -63,6 +63,7 @@
   - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
   - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected) 위임
+  - `lifecycle/bootstrapFlow.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩)와 beforeunload 정리 결선 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
   - `domTree/renderer.ts`, `domTree/fetchFlow.ts` 유틸로 DOM 트리 노드 렌더링과 getDomTree 조회/응답 상태 반영 플로우 위임
@@ -295,6 +296,11 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `targetFetch/flow.ts`: target 목록 옵션 렌더링, `fetchTargetData` 요청 실행, 응답 직렬화/오류 문구 반영 규칙 전담
 - `controller.ts`: target/fetch 버튼 DOM ref getter와 bridge caller를 주입하고 이벤트 바인딩만 수행
 
+## 7.11 Panel Lifecycle Bootstrap 모듈 분리 규칙
+
+- `lifecycle/bootstrapFlow.ts`: 패널 부트스트랩 순서(React 마운트, DOM ref 초기화, 초기 상태 문구, 이벤트 바인딩)와 unload cleanup 훅 바인딩 전담
+- `controller.ts`: workspace/wheel/runtime 정리 액션 구현과 각 핸들러 주입(결선)만 수행
+
 ## 8. 주요 UI 구성 파일 역할
 
 - `src/ui/sections/PanelViewSection.tsx`
@@ -405,6 +411,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/domTree/fetchFlow.ts`
 - `src/features/panel/domTree/renderer.ts`
 - `src/features/panel/elementPicker/bridgeFlow.ts`
+- `src/features/panel/lifecycle/bootstrapFlow.ts`
 - `src/features/panel/targetFetch/flow.ts`
 - `src/features/panel/pageAgent/responsePipeline.ts`
 - `src/features/panel/pageAgent/selectionSync.ts`

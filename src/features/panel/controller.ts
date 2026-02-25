@@ -82,6 +82,7 @@ import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './reactInspector/detailRenderer';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
+import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
@@ -715,49 +716,52 @@ const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue
 
 chrome.runtime.onMessage.addListener(onRuntimeMessage);
 
-/**
- * 패널 부트스트랩 순서:
- * 1) React 뷰 마운트
- * 2) DOM ref/레이아웃 매니저/휠 fallback 초기화
- * 3) UI 기본 문구/이벤트 바인딩
- * 4) 최초 React 런타임 조회 시작
- */
-function bootstrapPanel() {
-  mountPanelView();
-  initDomRefs();
-  workspaceLayoutManager = createWorkspaceLayoutManager({
-    panelContentEl,
-    workspacePanelToggleBarEl,
-    workspaceDockPreviewEl,
-    workspacePanelElements,
-  });
-  destroyWheelScrollFallback = initWheelScrollFallback(panelWorkspaceEl);
-  setPickerModeActive(false);
-  populateTargetSelect();
-  setElementOutput('런타임 트리를 자동으로 불러오는 중입니다.');
-  setDomTreeStatus('요소를 선택하면 DOM 트리를 표시합니다.');
-  setDomTreeEmpty('요소를 선택하면 DOM 트리를 표시합니다.');
-  if (fetchBtnEl) {
-    fetchBtnEl.addEventListener('click', onFetch);
+function onPanelBeforeUnload() {
+  workspaceLayoutManager?.destroy();
+  workspaceLayoutManager = null;
+  if (destroyWheelScrollFallback) {
+    destroyWheelScrollFallback();
+    destroyWheelScrollFallback = null;
   }
-  selectElementBtnEl.addEventListener('click', onSelectElement);
-  componentSearchInputEl.addEventListener('input', onComponentSearchInput);
-  reactComponentListEl.addEventListener('mouseleave', () => {
-    clearPageHoverPreview();
-  });
-  chrome.devtools.network.onNavigated.addListener(onInspectedPageNavigated);
-  window.addEventListener('beforeunload', () => {
-    workspaceLayoutManager?.destroy();
-    workspaceLayoutManager = null;
-    if (destroyWheelScrollFallback) {
-      destroyWheelScrollFallback();
-      destroyWheelScrollFallback = null;
-    }
-    runtimeRefreshScheduler.dispose();
-    chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
-  });
-  runtimeRefreshScheduler.refresh(false);
+  runtimeRefreshScheduler.dispose();
+  chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
 }
+
+const { bootstrapPanel } = createPanelBootstrapFlowValue({
+  mountPanelView,
+  initDomRefs,
+  initializeWorkspaceLayout: () => {
+    workspaceLayoutManager = createWorkspaceLayoutManager({
+      panelContentEl,
+      workspacePanelToggleBarEl,
+      workspaceDockPreviewEl,
+      workspacePanelElements,
+    });
+  },
+  initializeWheelFallback: () => {
+    destroyWheelScrollFallback = initWheelScrollFallback(panelWorkspaceEl);
+  },
+  setPickerModeActive,
+  populateTargetSelect,
+  setElementOutput,
+  setDomTreeStatus,
+  setDomTreeEmpty,
+  getFetchBtnEl: () => fetchBtnEl,
+  getSelectElementBtnEl: () => selectElementBtnEl,
+  getComponentSearchInputEl: () => componentSearchInputEl,
+  getReactComponentListEl: () => reactComponentListEl,
+  onFetch,
+  onSelectElement,
+  onComponentSearchInput,
+  clearPageHoverPreview,
+  addNavigatedListener: () => {
+    chrome.devtools.network.onNavigated.addListener(onInspectedPageNavigated);
+  },
+  onBeforeUnload: onPanelBeforeUnload,
+  runInitialRefresh: () => {
+    runtimeRefreshScheduler.refresh(false);
+  },
+});
 
 /** 화면 요소를 렌더링 */
 function renderPanelFatalError(error: unknown) {
