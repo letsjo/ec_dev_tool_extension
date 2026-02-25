@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentSerialization.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentSerialization.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -116,6 +116,7 @@
 React inspect/inspectPath 오케스트레이션은 `src/content/pageAgentInspect.ts`로 위임합니다.
 componentId 기반 root/fiber 탐색은 `src/content/pageAgentFiberSearch.ts`로 위임합니다.
 값 직렬화/collection path 해석은 `src/content/pageAgentSerialization.ts`로 위임합니다.
+hook 이름 추론/Ref 상태 정규화는 `src/content/pageAgentHookState.ts`로 위임합니다.
 DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
@@ -123,7 +124,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 
 새 메서드 추가 시:
 
-1. 도메인에 맞는 모듈(`pageAgent.ts`, `pageAgentDom.ts`, `pageAgentInspect.ts`, `pageAgentFiberSearch.ts`, `pageAgentSerialization.ts`)에 구현 함수 추가
+1. 도메인에 맞는 모듈(`pageAgent.ts`, `pageAgentDom.ts`, `pageAgentInspect.ts`, `pageAgentFiberSearch.ts`, `pageAgentSerialization.ts`, `pageAgentHookState.ts`)에 구현 함수 추가
 2. `pageAgentMethods.ts`의 method 라우터에 handler 연결
 3. `controller.ts`에서 호출 및 타입 가드 연결
 4. 필요하면 `src/shared/inspector/types.ts` 타입 확장
@@ -162,6 +163,11 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 
 - `pageAgentSerialization.ts`: inspect payload 직렬화(`makeSerializer`), props 직렬화(`serializePropsForFiber`), collection path token 해석(`resolveSpecialCollectionPathSegment`) 전담
 - `pageAgent.ts`/`pageAgentInspect.ts`: serializer 유틸을 호출해 hook/props 데이터 직렬화와 path 탐색 흐름만 조립
+
+## 6.8 pageAgent Hook State 모듈 분리 규칙
+
+- `pageAgentHookState.ts`: hook 이름 추론(`inferHookName`), Ref hook 상태 표시 정규화(`normalizeHookStateForDisplay`) 전담
+- `pageAgent.ts`: fiber hook 순회 중 hook state helper를 호출해 목록 오케스트레이션만 담당
 
 ## 7. 워크스페이스(패널 스플릿) 모델
 
@@ -325,7 +331,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 
 ### 새 pageAgent 메서드 추가
 
-1. 도메인 성격에 맞는 모듈(`pageAgent.ts`, `pageAgentDom.ts`, `pageAgentInspect.ts`, `pageAgentFiberSearch.ts`, `pageAgentSerialization.ts`)에 함수 작성
+1. 도메인 성격에 맞는 모듈(`pageAgent.ts`, `pageAgentDom.ts`, `pageAgentInspect.ts`, `pageAgentFiberSearch.ts`, `pageAgentSerialization.ts`, `pageAgentHookState.ts`)에 함수 작성
 2. `pageAgentMethods.ts` 라우터 case에 메서드/핸들러 연결
 3. `controller.ts`에서 `callInspectedPageAgent` 호출 경로 추가
 4. `types.ts`/`guards.ts`에 응답 타입과 검증기 추가
@@ -358,6 +364,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/content/pageAgentBridge.ts`
 - `src/content/pageAgentMethods.ts`
 - `src/content/pageAgentHookGroups.ts`
+- `src/content/pageAgentHookState.ts`
 - `src/content/pageAgentInspect.ts`
 - `src/content/pageAgentFiberSearch.ts`
 - `src/content/pageAgentSerialization.ts`

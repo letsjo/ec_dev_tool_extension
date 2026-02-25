@@ -15,10 +15,11 @@ import {
 } from "./pageAgentDom";
 import { installPageAgentBridge } from "./pageAgentBridge";
 import { createPageAgentMethodExecutor } from "./pageAgentMethods";
+import { inspectCustomHookGroupNames } from "./pageAgentHookGroups";
 import {
-  inspectCustomHookGroupNames,
-  parseHookDisplayName,
-} from "./pageAgentHookGroups";
+  inferHookName,
+  normalizeHookStateForDisplay,
+} from "./pageAgentHookState";
 import { createPageAgentInspectHandlers } from "./pageAgentInspect";
 import {
   makeSerializer,
@@ -327,72 +328,6 @@ function findPreferredSelectedFiber(startFiber: FiberLike) {
     guard += 1;
   }
   return firstInspectable;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function inferHookName(node: AnyRecord | null | undefined, index: number, hookTypes: unknown[] | null) {
-  let hookTypeName = null;
-  if (hookTypes && typeof hookTypes[index] === "string" && hookTypes[index]) {
-    hookTypeName = parseHookDisplayName(String(hookTypes[index]).trim());
-    if (hookTypeName) {
-      hookTypeName = hookTypeName.charAt(0).toUpperCase() + hookTypeName.slice(1);
-    }
-  }
-  if (!node || typeof node !== "object") return "Hook#" + String(index + 1);
-
-  const memoizedState = node.memoizedState;
-  if (node.queue && typeof node.queue === "object") {
-    const reducer = node.queue.lastRenderedReducer;
-    if (typeof reducer === "function") {
-      const reducerName = reducer.name || "";
-      if (reducerName && reducerName !== "basicStateReducer") return "Reducer";
-      if (hookTypeName === "Reducer") return "Reducer";
-      if (hookTypeName === "State") return "State";
-      if (reducerName === "basicStateReducer") return "State";
-      return "Reducer";
-    }
-    if (hookTypeName === "Reducer") return "Reducer";
-    if (hookTypeName === "State") return "State";
-    return "State";
-  }
-  if (hookTypeName) return hookTypeName;
-  if (
-    memoizedState
-    && typeof memoizedState === "object"
-    && "current" in memoizedState
-    && !Array.isArray(memoizedState)
-  ) {
-    return "Ref";
-  }
-  if (Array.isArray(memoizedState) && memoizedState.length === 2 && Array.isArray(memoizedState[1])) {
-    return typeof memoizedState[0] === "function" ? "Callback" : "Memo";
-  }
-  if (
-    memoizedState
-    && typeof memoizedState === "object"
-    && ("create" in memoizedState || "destroy" in memoizedState)
-  ) {
-    return "Effect";
-  }
-  return "Hook#" + String(index + 1);
-}
-
-/** 표시/전달용 값으로 변환 */
-function toRefCurrentDisplayValue(value: unknown) {
-  if (typeof Element !== "undefined" && value instanceof Element) {
-    const tagName = String(value.tagName || "").toLowerCase();
-    return tagName ? `<${tagName} />` : "<element />";
-  }
-  return value;
-}
-
-/** 입력 데이터를 표시/비교용으로 정규화 */
-function normalizeHookStateForDisplay(hookName: string, state: unknown) {
-  if (hookName !== "Ref") return state;
-  if (state && typeof state === "object" && !Array.isArray(state) && "current" in state) {
-    return toRefCurrentDisplayValue(state.current);
-  }
-  return toRefCurrentDisplayValue(state);
 }
 
 /** 필요한 값/상태를 계산해 반환 */
