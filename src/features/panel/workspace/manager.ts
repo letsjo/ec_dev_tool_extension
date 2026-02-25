@@ -1,15 +1,8 @@
 import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
 import {
   parseWorkspaceNodePath,
-  removePanelFromWorkspaceLayout,
-  updateWorkspaceSplitRatioByPath,
   WORKSPACE_DOCK_SPLIT_RATIO,
-  type WorkspaceDropTarget,
-  type WorkspaceLayoutNode,
-  type WorkspacePanelState,
 } from './layoutModel';
-import { applyWorkspaceDockDropToLayout } from './dockDropApply';
-import { reconcileWorkspaceLayoutState } from './layoutReconcile';
 import {
   computeWorkspaceDockDirection,
   findWorkspacePanelByPoint,
@@ -34,11 +27,8 @@ import {
   startWorkspaceSplitResizeSession,
   stopWorkspaceSplitResizeSession,
 } from './splitResizeSession';
-import {
-  persistWorkspaceStateSnapshot,
-  restoreWorkspaceStateSnapshot,
-} from './statePersistence';
 import { createWorkspaceResizeFlow } from './resizeFlow';
+import { createWorkspaceManagerLayoutState } from './managerLayoutState';
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -62,26 +52,21 @@ export function createWorkspaceLayoutManager({
   workspaceDockPreviewEl,
   workspacePanelElements,
 }: WorkspaceLayoutManagerElements): WorkspaceLayoutManager {
-  let workspaceLayoutRoot: WorkspaceLayoutNode | null = null;
-  let workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
   let unbindWorkspaceInteractions: (() => void) | null = null;
-
-  function reconcileWorkspaceLayout() {
-    workspaceLayoutRoot = reconcileWorkspaceLayoutState(
-      workspaceLayoutRoot,
-      workspacePanelStateById,
-    );
-  }
+  const workspaceLayoutState = createWorkspaceManagerLayoutState({
+    workspacePanelElements,
+  });
 
   const { renderWorkspaceLayout, toggleWorkspacePanelOpenState } = createWorkspaceRenderFlow({
     panelContentEl,
     workspaceDockPreviewEl,
     workspacePanelToggleBarEl,
     workspacePanelElements,
-    getWorkspaceLayoutRoot: () => workspaceLayoutRoot,
-    getWorkspacePanelStateById: () => workspacePanelStateById,
-    reconcileWorkspaceLayout,
+    getWorkspaceLayoutRoot: workspaceLayoutState.getWorkspaceLayoutRoot,
+    getWorkspacePanelStateById: workspaceLayoutState.getWorkspacePanelStateById,
+    reconcileWorkspaceLayout: workspaceLayoutState.reconcileWorkspaceLayout,
   });
+  workspaceLayoutState.setRenderWorkspaceLayout(renderWorkspaceLayout);
 
   const workspacePanelBodySizeObserver = createWorkspacePanelBodySizeObserver({
     panelContentEl,
@@ -91,39 +76,6 @@ export function createWorkspaceLayoutManager({
     },
   });
 
-  /**
-   * 단일 패널의 가시 상태를 변경하고 레이아웃 트리에 반영한다.
-   * `visible`로 전환할 때는 즉시 `open=true`로 강제해 body 높이 계산이 깨지지 않게 한다.
-   */
-  function setWorkspacePanelState(panelId: WorkspacePanelId, state: WorkspacePanelState) {
-    workspacePanelStateById.set(panelId, state);
-    if (state === 'visible') {
-      const panelEl = workspacePanelElements.get(panelId);
-      if (panelEl) {
-        panelEl.open = true;
-      }
-    } else {
-      const removal = removePanelFromWorkspaceLayout(workspaceLayoutRoot, panelId);
-      workspaceLayoutRoot = removal.node;
-    }
-    persistWorkspaceStateSnapshot(workspacePanelStateById, workspaceLayoutRoot);
-    renderWorkspaceLayout();
-  }
-
-  /** 해당 기능 흐름을 처리 */
-  function applyWorkspaceDockDrop(draggedPanelId: WorkspacePanelId, dropTarget: WorkspaceDropTarget) {
-    const nextLayout = applyWorkspaceDockDropToLayout(
-      workspaceLayoutRoot,
-      draggedPanelId,
-      dropTarget,
-    );
-    if (!nextLayout.changed) {
-      return;
-    }
-    workspaceLayoutRoot = nextLayout.layoutRoot;
-    persistWorkspaceStateSnapshot(workspacePanelStateById, workspaceLayoutRoot);
-    renderWorkspaceLayout();
-  }
   const workspaceDragDropFlow = createWorkspaceDragDropFlow({
     panelContentEl,
     workspacePanelElements,
@@ -137,7 +89,7 @@ export function createWorkspaceLayoutManager({
     showWorkspaceDockPreview(baseRect, direction) {
       showWorkspaceDockPreview(workspaceDockPreviewEl, panelContentEl, baseRect, direction);
     },
-    applyWorkspaceDockDrop,
+    applyWorkspaceDockDrop: workspaceLayoutState.applyWorkspaceDockDrop,
   });
   const workspaceResizeFlow = createWorkspaceResizeFlow({
     createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTarget,
@@ -148,16 +100,15 @@ export function createWorkspaceLayoutManager({
     parseWorkspaceNodePath,
     defaultSplitRatio: WORKSPACE_DOCK_SPLIT_RATIO,
     onPersistSplitRatio(splitPath, ratio) {
-      workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(workspaceLayoutRoot, splitPath, ratio);
-      persistWorkspaceStateSnapshot(workspacePanelStateById, workspaceLayoutRoot);
+      workspaceLayoutState.persistWorkspaceSplitRatio(splitPath, ratio);
     },
   });
 
   const workspaceActionHandlers = createWorkspaceActionHandlers({
     isWorkspacePanelId,
-    getWorkspacePanelStateById: () => workspacePanelStateById,
+    getWorkspacePanelStateById: workspaceLayoutState.getWorkspacePanelStateById,
     toggleWorkspacePanelOpenState,
-    setWorkspacePanelState,
+    setWorkspacePanelState: workspaceLayoutState.setWorkspacePanelState,
   });
 
   const panelInteractionHandlers = {
@@ -187,9 +138,7 @@ export function createWorkspaceLayoutManager({
    * 4) 마지막에 1회 렌더를 수행한다.
    */
   function initWorkspaceLayoutManager() {
-    const restored = restoreWorkspaceStateSnapshot();
-    workspacePanelStateById = restored.workspacePanelStateById;
-    workspaceLayoutRoot = restored.workspaceLayoutRoot;
+    workspaceLayoutState.restoreWorkspaceState();
 
     unbindWorkspaceInteractions?.();
     unbindWorkspaceInteractions = bindWorkspaceInteractionBindings({
