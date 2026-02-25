@@ -1,25 +1,16 @@
-import { readObjectRefId } from '../../../shared/inspector/guards';
 import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
 } from '../../../shared/inspector/types';
-import {
-  buildHookTree as buildHookTreeValue,
-  type HookRowItem,
-  type HookTreeNode,
-} from './hookTreeModel';
+import { buildHookTree as buildHookTreeValue } from './hookTreeModel';
+import { appendHookTreeNodes } from './jsonHookTreeRenderer';
+import { collectJsonRefMap } from './jsonRefMap';
 import type {
   FetchSerializedValueAtPathHandler,
   InspectFunctionAtPathHandler,
   JsonRenderContext,
 } from './jsonRenderTypes';
-import {
-  createDetailsToggleButton,
-  createExpandableValueRow,
-  createRowToggleSpacer,
-} from './jsonRowUi';
-import { isJsonInternalMetaKey } from './jsonPreview';
 import { createJsonValueNodeRenderer } from './jsonValueNode';
 
 /**
@@ -60,133 +51,6 @@ const createJsonValueNode = createJsonValueNodeRenderer({
   fetchSerializedValueAtPath,
 });
 
-function collectRefMap(root: unknown): Map<number, unknown> {
-  const map = new Map<number, unknown>();
-  const visited = new WeakSet<object>();
-  let remaining = 4000;
-
-  const walk = (value: unknown) => {
-    if (remaining <= 0) return;
-    if (value === null || typeof value !== 'object') return;
-    if (visited.has(value)) return;
-    visited.add(value);
-    remaining -= 1;
-
-    const refId = readObjectRefId(value);
-    if (refId !== null && !map.has(refId)) {
-      map.set(refId, value);
-    }
-
-    if (Array.isArray(value)) {
-      const maxLen = Math.min(value.length, 80);
-      for (let i = 0; i < maxLen && remaining > 0; i += 1) {
-        walk(value[i]);
-      }
-      return;
-    }
-
-    let scannedKeys = 0;
-    for (const [key, child] of Object.entries(value)) {
-      if (isJsonInternalMetaKey(key)) continue;
-      walk(child);
-      scannedKeys += 1;
-      if (scannedKeys >= 100 || remaining <= 0) break;
-    }
-  };
-
-  walk(root);
-  return map;
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createHookRowValueNode(
-  value: unknown,
-  context: JsonRenderContext,
-  path: JsonPathSegment[],
-): HTMLElement {
-  const node = createJsonValueNode(value, 1, {
-    ...context,
-    path,
-  });
-
-  if (node instanceof HTMLDetailsElement) {
-    node.classList.add('json-hook-state-node');
-  }
-
-  return node;
-}
-
-/** 생성한 노드를 컨테이너에 추가 */
-function appendHookRow(container: HTMLElement, item: HookRowItem, context: JsonRenderContext) {
-  const keyEl = document.createElement('span');
-  keyEl.className = 'json-key json-hook-key';
-
-  const indexEl = document.createElement('span');
-  indexEl.className = 'json-hook-index';
-  indexEl.textContent = String(item.order);
-  keyEl.appendChild(indexEl);
-
-  const nameEl = document.createElement('span');
-  nameEl.className = 'json-hook-name';
-  nameEl.textContent = item.name;
-  keyEl.appendChild(nameEl);
-
-  if (item.badge) {
-    const badgeEl = document.createElement('span');
-    badgeEl.className = `json-hook-badge json-hook-badge-${item.badge}`;
-    badgeEl.textContent = item.badge === 'effect' ? 'effect' : 'fn';
-    keyEl.appendChild(badgeEl);
-  }
-
-  const valueNode = createHookRowValueNode(item.state, context, [item.sourceIndex, 'state']);
-  if (valueNode instanceof HTMLDetailsElement) {
-    container.appendChild(
-      createExpandableValueRow({
-        keyEl,
-        valueDetails: valueNode,
-        extraClassName: 'json-hook-row',
-      }),
-    );
-    return;
-  }
-
-  const row = document.createElement('div');
-  row.className = 'json-row json-row-with-spacer json-hook-row';
-  row.appendChild(createRowToggleSpacer());
-  row.appendChild(keyEl);
-  row.appendChild(document.createTextNode(': '));
-  row.appendChild(valueNode);
-  container.appendChild(row);
-}
-
-/** 생성한 노드를 컨테이너에 추가 */
-function appendHookTree(container: HTMLElement, nodes: HookTreeNode[], context: JsonRenderContext) {
-  nodes.forEach((node) => {
-    if (node.type === 'item') {
-      appendHookRow(container, node.item, context);
-      return;
-    }
-
-    const groupDetails = document.createElement('details');
-    groupDetails.className = 'json-node json-hook-group';
-    groupDetails.open = false;
-
-    const groupTitle = document.createElement('summary');
-    groupTitle.className = 'json-hook-group-title';
-    groupTitle.appendChild(createDetailsToggleButton(groupDetails));
-    const groupLabel = document.createElement('span');
-    groupLabel.textContent = node.title;
-    groupTitle.appendChild(groupLabel);
-    groupDetails.appendChild(groupTitle);
-
-    const groupChildren = document.createElement('div');
-    groupChildren.className = 'json-children json-hook-group-children';
-    appendHookTree(groupChildren, node.children, context);
-    groupDetails.appendChild(groupChildren);
-    container.appendChild(groupDetails);
-  });
-}
-
 /** 렌더링에 사용할 DOM/데이터 구조를 생성 */
 function createJsonSection(
   title: string,
@@ -202,7 +66,7 @@ function createJsonSection(
   sectionTitle.textContent = title;
   sectionEl.appendChild(sectionTitle);
 
-  const refMap = collectRefMap(value);
+  const refMap = collectJsonRefMap(value);
   const baseContext: JsonRenderContext = {
     component,
     section: sectionKind,
@@ -223,7 +87,12 @@ function createJsonSection(
       hooksRows.appendChild(empty);
     } else {
       const tree = buildHookTreeValue(value);
-      appendHookTree(hooksRows, tree, baseContext);
+      appendHookTreeNodes({
+        container: hooksRows,
+        nodes: tree,
+        context: baseContext,
+        createJsonValueNode,
+      });
     }
 
     sectionEl.appendChild(hooksRows);
