@@ -7,11 +7,6 @@
  * 3. Components Tree, Inspector, Selected Element/DOM Path/DOM Tree, Raw Result를 렌더링한다.
  * 4. 스플릿/검색/선택/하이라이트/런타임 갱신 상태를 동기화한다.
  */
-import type {
-  ComponentFilterResult,
-  JsonSectionKind,
-  ReactComponentInfo,
-} from '../../shared/inspector/types';
 import type { WorkspacePanelId } from './workspacePanels';
 import {
   createWorkspaceLayoutManager,
@@ -23,48 +18,12 @@ import {
   mountPanelView as mountPanelViewValue,
 } from './domRefs';
 import {
-  buildReactComponentDetailRenderSignature as buildReactComponentDetailRenderSignatureValue,
-  buildReactListRenderSignature as buildReactListRenderSignatureValue,
-} from './reactInspector/signatures';
-import {
-  buildComponentIndexById as buildComponentIndexByIdValue,
-  ensureComponentSearchTextCache as ensureComponentSearchTextCacheValue,
-  expandAncestorPaths as expandAncestorPathsValue,
-  getComponentFilterResult as getComponentFilterResultValue,
-  patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
-} from './reactInspector/search';
-import {
-  createReactInspectResultApplyFlow as createReactInspectResultApplyFlowValue,
-} from './reactInspector/applyResultFlow';
-import {
   createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
 } from './reactInspector/fetchOptions';
-import {
-  resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
-} from './reactInspector/lookup';
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
-import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './reactInspector/listRenderFlow';
-import { createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue } from './reactInspector/detailRenderFlow';
-import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
-import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './reactInspector/searchInputBindingFlow';
-import { createReactComponentSelectionBindingFlow as createReactComponentSelectionBindingFlowValue } from './reactInspector/selectionBindingFlow';
-import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
-import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './reactInspector/detailQueueFlow';
-import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './reactInspector/resetStateFlow';
-import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
 import { createReactInspectorControllerState } from './reactInspector/controllerState';
-import {
-  buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
-} from './reactInspector/searchStatus';
-import {
-  applyReactInspectorPaneState as applyReactInspectorPaneStateValue,
-  buildReactComponentListEmptyText as buildReactComponentListEmptyTextValue,
-  buildReactInspectorLoadingPaneState as buildReactInspectorLoadingPaneStateValue,
-  buildReactInspectorResetPaneState as buildReactInspectorResetPaneStateValue,
-} from './reactInspector/viewState';
-import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
-import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './reactInspector/detailRenderer';
+import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from './reactInspector/controllerFlows';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
@@ -77,7 +36,6 @@ import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from './runtimeRefresh/panelRuntimeRefreshFlow';
 import {
-  clearPaneContent as clearPaneContentValue,
   setPaneEmptyState as setPaneEmptyStateValue,
   setPaneText as setPaneTextValue,
   setPaneTextWithErrorState as setPaneTextWithErrorStateValue,
@@ -183,12 +141,6 @@ function setReactDetailEmpty(text: string) {
   reactInspectorState.setLastReactDetailComponentId(null);
 }
 
-const reactInspectorPaneSetters = {
-  setReactStatus,
-  setReactListEmpty,
-  setReactDetailEmpty,
-};
-
 /** UI 상태 또는 문구를 설정 */
 function setDomTreeStatus(text: string, isError = false) {
   setPaneTextWithErrorStateValue(domTreeStatusEl, text, isError);
@@ -229,210 +181,25 @@ const { inspectFunctionAtPath, fetchSerializedValueAtPath } =
     setReactStatus,
   });
 
-/** 파생 데이터나 요약 값을 구성 */
-function buildReactComponentDetailRenderSignature(component: ReactComponentInfo): string {
-  return buildReactComponentDetailRenderSignatureValue(component);
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function buildReactListRenderSignature(
-  filterResult: ComponentFilterResult,
-  matchedIndexSet: Set<number>,
-): string {
-  return buildReactListRenderSignatureValue(
-    reactInspectorState.getReactComponents(),
-    reactInspectorState.getComponentSearchQuery(),
-    reactInspectorState.getSelectedReactComponentIndex(),
-    reactInspectorState.getCollapsedComponentIds(),
-    filterResult,
-    matchedIndexSet,
-  );
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createJsonSection(
-  title: string,
-  value: unknown,
-  component: ReactComponentInfo,
-  sectionKind: JsonSectionKind,
-): HTMLElement {
-  return createReactJsonSectionValue({
-    title,
-    value,
-    component,
-    sectionKind,
-    onInspectFunctionAtPath: inspectFunctionAtPath,
-    onFetchSerializedValueAtPath: fetchSerializedValueAtPath,
-  });
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getComponentFilterResult(): ComponentFilterResult {
-  reactInspectorState.setComponentSearchTexts(
-    ensureComponentSearchTextCacheValue(
-      reactInspectorState.getReactComponents(),
-      reactInspectorState.getComponentSearchQuery(),
-      reactInspectorState.getComponentSearchTexts(),
-      reactInspectorState.getComponentSearchIncludeDataTokens(),
-    ),
-  );
-  return getComponentFilterResultValue(
-    reactInspectorState.getReactComponents(),
-    reactInspectorState.getComponentSearchQuery(),
-    reactInspectorState.getComponentSearchTexts(),
-  );
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function buildComponentIndexById(): Map<string, number> {
-  return buildComponentIndexByIdValue(reactInspectorState.getReactComponents());
-}
-
-/** 부모 경로를 확장 */
-function expandAncestorPaths(indices: number[]) {
-  expandAncestorPathsValue(
-    reactInspectorState.getReactComponents(),
-    indices,
-    reactInspectorState.getCollapsedComponentIds(),
-  );
-}
-
-const applySearchNoResultState = createSearchNoResultStateFlowValue({
-  getTotalComponentCount: () => reactInspectorState.getReactComponents().length,
-  renderReactComponentList,
-  setReactDetailEmpty,
+const { onComponentSearchInput, fetchReactInfo } = createReactInspectorControllerFlowsValue({
+  state: reactInspectorState,
+  callInspectedPageAgent,
+  reactComponentListEl,
+  treePaneEl,
+  reactComponentDetailEl,
+  componentSearchInputEl,
   setReactStatus,
+  setReactListEmpty,
+  setReactDetailEmpty,
   clearPageHoverPreview,
   clearPageComponentHighlight,
+  previewPageDomForComponent,
+  highlightPageDomForComponent,
   setDomTreeStatus,
   setDomTreeEmpty,
-});
-
-const renderReactComponentDetailFlow = createReactComponentDetailRenderFlowValue({
-  readState: reactInspectorState.readDetailRenderState,
-  writeState: reactInspectorState.writeDetailRenderState,
-  reactComponentDetailEl,
-  buildRenderSignature: buildReactComponentDetailRenderSignature,
-  clearPaneContent: clearPaneContentValue,
-  createJsonSection,
-  renderReactComponentDetailPanel: renderReactComponentDetailPanelValue,
-});
-
-/** 화면 요소를 렌더링 */
-function renderReactComponentDetail(component: ReactComponentInfo) {
-  renderReactComponentDetailFlow(component);
-}
-
-const renderReactComponentListFlow = createReactComponentListRenderFlowValue({
-  readState: reactInspectorState.readListRenderState,
-  writeState: reactInspectorState.writeListRenderState,
-  setReactListEmpty,
-  buildReactComponentListEmptyText: buildReactComponentListEmptyTextValue,
-  getComponentFilterResult,
-  buildReactListRenderSignature,
-  buildComponentIndexById,
-  renderReactComponentListTree: renderReactComponentListTreeValue,
-  treePaneEl,
-  reactComponentListEl,
-  clearPaneContent: clearPaneContentValue,
-  previewPageDomForComponent,
-  clearPageHoverPreview,
-  getOnSelectComponent: () => selectReactComponent,
-});
-
-/** 화면 요소를 렌더링 */
-function renderReactComponentList() {
-  renderReactComponentListFlow();
-}
-
-const { detailFetchQueue } = createReactDetailQueueFlowValue({
-  cooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
-  callInspectedPageAgent,
-  getLookup: () => resolveRuntimeRefreshLookupValue(reactInspectorState.getStoredLookup()),
-  getReactComponents: reactInspectorState.getReactComponents,
-  setReactComponents: reactInspectorState.setReactComponents,
-  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
-  getComponentSearchTexts: reactInspectorState.getComponentSearchTexts,
-  getComponentSearchIncludeDataTokens: reactInspectorState.getComponentSearchIncludeDataTokens,
-  patchComponentSearchTextCacheAt: patchComponentSearchTextCacheAtValue,
-  renderReactComponentDetail,
-  setReactDetailEmpty,
-});
-
-const { selectReactComponent } = createReactComponentSelectionBindingFlowValue({
-  getReactComponents: reactInspectorState.getReactComponents,
-  setSelectedComponentIndex: reactInspectorState.setSelectedReactComponentIndex,
-  clearPageHoverPreview,
-  expandAncestorPaths,
-  renderReactComponentList,
-  getReactComponentListEl: () => reactComponentListEl,
-  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
-  renderReactComponentDetail,
-  setReactDetailEmpty,
-  highlightPageDomForComponent,
-  detailFetchQueue,
+  inspectFunctionAtPath,
+  fetchSerializedValueAtPath,
   detailFetchRetryCooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
-});
-
-const onComponentSearchInput = createReactComponentSearchInputFlowValue({
-  getSearchInputValue: () => componentSearchInputEl.value,
-  setComponentSearchQuery: reactInspectorState.setComponentSearchQuery,
-  getComponentSearchQuery: reactInspectorState.getComponentSearchQuery,
-  getReactComponents: reactInspectorState.getReactComponents,
-  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
-  getComponentFilterResult,
-  applySearchNoResultState,
-  expandAncestorPaths,
-  selectReactComponent,
-  renderReactComponentList,
-  setReactStatus,
-  buildSearchSummaryStatusText: buildSearchSummaryStatusTextValue,
-});
-
-const resetReactInspector = createReactInspectorResetStateFlowValue({
-  writeState: reactInspectorState.writeResetState,
-  resetDetailFetchQueue: () => {
-    detailFetchQueue.reset();
-  },
-  clearPageHoverPreview,
-  clearPageComponentHighlight,
-  applyResetPaneState: (statusText, isError) => {
-    applyReactInspectorPaneStateValue(
-      reactInspectorPaneSetters,
-      buildReactInspectorResetPaneStateValue(statusText, isError),
-    );
-  },
-});
-
-const applyReactInspectResult = createReactInspectResultApplyFlowValue({
-  readState: reactInspectorState.readApplyResultState,
-  writeState: reactInspectorState.writeApplyResultState,
-  getComponentFilterResult,
-  setReactStatus,
-  renderReactComponentList,
-  selectReactComponent,
-  applySearchNoResultState: (context) => {
-    applySearchNoResultState(context);
-  },
-  resetReactInspector,
-});
-
-const { fetchReactInfo } = createReactInspectFetchFlowValue({
-  callInspectedPageAgent,
-  getStoredLookup: reactInspectorState.getStoredLookup,
-  setStoredLookup: reactInspectorState.setStoredLookup,
-  getReactComponents: reactInspectorState.getReactComponents,
-  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
-  clearPageHoverPreview,
-  clearPageComponentHighlight,
-  applyLoadingPaneState: () => {
-    applyReactInspectorPaneStateValue(
-      reactInspectorPaneSetters,
-      buildReactInspectorLoadingPaneStateValue(),
-    );
-  },
-  resetReactInspector,
-  applyReactInspectResult,
 });
 
 const { runtimeRefreshScheduler, onInspectedPageNavigated } =
