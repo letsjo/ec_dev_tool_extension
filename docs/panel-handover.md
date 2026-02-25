@@ -226,6 +226,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/dragOverTarget.ts`
 - `src/features/panel/workspace/domReuse.ts`
+- `src/features/panel/workspace/domPatcher.ts`
 - `src/features/panel/workspace/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
@@ -262,11 +263,12 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.1 워크스페이스 모듈 분리 규칙
 
 - `layoutModel.ts`: 레이아웃 트리 모델/정규화/삽입/교체/비율 계산 같은 순수 로직
-- `manager.ts`: 워크스페이스 DOM patch 렌더, 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션
+- `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
 - `dockDropApply.ts`: dock drop target(`center|left|right|top|bottom`)에 따른 layout tree 변경(교체/삽입/append) 순수 계산 전담
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
 - `dragOverTarget.ts`: dragover pointer 좌표 기준 drop target/preview rect 계산 전담
 - `domReuse.ts`: panel id 집합 비교와 재사용 가능한 workspace root 노드 탐색 규칙 전담
+- `domPatcher.ts`: layout tree 재귀 patch, split node 재사용/대체 판단, first/second slot subtree 매핑 전담
 - `layoutDom.ts`: split DOM 골격 생성과 panel split class reset 정리 전담
 - `panelBindings.ts`: panel summary/action 버튼 drag/click/mousedown 이벤트 바인딩/해제 전담
 - `containerBindings.ts`: workspace 컨테이너 drag/drop/pointer/dblclick, toggle bar click 이벤트 바인딩/해제 전담
@@ -523,6 +525,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/dragOverTarget.ts`
 - `src/features/panel/workspace/domReuse.ts`
+- `src/features/panel/workspace/domPatcher.ts`
 - `src/features/panel/workspace/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`

@@ -9,13 +9,11 @@ import {
   parseWorkspaceNodePath,
   pruneWorkspaceLayoutByVisiblePanels,
   removePanelFromWorkspaceLayout,
-  stringifyWorkspaceNodePath,
   updateWorkspaceSplitRatioByPath,
   WORKSPACE_DOCK_SPLIT_RATIO,
   type WorkspaceDockDirection,
   type WorkspaceDropTarget,
   type WorkspaceLayoutNode,
-  type WorkspaceNodePath,
   type WorkspacePanelState,
 } from './layoutModel';
 import { applyWorkspaceDockDropToLayout as applyWorkspaceDockDropToLayoutValue } from './dockDropApply';
@@ -26,10 +24,7 @@ import {
   showWorkspaceDockPreview as showWorkspaceDockPreviewValue,
 } from './dockPreview';
 import {
-  collectWorkspacePanelIdsFromDom as collectWorkspacePanelIdsFromDomValue,
-  findReusableWorkspaceDomRoot as findReusableWorkspaceDomRootValue,
   getWorkspaceLayoutRootElement as getWorkspaceLayoutRootElementValue,
-  isSameWorkspacePanelIdSet as isSameWorkspacePanelIdSetValue,
 } from './domReuse';
 import {
   captureWorkspaceScrollSnapshots as captureWorkspaceScrollSnapshotsValue,
@@ -53,9 +48,9 @@ import {
   updateWorkspacePanelControlState as updateWorkspacePanelControlStateValue,
 } from './toggleBar';
 import {
-  createWorkspaceSplitElement as createWorkspaceSplitElementValue,
   resetWorkspacePanelSplitClasses as resetWorkspacePanelSplitClassesValue,
 } from './layoutDom';
+import { patchWorkspaceLayoutDomNode as patchWorkspaceLayoutDomNodeValue } from './domPatcher';
 import {
   applyWorkspaceSplitRatioStyle as applyWorkspaceSplitRatioStyleValue,
   computeWorkspaceResizeRatioFromPointer as computeWorkspaceResizeRatioFromPointerValue,
@@ -169,122 +164,6 @@ export function createWorkspaceLayoutManager({
     return getWorkspaceLayoutRootElementValue(panelContentEl, workspaceDockPreviewEl);
   }
 
-  /** 파생 데이터나 요약 값을 구성 */
-  function collectWorkspacePanelIdsFromDom(rootEl: Element | null): Set<WorkspacePanelId> {
-    return collectWorkspacePanelIdsFromDomValue(rootEl);
-  }
-
-  /** 조건 여부를 판별 */
-  function isSameWorkspacePanelIdSet(a: Set<WorkspacePanelId>, b: Set<WorkspacePanelId>): boolean {
-    return isSameWorkspacePanelIdSetValue(a, b);
-  }
-
-  /** 조건에 맞는 대상을 탐색 */
-  function findReusableWorkspaceDomRoot(
-    layoutNode: WorkspaceLayoutNode,
-    existingRoot: HTMLElement | null,
-  ): HTMLElement | null {
-    return findReusableWorkspaceDomRootValue(layoutNode, existingRoot);
-  }
-
-  /** 생성한 노드를 컨테이너에 추가 */
-  function patchWorkspaceLayoutDomNode(
-    layoutNode: WorkspaceLayoutNode,
-    existingRoot: HTMLElement | null,
-    path: WorkspaceNodePath = [],
-  ): HTMLElement {
-    const reusableRoot = findReusableWorkspaceDomRoot(layoutNode, existingRoot);
-
-    if (layoutNode.type === 'panel') {
-      const panelEl = workspacePanelElements.get(layoutNode.panelId);
-      if (!panelEl) {
-        const fallback = document.createElement('div');
-        fallback.className = 'workspace-panel-missing';
-        fallback.textContent = `패널을 찾을 수 없습니다: ${layoutNode.panelId}`;
-        return fallback;
-      }
-      panelEl.classList.remove('workspace-split-child', 'workspace-split-child-first', 'workspace-split-child-second');
-      return panelEl;
-    }
-
-    const splitEl =
-      reusableRoot && reusableRoot.classList.contains('workspace-split') && reusableRoot.dataset.splitAxis === layoutNode.axis
-        ? reusableRoot
-        : createWorkspaceSplitElementValue(layoutNode.axis);
-
-    splitEl.classList.add('workspace-split', `workspace-split-${layoutNode.axis}`);
-    splitEl.classList.remove(layoutNode.axis === 'row' ? 'workspace-split-column' : 'workspace-split-row');
-    splitEl.dataset.splitAxis = layoutNode.axis;
-    splitEl.dataset.splitPath = stringifyWorkspaceNodePath(path);
-    splitEl.style.setProperty('--workspace-split-first', `${layoutNode.ratio}fr`);
-    splitEl.style.setProperty('--workspace-split-second', `${1 - layoutNode.ratio}fr`);
-
-    const firstSlot = splitEl.querySelector<HTMLElement>(':scope > .workspace-split-child-first');
-    const divider = splitEl.querySelector<HTMLElement>(':scope > .workspace-split-divider');
-    const secondSlot = splitEl.querySelector<HTMLElement>(':scope > .workspace-split-child-second');
-    if (!firstSlot || !divider || !secondSlot) {
-      const recreated = createWorkspaceSplitElementValue(layoutNode.axis);
-      return patchWorkspaceLayoutDomNode(layoutNode, recreated, path);
-    }
-
-    divider.className = `workspace-split-divider workspace-split-divider-${layoutNode.axis}`;
-    divider.setAttribute('aria-orientation', layoutNode.axis === 'row' ? 'vertical' : 'horizontal');
-    splitEl.append(firstSlot, divider, secondSlot);
-
-    const firstExpectedIds = collectPanelIdsFromLayout(layoutNode.first);
-    const secondExpectedIds = collectPanelIdsFromLayout(layoutNode.second);
-
-    let firstExistingRoot = firstSlot.firstElementChild as HTMLElement | null;
-    let secondExistingRoot = secondSlot.firstElementChild as HTMLElement | null;
-    if (!reusableRoot && existingRoot) {
-      const existingIds = collectWorkspacePanelIdsFromDom(existingRoot);
-      if (!firstExistingRoot && isSameWorkspacePanelIdSet(existingIds, firstExpectedIds)) {
-        firstExistingRoot = existingRoot;
-      } else if (!secondExistingRoot && isSameWorkspacePanelIdSet(existingIds, secondExpectedIds)) {
-        secondExistingRoot = existingRoot;
-      } else if (existingRoot.classList.contains('workspace-split')) {
-        const existingFirst = existingRoot.querySelector<HTMLElement>(
-          ':scope > .workspace-split-child-first > *',
-        );
-        const existingSecond = existingRoot.querySelector<HTMLElement>(
-          ':scope > .workspace-split-child-second > *',
-        );
-        if (existingFirst && !firstExistingRoot) {
-          const existingFirstIds = collectWorkspacePanelIdsFromDom(existingFirst);
-          if (isSameWorkspacePanelIdSet(existingFirstIds, firstExpectedIds)) {
-            firstExistingRoot = existingFirst;
-          }
-        }
-        if (existingSecond && !secondExistingRoot) {
-          const existingSecondIds = collectWorkspacePanelIdsFromDom(existingSecond);
-          if (isSameWorkspacePanelIdSet(existingSecondIds, secondExpectedIds)) {
-            secondExistingRoot = existingSecond;
-          }
-        }
-      }
-    }
-
-    const firstPatched = patchWorkspaceLayoutDomNode(
-      layoutNode.first,
-      firstExistingRoot,
-      [...path, 'first'],
-    );
-    const secondPatched = patchWorkspaceLayoutDomNode(
-      layoutNode.second,
-      secondExistingRoot,
-      [...path, 'second'],
-    );
-
-    if (firstExistingRoot !== firstPatched || firstSlot.childElementCount !== 1) {
-      firstSlot.replaceChildren(firstPatched);
-    }
-    if (secondExistingRoot !== secondPatched || secondSlot.childElementCount !== 1) {
-      secondSlot.replaceChildren(secondPatched);
-    }
-
-    return splitEl;
-  }
-
   /** 레이아웃을 재구성하지 않고 패널 접기/펼치기 상태만 반영 */
   function toggleWorkspacePanelOpenState(panelId: WorkspacePanelId) {
     const panelEl = workspacePanelElements.get(panelId);
@@ -357,7 +236,11 @@ export function createWorkspaceLayoutManager({
     const existingRoot = getWorkspaceLayoutRootElement();
     let nextRoot: HTMLElement;
     if (workspaceLayoutRoot) {
-      nextRoot = patchWorkspaceLayoutDomNode(workspaceLayoutRoot, existingRoot, []);
+      nextRoot = patchWorkspaceLayoutDomNodeValue({
+        layoutNode: workspaceLayoutRoot,
+        existingRoot,
+        workspacePanelElements,
+      });
     } else if (existingRoot && existingRoot.classList.contains('workspace-empty')) {
       nextRoot = existingRoot;
     } else {
