@@ -67,6 +67,7 @@
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/lookup.ts`, `reactInspector/searchStatus.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/selectionModel.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/lookup 저장·refresh lookup 계산·inspectPath fallback/검색 캐시 생성·보정/검색 상태 문구/placeholder 상태/선택 시퀀스/선택 인덱스 계산/상세(JSON/hook) 렌더 로직 위임
   - `controller.ts`의 `applyReactInspectResult`는 내부를 3단계(data stage → selection stage → render stage) 헬퍼로 분리해 오케스트레이션만 담당
   - `controller.ts`의 `fetchReactInfo`는 request stage(`applyReactFetchRequestStage`)와 response stage(`applyReactFetchResponseStage`)로 분리해 오케스트레이션만 담당
+  - `controller.ts`의 reactInspectPath 호출(`inspectFunctionAtPath`, `fetchSerializedValueAtPath`)은 공통 helper(`requestReactInspectPath`)로 요청/응답 검증 규칙을 재사용
   - `reactInspector/detailFetchQueue.ts` 유틸로 선택 컴포넌트 상세 지연조회 큐(in-flight/queue/cooldown) 위임
   - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화

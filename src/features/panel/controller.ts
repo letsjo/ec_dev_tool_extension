@@ -401,32 +401,79 @@ const {
   },
 });
 
+type ReactInspectPathMode = 'inspectFunction' | 'serializeValue';
+
+interface ReactInspectPathRequestFailure {
+  kind: 'runtimeError' | 'responseError';
+  message: string;
+}
+
+interface RequestReactInspectPathOptions {
+  component: ReactComponentInfo;
+  section: JsonSectionKind;
+  path: JsonPathSegment[];
+  mode: ReactInspectPathMode;
+  serializeLimit?: number;
+  onDone: (result: Record<string, unknown> | null, failure?: ReactInspectPathRequestFailure) => void;
+}
+
+/**
+ * reactInspectPath 공통 요청 헬퍼.
+ * selector/pickPoint fallback 계산과 응답 형식 검증을 한 곳에서 처리한다.
+ */
+function requestReactInspectPath(options: RequestReactInspectPathOptions) {
+  const lookup = resolveInspectPathLookupValue(options.component.domSelector, lastReactLookup);
+  callInspectedPageAgent(
+    'reactInspectPath',
+    {
+      componentId: options.component.id,
+      selector: lookup.selector,
+      pickPoint: lookup.pickPoint,
+      section: options.section,
+      path: options.path,
+      mode: options.mode,
+      ...(typeof options.serializeLimit === 'number'
+        ? { serializeLimit: options.serializeLimit }
+        : {}),
+    },
+    (res, errorText) => {
+      if (errorText) {
+        options.onDone(null, { kind: 'runtimeError', message: errorText });
+        return;
+      }
+      if (!isRecord(res) || res.ok !== true) {
+        const reason = isRecord(res) ? String(res.error ?? '알 수 없는 오류') : '알 수 없는 오류';
+        options.onDone(null, { kind: 'responseError', message: reason });
+        return;
+      }
+      options.onDone(res);
+    },
+  );
+}
+
 /** 경로 기준 inspect 동작을 수행 */
 function inspectFunctionAtPath(
   component: ReactComponentInfo,
   section: JsonSectionKind,
   path: JsonPathSegment[],
 ) {
-  const lookup = resolveInspectPathLookupValue(component.domSelector, lastReactLookup);
   setReactStatus('함수 이동 시도 중…');
-  callInspectedPageAgent(
-    'reactInspectPath',
-    {
-      componentId: component.id,
-      selector: lookup.selector,
-      pickPoint: lookup.pickPoint,
-      section,
-      path,
-      mode: 'inspectFunction',
-    },
-    (res, errorText) => {
-      if (errorText) {
-        setReactStatus(`함수 이동 실행 오류: ${errorText}`, true);
+  requestReactInspectPath({
+    component,
+    section,
+    path,
+    mode: 'inspectFunction',
+    onDone: (res, failure) => {
+      if (failure) {
+        if (failure.kind === 'runtimeError') {
+          setReactStatus(`함수 이동 실행 오류: ${failure.message}`, true);
+          return;
+        }
+        setReactStatus(`함수 이동 실패: ${failure.message}`, true);
         return;
       }
-      if (!isRecord(res) || res.ok !== true) {
-        const reason = isRecord(res) ? String(res.error ?? '알 수 없는 오류') : '알 수 없는 오류';
-        setReactStatus(`함수 이동 실패: ${reason}`, true);
+      if (!res) {
+        setReactStatus('함수 이동 실패: 알 수 없는 오류', true);
         return;
       }
       const name = typeof res.name === 'string' ? res.name : '(anonymous)';
@@ -437,7 +484,7 @@ function inspectFunctionAtPath(
       }
       openFunctionInSources(inspectRefKey, name);
     },
-  );
+  });
 }
 
 /** DevTools 기능을 호출해 이동/열기를 수행 */
@@ -475,30 +522,20 @@ function fetchSerializedValueAtPath(
   path: JsonPathSegment[],
   onDone: (value: unknown | null) => void,
 ) {
-  const lookup = resolveInspectPathLookupValue(component.domSelector, lastReactLookup);
-  callInspectedPageAgent(
-    'reactInspectPath',
-    {
-      componentId: component.id,
-      selector: lookup.selector,
-      pickPoint: lookup.pickPoint,
-      section,
-      path,
-      mode: 'serializeValue',
-      serializeLimit: 45000,
-    },
-    (res, errorText) => {
-      if (errorText) {
-        onDone(null);
-        return;
-      }
-      if (!isRecord(res) || res.ok !== true) {
+  requestReactInspectPath({
+    component,
+    section,
+    path,
+    mode: 'serializeValue',
+    serializeLimit: 45000,
+    onDone: (res) => {
+      if (!res) {
         onDone(null);
         return;
       }
       onDone('value' in res ? (res as { value: unknown }).value : null);
     },
-  );
+  });
 }
 
 /** 파생 데이터나 요약 값을 구성 */
