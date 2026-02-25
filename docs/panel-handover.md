@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이/하이라이트 상태, runtime hook/pageAgent 브리지 상태, 선택 element selector/path 정보 계산, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentDomTree.ts`, `src/content/pageAgentDomHighlight.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationCore.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentDomTree.ts`, `src/content/pageAgentDomHighlight.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookDispatcherTypes.ts`, `src/content/pageAgentHookDispatcherState.ts`, `src/content/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationCore.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -135,7 +135,7 @@ fiber hook linked-list 정규화/개수 집계/직렬화 payload 구성은 `src/
 DOM selector/path 계산은 `src/content/pageAgentDom.ts`로, DOM tree 직렬화는 `src/content/pageAgentDomTree.ts`로, highlight/preview 상태 복원·적용은 `src/content/pageAgentDomHighlight.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
-custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group path 추론 유틸은 `src/content/pageAgentHookGrouping.ts`로, dispatcher/ref/render 대상 해석 유틸은 `src/content/pageAgentHookRuntime.ts`로, hook dispatcher 구성 유틸은 `src/content/pageAgentHookDispatcher.ts`로, primitive warmup stack cache 빌더는 `src/content/pageAgentHookPrimitiveStack.ts`로, dispatcher 교체/console mute/render 실행 유틸은 `src/content/pageAgentHookRenderExecution.ts`로, 전체 오케스트레이션은 `src/content/pageAgentHookGroups.ts`로 위임합니다.
+custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group path 추론 유틸은 `src/content/pageAgentHookGrouping.ts`로, dispatcher/ref/render 대상 해석 유틸은 `src/content/pageAgentHookRuntime.ts`로, hook dispatcher 타입/상태/메서드 구성 유틸은 `src/content/pageAgentHookDispatcherTypes.ts`/`src/content/pageAgentHookDispatcherState.ts`/`src/content/pageAgentHookDispatcherMethods.ts`로, dispatcher 조립/Proxy fallback 유틸은 `src/content/pageAgentHookDispatcher.ts`로, primitive warmup stack cache 빌더는 `src/content/pageAgentHookPrimitiveStack.ts`로, dispatcher 교체/console mute/render 실행 유틸은 `src/content/pageAgentHookRenderExecution.ts`로, 전체 오케스트레이션은 `src/content/pageAgentHookGroups.ts`로 위임합니다.
 
 새 메서드 추가 시:
 
@@ -168,7 +168,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentHookRuntime.ts`: global hook dispatcher ref 탐색, render 함수/기본 props 해석 유틸 전담
 - `pageAgentHookResult.ts`: custom hook metadata 배열 결과(`groupNames/groupPaths/primitive*`) 길이 정렬(pad/truncate) 전담
 - `pageAgentHookMetadataBuild.ts`: hookLog + stack 비교 결과를 custom hook metadata 배열(`groupNames/groupPaths/primitive*`)로 변환하는 루프 전담
-- `pageAgentHookDispatcher.ts`: hook inspect용 대체 dispatcher 생성, hook log 수집, generic hook fallback 처리 전담
+- `pageAgentHookDispatcherTypes.ts`: hook inspect dispatcher 공용 타입(`HookInspectState`, `HookLogEntry`) 전담
+- `pageAgentHookDispatcherState.ts`: hook cursor(`nextHook`/`readHookMemoizedState`)와 context snapshot/log push 상태 유틸 전담
+- `pageAgentHookDispatcherMethods.ts`: built-in hook 메서드(useState/useReducer/use/useTransition 등) 구현 집합 전담
+- `pageAgentHookDispatcher.ts`: state/method helper 조립과 Proxy 기반 generic hook fallback 결선 전담
 - `pageAgentHookPrimitiveStack.ts`: dispatcher warmup 로그를 primitive별 stack frame 캐시로 구성하는 단계 전담
 - `pageAgentHookRenderExecution.ts`: dispatcher 교체, console mute, hook inspect render 실행, suspended(use) 예외 완화, dispatcher/console 복구 전담
 - `pageAgentHookGroups.ts`: stack/grouping/runtime/result/metadata-build/dispatcher/primitive-stack/render-execution 유틸을 조합해 custom metadata(group/path/primitive) 오케스트레이션 전담
@@ -645,6 +648,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentHookResult.ts`
 - `src/content/pageAgentHookMetadataBuild.ts`
 - `src/content/pageAgentHookDispatcher.ts`
+- `src/content/pageAgentHookDispatcherTypes.ts`
+- `src/content/pageAgentHookDispatcherState.ts`
+- `src/content/pageAgentHookDispatcherMethods.ts`
 - `src/content/pageAgentHookPrimitiveStack.ts`
 - `src/content/pageAgentHookRenderExecution.ts`
 - `src/content/pageAgentHookState.ts`
@@ -707,6 +713,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기
   - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 대상 미발견 에러 처리와 DOM tree 직렬화 기본 경로
   - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, clear 복원, selector 미발견 에러 처리
+  - `tests/content/pageAgentHookDispatcher.test.ts`: `pageAgentHookDispatcher.ts`의 useState cursor 전진, `use` promise unresolved/resolved 처리, context snapshot, generic hook fallback 분기
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
   - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, hook count 집계, class component hook payload 직렬화
   - `tests/content/pageAgentSerializationCore.test.ts`: serializer 내부키 매핑, class name 판별, dehydrated 토큰 생성, 순환참조 저장소 동작
