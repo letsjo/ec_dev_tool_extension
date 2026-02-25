@@ -76,6 +76,7 @@ import {
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './reactInspector/detailRenderer';
+import { applySelectedComponentDetailResult as applySelectedComponentDetailResultValue } from './reactInspector/detailApply';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
@@ -426,34 +427,17 @@ function scrollSelectedComponentIntoView() {
 
 /** 계산/조회 결과를 UI 상태에 반영 */
 function applySelectedComponentDetail(result: ReactComponentDetailResult): boolean {
-  if (!result.ok || typeof result.componentId !== 'string') return false;
-
-  const componentIndex = reactComponents.findIndex(
-    (component) => component.id === result.componentId,
-  );
-  if (componentIndex < 0) return false;
-
-  const previous = reactComponents[componentIndex];
-  const next: ReactComponentInfo = {
-    ...previous,
-    props: result.props,
-    hooks: result.hooks,
-    hookCount: typeof result.hookCount === 'number' ? result.hookCount : previous.hookCount,
-    hasSerializedData: true,
-  };
-  reactComponents[componentIndex] = next;
-
-  patchComponentSearchTextCacheAtValue(
+  const appliedResult = applySelectedComponentDetailResultValue({
+    result,
     reactComponents,
     componentSearchTexts,
-    componentIndex,
     componentSearchIncludeDataTokens,
-  );
-
-  if (selectedReactComponentIndex === componentIndex) {
-    renderReactComponentDetail(next);
-  }
-  return true;
+    selectedReactComponentIndex,
+    patchComponentSearchTextCacheAt: patchComponentSearchTextCacheAtValue,
+    renderReactComponentDetail,
+  });
+  reactComponents = appliedResult.reactComponents;
+  return appliedResult.applied;
 }
 
 const detailFetchQueue = createReactDetailFetchQueue({
