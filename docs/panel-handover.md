@@ -21,8 +21,8 @@
 - 역할: panel ↔ content 메시지 중계, content script 미주입 탭 복구
 
 3. Content script (isolated world)
-- 파일: `src/content/elementPicker.ts`, `src/content/elementSelectorInfo.ts`, `src/content/runtimeMessaging.ts`
-- 역할: 요소 선택 오버레이, 선택 element selector/path 정보 계산, main world 스크립트 주입, pageAgent 브리지, runtime 메시지 안전 전송 유틸
+- 파일: `src/content/elementPicker.ts`, `src/content/elementPickerBridge.ts`, `src/content/elementSelectorInfo.ts`, `src/content/runtimeMessaging.ts`
+- 역할: 요소 선택 오버레이/상태, runtime hook/pageAgent 브리지 상태, 선택 element selector/path 정보 계산, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
 - 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
@@ -87,7 +87,7 @@
 1. panel이 `chrome.runtime.sendMessage({ action: "callPageAgent", ... })` 전송
 2. background가 `ensureContentScript(tabId)`로 content 존재 보장
 3. background가 content로 `callPageAgent` 재전송
-4. content(`elementPicker.ts`)가 `window.postMessage` 브리지로 pageAgent 호출
+4. content(`elementPicker.ts`, `elementPickerBridge.ts`)가 `window.postMessage` 브리지로 pageAgent 호출
 5. pageAgent(`pageAgent.ts`)가 메서드 실행 후 응답
 6. 응답이 역방향으로 panel까지 전달
 
@@ -418,7 +418,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 4. 자동 갱신이 과도하거나 느린 경우
 - `runtimeRefresh/scheduler.ts` 생성 옵션(`minIntervalMs`, `debounceMs`) 값 점검
-- `elementPicker.ts`의 notify throttle 값과 함께 조정
+- `elementPickerBridge.ts`의 notify throttle 값과 함께 조정
 
 5. DOM 트리 렌더가 무거운 경우
 - `pageAgentDom.ts`의 직렬화 제한(`MAX_DEPTH`, `MAX_CHILDREN_PER_NODE`) 점검
@@ -552,6 +552,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/ui/panels/index.ts`
 - `src/features/panel/workspacePanels.ts`
 - `src/content/elementPicker.ts`
+- `src/content/elementPickerBridge.ts`
 - `src/content/elementSelectorInfo.ts`
 - `src/content/runtimeMessaging.ts`
 - `src/content/pageAgent.ts`
