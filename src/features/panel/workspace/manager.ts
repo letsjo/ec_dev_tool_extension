@@ -43,6 +43,7 @@ import {
   bindWorkspacePanelInteractions as bindWorkspacePanelInteractionsValue,
   unbindWorkspacePanelInteractions as unbindWorkspacePanelInteractionsValue,
 } from './panelBindings';
+import { resolveWorkspaceDragOverTarget as resolveWorkspaceDragOverTargetValue } from './dragOverTarget';
 import {
   createWorkspaceSplitElement as createWorkspaceSplitElementValue,
   resetWorkspacePanelSplitClasses as resetWorkspacePanelSplitClassesValue,
@@ -485,23 +486,15 @@ export function createWorkspaceLayoutManager({
   function onWorkspaceDragOver(event: DragEvent) {
     if (!workspaceDragPanelId) return;
     event.preventDefault();
-
-    const panelEl = findWorkspacePanelByPoint(event.clientX, event.clientY);
-    if (!panelEl || !isWorkspacePanelId(panelEl.id)) {
-      workspaceDropTarget = {
-        targetPanelId: null,
-        direction: 'center',
-      };
-      showWorkspaceDockPreview(panelContentEl.getBoundingClientRect(), 'center');
-      return;
-    }
-
-    const direction = computeWorkspaceDockDirection(panelEl, event.clientX, event.clientY);
-    workspaceDropTarget = {
-      targetPanelId: panelEl.id,
-      direction,
-    };
-    showWorkspaceDockPreview(panelEl.getBoundingClientRect(), direction);
+    const resolution = resolveWorkspaceDragOverTargetValue({
+      panelContentEl,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      findWorkspacePanelByPoint,
+      computeWorkspaceDockDirection,
+    });
+    workspaceDropTarget = resolution.dropTarget;
+    showWorkspaceDockPreview(resolution.previewRect, resolution.dropTarget.direction);
   }
 
   /** 이벤트를 처리 */
