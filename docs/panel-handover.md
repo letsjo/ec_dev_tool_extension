@@ -21,7 +21,7 @@
 - 역할: panel ↔ content 메시지 중계, content script 미주입 탭 복구
 
 3. Content script (isolated world)
-- 파일: `src/content/elementPicker.ts`, `src/content/elementPickerOverlay.ts`, `src/content/elementPickerBridge.ts`, `src/content/elementSelectorInfo.ts`, `src/content/runtimeMessaging.ts`
+- 파일: `src/content/elementPicker.ts`, `src/content/elementPickerOverlay.ts`, `src/content/elementPickerBridge.ts`, `src/content/elementPickerPageAgentClient.ts`, `src/content/elementSelectorInfo.ts`, `src/content/runtimeMessaging.ts`
 - 역할: 요소 선택 오버레이/하이라이트 상태, runtime hook/pageAgent 브리지 상태, 선택 element selector/path 정보 계산, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
@@ -87,9 +87,11 @@
 1. panel이 `chrome.runtime.sendMessage({ action: "callPageAgent", ... })` 전송
 2. background가 `ensureContentScript(tabId)`로 content 존재 보장
 3. background가 content로 `callPageAgent` 재전송
-4. content(`elementPicker.ts`, `elementPickerBridge.ts`)가 `window.postMessage` 브리지로 pageAgent 호출
+4. content(`elementPicker.ts`, `elementPickerBridge.ts`, `elementPickerPageAgentClient.ts`)가 `window.postMessage` 브리지로 pageAgent 호출
 5. pageAgent(`pageAgent.ts`)가 메서드 실행 후 응답
 6. 응답이 역방향으로 panel까지 전달
+
+- content 브리지의 request timeout/pending request cleanup은 `elementPickerPageAgentClient.ts`가 전담한다.
 
 ### 5.2 요소 선택 흐름
 
@@ -636,6 +638,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/elementPicker.ts`
 - `src/content/elementPickerOverlay.ts`
 - `src/content/elementPickerBridge.ts`
+- `src/content/elementPickerPageAgentClient.ts`
 - `src/content/elementSelectorInfo.ts`
 - `src/content/runtimeMessaging.ts`
 - `src/content/pageAgent.ts`
@@ -717,6 +720,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기
   - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 대상 미발견 에러 처리와 DOM tree 직렬화 기본 경로
   - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, clear 복원, selector 미발견 에러 처리
+  - `tests/content/elementPickerPageAgentClient.test.ts`: `elementPickerPageAgentClient.ts`의 request/response resolve, error reject, stop listener cancel 분기
   - `tests/content/pageAgentHookDispatcher.test.ts`: `pageAgentHookDispatcher.ts`의 useState cursor 전진, `use` promise unresolved/resolved 처리, context snapshot, generic hook fallback 분기
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
   - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, hook count 집계, class component hook payload 직렬화
