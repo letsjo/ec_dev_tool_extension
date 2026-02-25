@@ -13,6 +13,7 @@ import {
   getElementPath,
   resolveTargetElement,
 } from "./pageAgentDom";
+import { installPageAgentBridge } from "./pageAgentBridge";
 
 const BRIDGE_SOURCE = "EC_DEV_TOOL_PAGE_AGENT_BRIDGE";
 const BRIDGE_ACTION_REQUEST = "request";
@@ -2431,37 +2432,10 @@ function executeMethod(method: string, args: unknown) {
   }
 }
 
-/** 브리지 응답/메시지를 전송 */
-function postBridgeResponse(requestId: string, ok: boolean, payload: AnyRecord) {
-  window.postMessage(
-    {
-      source: BRIDGE_SOURCE,
-      action: BRIDGE_ACTION_RESPONSE,
-      requestId,
-      ok,
-      ...payload,
-    },
-    "*"
-  );
-}
-
-/** 이벤트를 처리 */
-function onBridgeMessage(event: MessageEvent) {
-  if (event.source !== window) return;
-  const data = event.data;
-  if (!data || typeof data !== "object") return;
-  if (data.source !== BRIDGE_SOURCE || data.action !== BRIDGE_ACTION_REQUEST) return;
-  if (typeof data.requestId !== "string" || !data.requestId) return;
-
-  try {
-    const result = executeMethod(data.method, data.args);
-    postBridgeResponse(data.requestId, true, { result });
-  } catch (error) {
-    postBridgeResponse(data.requestId, false, {
-      error: String(error && error.message ? error.message : error),
-    });
-  }
-}
-
-window.addEventListener("message", onBridgeMessage);
+installPageAgentBridge({
+  bridgeSource: BRIDGE_SOURCE,
+  requestAction: BRIDGE_ACTION_REQUEST,
+  responseAction: BRIDGE_ACTION_RESPONSE,
+  executeMethod,
+});
 }

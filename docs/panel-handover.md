@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -112,6 +112,7 @@
 
 `src/content/pageAgent.ts`는 브리지 라우팅/React inspect 중심 오케스트레이션을 담당하고,
 DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.ts`로 위임합니다.
+브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 
 새 메서드 추가 시:
 
@@ -124,6 +125,11 @@ DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.t
 
 - `pageAgentDom.ts`: DOM selector/path 계산, DOM 트리 직렬화, component highlight/hover preview 상태 복원 전담
 - `pageAgent.ts`: 요청 method 라우팅, React fiber 기반 inspect/path 처리 전담
+
+## 6.2 pageAgent Bridge 모듈 분리 규칙
+
+- `pageAgentBridge.ts`: window message 리스너 설치, request 검증, response 포맷/전송 전담
+- `pageAgent.ts`: executeMethod 구현과 도메인 핸들러 조립 전담
 
 ## 7. 워크스페이스(패널 스플릿) 모델
 
@@ -304,6 +310,7 @@ DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.t
 - `src/content/elementPicker.ts`
 - `src/content/pageAgent.ts`
 - `src/content/pageAgentDom.ts`
+- `src/content/pageAgentBridge.ts`
 - `src/content/reactRuntimeHook.ts`
 - `src/background.ts`
 - `panel.html`
