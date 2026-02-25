@@ -12,7 +12,6 @@ import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { TARGETS } from '../../config';
 import {
-  isPageHighlightResult,
   isPickPoint,
   isReactInspectResult,
   isRecord,
@@ -24,7 +23,6 @@ import type {
   ElementSelectedMessage,
   JsonPathSegment,
   JsonSectionKind,
-  PageHighlightResult,
   PickPoint,
   PickerStartResponse,
   ReactComponentDetailResult,
@@ -58,6 +56,7 @@ import {
   handleDomTreeAgentResponse,
   handleReactInspectAgentResponse,
 } from './pageAgent/responsePipeline';
+import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createRuntimeRefreshScheduler } from './runtimeRefresh/scheduler';
 
 let outputEl!: HTMLDivElement;
@@ -394,78 +393,21 @@ function fetchDomTree(selector: string, pickPoint?: PickPoint) {
   );
 }
 
-/** 기존 상태를 정리 */
-function clearPageComponentHighlight() {
-  callInspectedPageAgent('clearComponentHighlight', null, () => {
-    /** 동작 없음. */
-  });
-}
-
-/** 기존 상태를 정리 */
-function clearPageHoverPreview() {
-  callInspectedPageAgent('clearHoverPreview', null, () => {
-    /** 동작 없음. */
-  });
-}
-
-/** 해당 기능 흐름을 처리 */
-function previewPageDomForComponent(component: ReactComponentInfo) {
-  if (!component.domSelector) return;
-  callInspectedPageAgent('previewComponent', { selector: component.domSelector }, () => {
-    /** 동작 없음. */
-  });
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setElementOutputFromHighlightResult(
-  result: PageHighlightResult,
-  fallback: ReactComponentInfo,
-) {
-  const lines = [
-    `tagName: ${result.tagName ?? fallback.domTagName ?? ''}`,
-    `selector: ${result.selector ?? fallback.domSelector ?? ''}`,
-    `domPath: ${result.domPath ?? fallback.domPath ?? ''}`,
-    result.rect ? `rect: ${JSON.stringify(result.rect)}` : null,
-  ].filter(Boolean);
-  setElementOutput(lines.join('\n'));
-}
-
-/**
- * 선택 컴포넌트의 실제 DOM 하이라이트 + 선택 요소 패널 동기화 + DOM 트리 재조회.
- * 이 함수가 성공하면 우측 패널(Selected Element / DOM Path / DOM Tree)이
- * 같은 selector 기준으로 함께 업데이트된다.
- */
-function highlightPageDomForComponent(component: ReactComponentInfo) {
-  if (!component.domSelector) {
-    clearPageComponentHighlight();
-    setReactStatus(`선택한 컴포넌트(${component.name})는 연결된 DOM 요소가 없습니다.`);
-    setElementOutput(`component: ${component.name}\nDOM 매핑 없음`);
-    setDomTreeStatus('선택한 컴포넌트에 연결된 DOM 요소가 없습니다.', true);
-    setDomTreeEmpty('표시할 DOM이 없습니다.');
-    return;
-  }
-
-  callInspectedPageAgent(
-    'highlightComponent',
-    { selector: component.domSelector },
-    (res, errorText) => {
-      if (errorText) {
-        setReactStatus(`DOM 하이라이트 실행 오류: ${errorText}`, true);
-        return;
-      }
-      if (!isPageHighlightResult(res) || !res.ok) {
-        const reason = isPageHighlightResult(res) ? res.error : '알 수 없는 오류';
-        setReactStatus(`DOM 하이라이트 실패: ${reason ?? '알 수 없는 오류'}`, true);
-        setDomTreeStatus(`DOM 하이라이트 실패: ${reason ?? '알 수 없는 오류'}`, true);
-        setDomTreeEmpty('표시할 DOM이 없습니다.');
-        return;
-      }
-      setReactStatus(`컴포넌트 ${component.name} DOM 하이라이트 완료`);
-      setElementOutputFromHighlightResult(res, component);
-      fetchDomTree(res.selector ?? component.domSelector ?? '');
-    },
-  );
-}
+const {
+  clearPageComponentHighlight,
+  clearPageHoverPreview,
+  previewPageDomForComponent,
+  highlightPageDomForComponent,
+} = createPanelSelectionSyncHandlers({
+  callInspectedPageAgent,
+  setReactStatus,
+  setElementOutput,
+  setDomTreeStatus,
+  setDomTreeEmpty,
+  fetchDomTree: (selector) => {
+    fetchDomTree(selector);
+  },
+});
 
 /** 경로 기준 inspect 동작을 수행 */
 function inspectFunctionAtPath(
