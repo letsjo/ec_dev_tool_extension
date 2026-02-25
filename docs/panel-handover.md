@@ -209,6 +209,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/domReuse.ts`
 - `src/features/panel/workspace/layoutDom.ts`
+- `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/splitResize.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
@@ -244,6 +245,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
 - `domReuse.ts`: panel id 집합 비교와 재사용 가능한 workspace root 노드 탐색 규칙 전담
 - `layoutDom.ts`: split DOM 골격 생성과 panel split class reset 정리 전담
+- `panelBindings.ts`: panel summary/action 버튼 drag/click/mousedown 이벤트 바인딩/해제 전담
 - `panelSizing.ts`: 접힘 split row(`grid-template-rows`) 계산과 패널 body width/height 동기화 전담
 - `splitResize.ts`: split divider pointerdown 상태 복원, pointer 좌표->ratio 계산, split ratio CSS 반영 전담
 - `scrollSnapshot.ts`: 레이아웃 patch 전후 스크롤 위치 캡처/복원 로직 전담
@@ -494,6 +496,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/domReuse.ts`
 - `src/features/panel/workspace/layoutDom.ts`
+- `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/splitResize.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`

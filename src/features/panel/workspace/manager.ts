@@ -40,6 +40,10 @@ import {
   syncWorkspaceSplitCollapsedRows as syncWorkspaceSplitCollapsedRowsValue,
 } from './panelSizing';
 import {
+  bindWorkspacePanelInteractions as bindWorkspacePanelInteractionsValue,
+  unbindWorkspacePanelInteractions as unbindWorkspacePanelInteractionsValue,
+} from './panelBindings';
+import {
   createWorkspaceSplitElement as createWorkspaceSplitElementValue,
   resetWorkspacePanelSplitClasses as resetWorkspacePanelSplitClassesValue,
 } from './layoutDom';
@@ -664,22 +668,13 @@ export function createWorkspaceLayoutManager({
   function initWorkspaceLayoutManager() {
     restoreWorkspaceState();
 
-    workspacePanelElements.forEach((panelEl, panelId) => {
-      panelEl.classList.add('workspace-panel');
-      panelEl.dataset.panelId = panelId;
-      const summaryEl = panelEl.querySelector<HTMLElement>('summary.workspace-panel-summary');
-      if (summaryEl) {
-        summaryEl.draggable = true;
-        summaryEl.addEventListener('dragstart', onWorkspacePanelDragStart);
-        summaryEl.addEventListener('dragend', onWorkspacePanelDragEnd);
-        summaryEl.addEventListener('click', onWorkspaceSummaryAction);
-        summaryEl.addEventListener('click', onWorkspaceSummaryClick);
-      }
-      const actionButtons = panelEl.querySelectorAll<HTMLButtonElement>('.workspace-panel-action');
-      actionButtons.forEach((button) => {
-        button.addEventListener('mousedown', onWorkspaceActionButtonMouseDown);
-        button.addEventListener('dragstart', onWorkspaceActionButtonDragStart);
-      });
+    bindWorkspacePanelInteractionsValue(workspacePanelElements, {
+      onPanelDragStart: onWorkspacePanelDragStart,
+      onPanelDragEnd: onWorkspacePanelDragEnd,
+      onSummaryAction: onWorkspaceSummaryAction,
+      onSummaryClick: onWorkspaceSummaryClick,
+      onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
+      onActionButtonDragStart: onWorkspaceActionButtonDragStart,
     });
 
     panelContentEl.addEventListener('dragover', onWorkspaceDragOver);
@@ -701,19 +696,13 @@ export function createWorkspaceLayoutManager({
     panelContentEl.removeEventListener('dblclick', onWorkspaceSplitDividerDoubleClick);
     workspacePanelToggleBarEl.removeEventListener('click', onWorkspacePanelToggleButtonClick);
 
-    workspacePanelElements.forEach((panelEl) => {
-      const summaryEl = panelEl.querySelector<HTMLElement>('summary.workspace-panel-summary');
-      if (summaryEl) {
-        summaryEl.removeEventListener('dragstart', onWorkspacePanelDragStart);
-        summaryEl.removeEventListener('dragend', onWorkspacePanelDragEnd);
-        summaryEl.removeEventListener('click', onWorkspaceSummaryAction);
-        summaryEl.removeEventListener('click', onWorkspaceSummaryClick);
-      }
-      const actionButtons = panelEl.querySelectorAll<HTMLButtonElement>('.workspace-panel-action');
-      actionButtons.forEach((button) => {
-        button.removeEventListener('mousedown', onWorkspaceActionButtonMouseDown);
-        button.removeEventListener('dragstart', onWorkspaceActionButtonDragStart);
-      });
+    unbindWorkspacePanelInteractionsValue(workspacePanelElements, {
+      onPanelDragStart: onWorkspacePanelDragStart,
+      onPanelDragEnd: onWorkspacePanelDragEnd,
+      onSummaryAction: onWorkspaceSummaryAction,
+      onSummaryClick: onWorkspaceSummaryClick,
+      onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
+      onActionButtonDragStart: onWorkspaceActionButtonDragStart,
     });
 
     if (workspacePanelBodySizeObserver) {
