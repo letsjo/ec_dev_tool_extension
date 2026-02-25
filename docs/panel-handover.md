@@ -62,6 +62,7 @@
   - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
   - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
+  - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected) 위임
   - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
   - `domTree/renderer.ts`, `domTree/fetchFlow.ts` 유틸로 DOM 트리 노드 렌더링과 getDomTree 조회/응답 상태 반영 플로우 위임
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/lookup.ts`, `reactInspector/openInSources.ts`, `reactInspector/pathActions.ts`, `reactInspector/pathBindings.ts`, `reactInspector/pathCompletion.ts`, `reactInspector/pathFailure.ts`, `reactInspector/pathOpenAction.ts`, `reactInspector/pathRequest.ts`, `reactInspector/pathRequestCompletion.ts`, `reactInspector/pathRequestRunner.ts`, `reactInspector/pathResponse.ts`, `reactInspector/searchStatus.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/selectionModel.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/lookup 저장·refresh lookup 계산·inspectPath fallback/devtools inspect eval expression 조립·실패 판정·상태 문구 규칙/inspectFunction·serializeValue completion 후처리(action/value) 규칙/inspectFunction/serializeValue 액션 핸들러 오케스트레이션/inspectPath request-open-action bindings 조립/function inspect open action(eval 실행 + 상태 문구) 오케스트레이션/inspectPath 실패 유형 정규화·상태 문구 규칙/inspectPath 호출 args(selector/pickPoint/mode/serializeLimit) 조립/inspectPath 요청 completion을 판별 유니온(`success`/`failure`)으로 정규화하고 success/failure 타입가드 제공/inspectPath request runner 생성(브리지 호출 + completion 반환)/inspectPath 성공 payload 파싱/검색 캐시 생성·보정/검색 상태 문구/placeholder 상태/선택 시퀀스/선택 인덱스 계산/상세(JSON/hook) 렌더 로직 위임
@@ -279,6 +280,11 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `paneState.ts`: 패널 텍스트 반영, `.empty`/`.error` 클래스 토글, empty placeholder signature 생성/반환 전담
 - `controller.ts`: 도메인 상태에 따라 어떤 메시지를 노출할지 결정하고 paneState 유틸 호출만 수행
 
+## 7.9 Panel Element Picker Bridge 모듈 분리 규칙
+
+- `elementPicker/bridgeFlow.ts`: 요소 선택 시작 요청(`startElementPicker`)과 runtime 메시지 분기(`elementPickerStopped`/`pageRuntimeChanged`/`elementSelected`) 규칙, Selected Element 출력 텍스트 조립 전담
+- `controller.ts`: picker 상태 setter, DOM/React fetch 액션, runtime refresh scheduler를 주입하고 이벤트 바인딩만 수행
+
 ## 8. 주요 UI 구성 파일 역할
 
 - `src/ui/sections/PanelViewSection.tsx`
@@ -388,6 +394,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/bridge/pageAgentClient.ts`
 - `src/features/panel/domTree/fetchFlow.ts`
 - `src/features/panel/domTree/renderer.ts`
+- `src/features/panel/elementPicker/bridgeFlow.ts`
 - `src/features/panel/pageAgent/responsePipeline.ts`
 - `src/features/panel/pageAgent/selectionSync.ts`
 - `src/features/panel/paneState.ts`

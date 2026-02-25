@@ -11,17 +11,11 @@ import React from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { TARGETS } from '../../config';
-import {
-  isPickPoint,
-  isReactInspectResult,
-} from '../../shared/inspector/guards';
-import { readString } from '../../shared/readers/string';
+import { isReactInspectResult } from '../../shared/inspector/guards';
 import type {
   ComponentFilterResult,
-  ElementSelectedMessage,
   JsonSectionKind,
   PickPoint,
-  PickerStartResponse,
   ReactComponentDetailResult,
   ReactComponentInfo,
   ReactInspectResult,
@@ -88,6 +82,7 @@ import {
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
+import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import {
   handleReactInspectAgentResponse,
@@ -981,99 +976,26 @@ function onInspectedPageNavigated(url: string) {
 
 /**
  * 요소 선택 모드를 시작한다.
- * 실제 선택 완료/취소 이벤트는 runtime.onMessage 핸들러에서 이어서 처리된다.
+ * 실제 선택 완료/취소/런타임 갱신 이벤트는 runtime 메시지 핸들러에서 이어서 처리된다.
  */
-function onSelectElement() {
-  clearPageHoverPreview();
-  const tabId = chrome.devtools.inspectedWindow.tabId;
-  chrome.runtime.sendMessage(
-    { action: 'startElementPicker', tabId },
-    (response?: PickerStartResponse) => {
-      if (chrome.runtime.lastError) {
-        setPickerModeActive(false);
-        setElementOutput(
-          '오류: ' +
-            (chrome.runtime.lastError.message ??
-              '콘텐츠 스크립트를 불러올 수 없습니다. 페이지를 새로고침한 뒤 다시 시도하세요.'),
-        );
-        setDomTreeStatus('오류: 요소 선택을 시작할 수 없습니다.', true);
-        return;
-      }
-      if (!response?.ok) {
-        setPickerModeActive(false);
-        setElementOutput('오류: ' + (response?.error ?? '요소 선택 시작에 실패했습니다.'));
-        setDomTreeStatus('오류: 요소 선택 시작에 실패했습니다.', true);
-      } else {
-        setPickerModeActive(true);
-        setElementOutput('페이지에서 요소를 클릭하세요. (취소: Esc)');
-        setReactStatus('요소 선택 대기 중… 선택 후 컴포넌트 트리를 조회합니다.');
-        setDomTreeStatus('요소 선택 대기 중…');
-        setDomTreeEmpty('요소를 클릭하면 DOM 트리를 표시합니다.');
-      }
-    },
-  );
-}
-
-/**
- * background/content script에서 오는 패널 동기화 이벤트 진입점.
- * 분기:
- * - elementPickerStopped: 선택 모드 종료 상태 반영
- * - pageRuntimeChanged: 경량 runtime refresh 예약
- * - elementSelected: Selected Element/DOM/React 패널 동시 갱신
- */
-chrome.runtime.onMessage.addListener((message: ElementSelectedMessage) => {
-  const inspectedTabId = chrome.devtools.inspectedWindow.tabId;
-  if (message.action === 'elementPickerStopped' && message.tabId === inspectedTabId) {
-    clearPageHoverPreview();
-    setPickerModeActive(false);
-    if (message.reason === 'cancelled') {
-      setReactStatus('요소 선택이 취소되었습니다.');
-      setDomTreeStatus('요소 선택이 취소되었습니다.');
-    }
-    return;
-  }
-
-  if (message.action === 'pageRuntimeChanged' && message.tabId === inspectedTabId) {
+const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue({
+  getInspectedTabId: () => chrome.devtools.inspectedWindow.tabId,
+  clearPageHoverPreview,
+  setPickerModeActive,
+  setElementOutput,
+  setReactStatus,
+  setDomTreeStatus,
+  setDomTreeEmpty,
+  fetchDomTree,
+  fetchReactInfoForElementSelection: (selector, pickPoint) => {
+    fetchReactInfo(selector, pickPoint, createElementSelectionFetchOptionsValue());
+  },
+  scheduleRuntimeRefresh: () => {
     runtimeRefreshScheduler.schedule(true);
-    return;
-  }
-
-  if (
-    message.action === 'elementSelected' &&
-    message.elementInfo &&
-    message.tabId === inspectedTabId
-  ) {
-    clearPageHoverPreview();
-    setPickerModeActive(false);
-    const info = message.elementInfo;
-    const selectorText = readString(info.selector);
-    const domPathText = readString(info.domPath);
-    const tagNameText = readString(info.tagName);
-    const idText = readString(info.id);
-    const classNameText = readString(info.className);
-    const innerText = readString(info.innerText);
-    const clickPoint = isPickPoint(info.clickPoint) ? info.clickPoint : undefined;
-
-    const lines = [
-      `tagName: ${tagNameText}`,
-      `selector: ${selectorText}`,
-      `domPath: ${domPathText}`,
-      idText ? `id: ${idText}` : null,
-      classNameText ? `className: ${classNameText}` : null,
-      info.rect ? `rect: ${JSON.stringify(info.rect)}` : null,
-      innerText ? `innerText: ${innerText.slice(0, 100)}…` : null,
-      clickPoint ? `clickPoint: ${JSON.stringify(clickPoint)}` : null,
-    ].filter(Boolean);
-    setElementOutput(lines.join('\n'));
-
-    fetchDomTree(selectorText || domPathText, clickPoint);
-    fetchReactInfo(
-      selectorText || domPathText,
-      clickPoint,
-      createElementSelectionFetchOptionsValue(),
-    );
-  }
+  },
 });
+
+chrome.runtime.onMessage.addListener(onRuntimeMessage);
 
 /**
  * 패널 부트스트랩 순서:
