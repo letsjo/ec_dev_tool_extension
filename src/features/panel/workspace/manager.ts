@@ -1,7 +1,6 @@
 import { isWorkspacePanelId, WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '../workspacePanels';
 import {
   appendPanelToWorkspaceLayout,
-  clampWorkspaceSplitRatio,
   collectPanelIdsFromLayout,
   createDefaultWorkspaceLayout,
   createWorkspacePanelNode,
@@ -42,19 +41,16 @@ import {
   syncWorkspacePanelBodySizes as syncWorkspacePanelBodySizesValue,
   syncWorkspaceSplitCollapsedRows as syncWorkspaceSplitCollapsedRowsValue,
 } from './panelSizing';
+import {
+  applyWorkspaceSplitRatioStyle as applyWorkspaceSplitRatioStyleValue,
+  computeWorkspaceResizeRatioFromPointer as computeWorkspaceResizeRatioFromPointerValue,
+  createWorkspaceResizeDragStateFromTarget as createWorkspaceResizeDragStateFromTargetValue,
+  type WorkspaceResizeDragState,
+} from './splitResize';
 import { readStoredJson, writeStoredJson } from './storage';
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = 'ecDevTool.workspaceLayout.v1';
 const WORKSPACE_PANEL_STATE_STORAGE_KEY = 'ecDevTool.workspacePanelState.v1';
-
-interface WorkspaceResizeDragState {
-  splitPath: WorkspaceNodePath;
-  axis: 'row' | 'column';
-  splitEl: HTMLElement;
-  splitRect: DOMRect;
-  dividerSize: number;
-  ratio: number;
-}
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -573,20 +569,10 @@ export function createWorkspaceLayoutManager({
   function onWorkspaceSplitResizePointerMove(event: PointerEvent) {
     const state = workspaceResizeDragState;
     if (!state) return;
-    const totalSize =
-      state.axis === 'row'
-        ? state.splitRect.width - state.dividerSize
-        : state.splitRect.height - state.dividerSize;
-    if (totalSize <= 0) return;
-
-    const pointerOffset =
-      state.axis === 'row'
-        ? event.clientX - state.splitRect.left
-        : event.clientY - state.splitRect.top;
-    const nextRatio = clampWorkspaceSplitRatio((pointerOffset - state.dividerSize / 2) / totalSize);
+    const nextRatio = computeWorkspaceResizeRatioFromPointerValue(state, event);
+    if (nextRatio === null) return;
     state.ratio = nextRatio;
-    state.splitEl.style.setProperty('--workspace-split-first', `${nextRatio}fr`);
-    state.splitEl.style.setProperty('--workspace-split-second', `${1 - nextRatio}fr`);
+    applyWorkspaceSplitRatioStyleValue(state.splitEl, nextRatio);
     event.preventDefault();
   }
 
@@ -628,34 +614,18 @@ export function createWorkspaceLayoutManager({
 
   /** 이벤트를 처리 */
   function onWorkspaceSplitResizePointerDown(event: PointerEvent) {
-    const target = event.target as HTMLElement | null;
-    const dividerEl = target?.closest<HTMLElement>('.workspace-split-divider');
-    if (!dividerEl || event.button !== 0) return;
-    const splitEl = dividerEl.parentElement;
-    if (!(splitEl instanceof HTMLElement)) return;
-    const axisRaw = splitEl.dataset.splitAxis;
-    if (axisRaw !== 'row' && axisRaw !== 'column') return;
+    if (event.button !== 0) return;
+    const nextDragState = createWorkspaceResizeDragStateFromTargetValue(event.target);
+    if (!nextDragState) return;
+    workspaceResizeDragState = nextDragState;
 
-    const splitRect = splitEl.getBoundingClientRect();
-    const dividerRect = dividerEl.getBoundingClientRect();
-    const dividerSize = axisRaw === 'row' ? dividerRect.width : dividerRect.height;
-    const splitPath = parseWorkspaceNodePath(splitEl.dataset.splitPath ?? '');
-    const firstRaw = splitEl.style.getPropertyValue('--workspace-split-first').trim();
-    const nextRatioFromCss = Number.parseFloat(firstRaw.replace('fr', ''));
-    const ratio = Number.isFinite(nextRatioFromCss) ? clampWorkspaceSplitRatio(nextRatioFromCss) : 0.5;
+    const dividerEl = nextDragState.splitEl.querySelector<HTMLElement>(
+      ':scope > .workspace-split-divider',
+    );
 
-    workspaceResizeDragState = {
-      splitPath,
-      axis: axisRaw,
-      splitEl,
-      splitRect,
-      dividerSize,
-      ratio,
-    };
-
-    dividerEl.classList.add('dragging');
+    dividerEl?.classList.add('dragging');
     document.body.style.userSelect = 'none';
-    document.body.style.cursor = axisRaw === 'row' ? 'col-resize' : 'row-resize';
+    document.body.style.cursor = nextDragState.axis === 'row' ? 'col-resize' : 'row-resize';
 
     window.addEventListener('pointermove', onWorkspaceSplitResizePointerMove);
     window.addEventListener('pointerup', onWorkspaceSplitResizePointerUp);
@@ -675,8 +645,7 @@ export function createWorkspaceLayoutManager({
     const splitPath = parseWorkspaceNodePath(splitEl.dataset.splitPath ?? '');
     const nextRatio = WORKSPACE_DOCK_SPLIT_RATIO;
 
-    splitEl.style.setProperty('--workspace-split-first', `${nextRatio}fr`);
-    splitEl.style.setProperty('--workspace-split-second', `${1 - nextRatio}fr`);
+    applyWorkspaceSplitRatioStyleValue(splitEl, nextRatio);
     workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(workspaceLayoutRoot, splitPath, nextRatio);
     persistWorkspaceState();
     event.preventDefault();
