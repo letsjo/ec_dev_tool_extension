@@ -267,6 +267,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `layoutModel.ts`: 레이아웃 트리 모델/정규화/삽입/교체/비율 계산 같은 순수 로직
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
+  - 2026-02 리팩터링: `manager.ts` 내부 thin wrapper를 제거하고 `dockPreview/panelSizing/scrollSnapshot/...` helper를 직접 결선해 호출 경로를 단순화
 - `dockDropApply.ts`: dock drop target(`center|left|right|top|bottom`)에 따른 layout tree 변경(교체/삽입/append) 순수 계산 전담
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
 - `dragOverTarget.ts`: dragover pointer 좌표 기준 drop target/preview rect 계산 전담

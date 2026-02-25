@@ -132,48 +132,13 @@ export function createWorkspaceLayoutManager({
     workspaceLayoutRoot = restored.workspaceLayoutRoot;
   }
 
-  /** 화면 요소를 렌더링 */
-  const renderWorkspacePanelToggleBar = () =>
-    renderWorkspacePanelToggleBarValue(workspacePanelToggleBarEl, workspacePanelStateById);
-
-  /** UI 상태 또는 문구를 설정 */
-  const updateWorkspacePanelControlState = (panelId: WorkspacePanelId) =>
-    updateWorkspacePanelControlStateValue(workspacePanelElements, panelId);
-
-  /** 레이아웃/상태를 동기화 */
-  function syncWorkspaceSplitCollapsedRows() {
-    syncWorkspaceSplitCollapsedRowsValue(panelContentEl);
-  }
-
-  /** 현재 워크스페이스 내 스크롤 위치를 캡처 */
-  function captureWorkspaceScrollSnapshots() {
-    return captureWorkspaceScrollSnapshotsValue(panelContentEl);
-  }
-
-  /** 캡처한 스크롤 위치를 복원 */
-  function restoreWorkspaceScrollSnapshots(
-    snapshots: ReturnType<typeof captureWorkspaceScrollSnapshots>,
-  ) {
-    restoreWorkspaceScrollSnapshotsValue(snapshots);
-  }
-
-  /** 현재 workspace 루트 DOM 노드를 반환 */
-  function getWorkspaceLayoutRootElement(): HTMLElement | null {
-    return getWorkspaceLayoutRootElementValue(panelContentEl, workspaceDockPreviewEl);
-  }
-
   /** 레이아웃을 재구성하지 않고 패널 접기/펼치기 상태만 반영 */
   function toggleWorkspacePanelOpenState(panelId: WorkspacePanelId) {
     const panelEl = workspacePanelElements.get(panelId);
     if (!panelEl || panelEl.hidden) return;
     panelEl.open = !panelEl.open;
-    updateWorkspacePanelControlState(panelId);
-    syncWorkspaceSplitCollapsedRows();
-    syncWorkspacePanelBodySizes();
-  }
-
-  /** 레이아웃/상태를 동기화 */
-  function syncWorkspacePanelBodySizes() {
+    updateWorkspacePanelControlStateValue(workspacePanelElements, panelId);
+    syncWorkspaceSplitCollapsedRowsValue(panelContentEl);
     syncWorkspacePanelBodySizesValue(workspacePanelElements);
   }
 
@@ -185,22 +150,12 @@ export function createWorkspaceLayoutManager({
     }
 
     workspacePanelBodySizeObserver = new ResizeObserver(() => {
-      syncWorkspacePanelBodySizes();
+      syncWorkspacePanelBodySizesValue(workspacePanelElements);
     });
     workspacePanelBodySizeObserver.observe(panelContentEl);
     workspacePanelElements.forEach((panelEl) => {
       workspacePanelBodySizeObserver?.observe(panelEl);
     });
-  }
-
-  /** 화면 요소를 렌더링 */
-  function hideWorkspaceDockPreview() {
-    hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
-  }
-
-  /** 화면 요소를 렌더링 */
-  function showWorkspaceDockPreview(baseRect: DOMRect, direction: WorkspaceDockDirection) {
-    showWorkspaceDockPreviewValue(workspaceDockPreviewEl, panelContentEl, baseRect, direction);
   }
 
   /**
@@ -219,7 +174,7 @@ export function createWorkspaceLayoutManager({
       const state = workspacePanelStateById.get(panelId) ?? 'visible';
       panelEl.hidden = state !== 'visible';
       panelEl.dataset.panelState = state;
-      updateWorkspacePanelControlState(panelId);
+      updateWorkspacePanelControlStateValue(workspacePanelElements, panelId);
     });
 
     if (workspaceDockPreviewEl.parentElement !== panelContentEl) {
@@ -228,10 +183,10 @@ export function createWorkspaceLayoutManager({
     if (panelContentEl.firstElementChild !== workspaceDockPreviewEl) {
       panelContentEl.insertBefore(workspaceDockPreviewEl, panelContentEl.firstChild);
     }
-    hideWorkspaceDockPreview();
+    hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
 
-    const scrollSnapshots = captureWorkspaceScrollSnapshots();
-    const existingRoot = getWorkspaceLayoutRootElement();
+    const scrollSnapshots = captureWorkspaceScrollSnapshotsValue(panelContentEl);
+    const existingRoot = getWorkspaceLayoutRootElementValue(panelContentEl, workspaceDockPreviewEl);
     let nextRoot: HTMLElement;
     if (workspaceLayoutRoot) {
       nextRoot = patchWorkspaceLayoutDomNodeValue({
@@ -261,11 +216,11 @@ export function createWorkspaceLayoutManager({
     });
 
     if (workspaceLayoutRoot) {
-      syncWorkspaceSplitCollapsedRows();
+      syncWorkspaceSplitCollapsedRowsValue(panelContentEl);
     }
-    renderWorkspacePanelToggleBar();
-    syncWorkspacePanelBodySizes();
-    restoreWorkspaceScrollSnapshots(scrollSnapshots);
+    renderWorkspacePanelToggleBarValue(workspacePanelToggleBarEl, workspacePanelStateById);
+    syncWorkspacePanelBodySizesValue(workspacePanelElements);
+    restoreWorkspaceScrollSnapshotsValue(scrollSnapshots);
   }
 
   /**
@@ -287,20 +242,6 @@ export function createWorkspaceLayoutManager({
     renderWorkspaceLayout();
   }
 
-  /** 조건에 맞는 대상을 탐색 */
-  function findWorkspacePanelByPoint(clientX: number, clientY: number): HTMLDetailsElement | null {
-    return findWorkspacePanelByPointValue(clientX, clientY);
-  }
-
-  /** 필요한 값/상태를 계산해 반환 */
-  function computeWorkspaceDockDirection(
-    panelEl: HTMLElement,
-    clientX: number,
-    clientY: number,
-  ): WorkspaceDockDirection {
-    return computeWorkspaceDockDirectionValue(panelEl, clientX, clientY);
-  }
-
   /** 해당 기능 흐름을 처리 */
   function applyWorkspaceDockDrop(draggedPanelId: WorkspacePanelId, dropTarget: WorkspaceDropTarget) {
     const nextLayout = applyWorkspaceDockDropToLayoutValue(
@@ -319,11 +260,15 @@ export function createWorkspaceLayoutManager({
     panelContentEl,
     workspacePanelElements,
     isWorkspacePanelId,
-    findWorkspacePanelByPoint,
-    computeWorkspaceDockDirection,
+    findWorkspacePanelByPoint: findWorkspacePanelByPointValue,
+    computeWorkspaceDockDirection: computeWorkspaceDockDirectionValue,
     resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTargetValue,
-    hideWorkspaceDockPreview,
-    showWorkspaceDockPreview,
+    hideWorkspaceDockPreview() {
+      hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
+    },
+    showWorkspaceDockPreview(baseRect, direction) {
+      showWorkspaceDockPreviewValue(workspaceDockPreviewEl, panelContentEl, baseRect, direction);
+    },
     applyWorkspaceDockDrop,
   });
   const workspaceResizeFlow = createWorkspaceResizeFlowValue({
@@ -448,7 +393,7 @@ export function createWorkspaceLayoutManager({
     }
 
     workspaceResizeFlow.stopWorkspaceSplitResize(false);
-    hideWorkspaceDockPreview();
+    hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
     workspaceDragDropFlow.onWorkspacePanelDragEnd();
   }
 
