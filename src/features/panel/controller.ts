@@ -71,7 +71,6 @@ import {
 } from './reactInspector/lookup';
 import {
   buildInspectFunctionPathFailureStatusText as buildInspectFunctionPathFailureStatusTextValue,
-  resolveReactInspectPathRequestFailure as resolveReactInspectPathRequestFailureValue,
   type ReactInspectPathRequestFailure,
 } from './reactInspector/pathFailure';
 import {
@@ -84,6 +83,7 @@ import {
   buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
   type ReactInspectPathMode,
 } from './reactInspector/pathRequest';
+import { resolveReactInspectPathRequestCompletion as resolveReactInspectPathRequestCompletionValue } from './reactInspector/pathRequestCompletion';
 import {
   parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
   parseSerializedPathResponse as parseSerializedPathResponseValue,
@@ -445,12 +445,8 @@ function requestReactInspectPath(options: RequestReactInspectPathOptions) {
     'reactInspectPath',
     args,
     (res, errorText) => {
-      const failure = resolveReactInspectPathRequestFailureValue(res, errorText);
-      if (failure) {
-        options.onDone(null, failure);
-        return;
-      }
-      options.onDone(res as Record<string, unknown>);
+      const completion = resolveReactInspectPathRequestCompletionValue(res, errorText);
+      options.onDone(completion.response, completion.failure);
     },
   );
 }
