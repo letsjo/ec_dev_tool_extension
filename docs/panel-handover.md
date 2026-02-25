@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -98,7 +98,7 @@
 
 ## 6. pageAgent 공개 메서드 계약
 
-`src/content/pageAgent.ts`의 `executeMethod` 스위치가 단일 진입점입니다.
+`src/content/pageAgentMethods.ts`의 `createPageAgentMethodExecutor(...)`가 method 라우팅 단일 진입점입니다.
 
 - `ping`
 - `fetchTargetData`
@@ -113,11 +113,12 @@
 `src/content/pageAgent.ts`는 브리지 라우팅/React inspect 중심 오케스트레이션을 담당하고,
 DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
+method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
 
 새 메서드 추가 시:
 
 1. `pageAgent.ts`에 구현 함수 추가
-2. `executeMethod` switch case 등록
+2. `pageAgentMethods.ts`의 method 라우터에 handler 연결
 3. `controller.ts`에서 호출 및 타입 가드 연결
 4. 필요하면 `src/shared/inspector/types.ts` 타입 확장
 
@@ -129,7 +130,12 @@ DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.t
 ## 6.2 pageAgent Bridge 모듈 분리 규칙
 
 - `pageAgentBridge.ts`: window message 리스너 설치, request 검증, response 포맷/전송 전담
-- `pageAgent.ts`: executeMethod 구현과 도메인 핸들러 조립 전담
+- `pageAgent.ts`: bridge 설치 호출과 도메인 핸들러 조립 전담
+
+## 6.3 pageAgent Method Router 모듈 분리 규칙
+
+- `pageAgentMethods.ts`: method 이름 -> 도메인 핸들러 라우팅, `fetchTargetData` 처리 전담
+- `pageAgent.ts`: React inspect/domain 핸들러 구현체를 라우터에 주입하는 조립 전담
 
 ## 7. 워크스페이스(패널 스플릿) 모델
 
@@ -283,10 +289,11 @@ DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.t
 
 ### 새 pageAgent 메서드 추가
 
-1. `pageAgent.ts`에 함수 작성 및 `executeMethod` 연결
-2. `controller.ts`에서 `callInspectedPageAgent` 호출 경로 추가
-3. `types.ts`/`guards.ts`에 응답 타입과 검증기 추가
-4. 실패/성공 UI 문구(`setReactStatus`, `setDomTreeStatus`) 정리
+1. `pageAgent.ts`에 함수 작성
+2. `pageAgentMethods.ts` 라우터 case에 메서드/핸들러 연결
+3. `controller.ts`에서 `callInspectedPageAgent` 호출 경로 추가
+4. `types.ts`/`guards.ts`에 응답 타입과 검증기 추가
+5. 실패/성공 UI 문구(`setReactStatus`, `setDomTreeStatus`) 정리
 
 ---
 
@@ -311,6 +318,7 @@ DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.t
 - `src/content/pageAgent.ts`
 - `src/content/pageAgentDom.ts`
 - `src/content/pageAgentBridge.ts`
+- `src/content/pageAgentMethods.ts`
 - `src/content/reactRuntimeHook.ts`
 - `src/background.ts`
 - `panel.html`
