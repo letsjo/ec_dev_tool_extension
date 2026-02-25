@@ -314,6 +314,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/pathResponse.ts`: `reactInspectPath` 성공 응답(`inspectFunction`, `serializeValue`) payload 파싱과 기본값 규칙 전담
 - `reactInspector/collectionDisplay.ts`: map/set serializer token의 display path/meta 부착과 child path 역매핑, collection normalize 규칙 전담
 - `reactInspector/hookTreeModel.ts`: hook row 정규화(index/name/groupPath/badge)와 explicit/fallback hook tree 모델 구성 전담
+- `reactInspector/noResultStateFlow.ts`: 검색 결과 없음 상태(detail/status/dom) 공통 문구/부수효과 적용 흐름 전담
 - `reactInspector/jsonTokenNodes.ts`: function token inspect 링크 렌더와 circular ref 지연 확장(details toggle) 렌더 규칙 전담
 - `reactInspector/jsonRenderTypes.ts`: JSON 렌더 공통 context/handler 타입(`JsonRenderContext`, `FetchSerializedValueAtPathHandler` 등) 소스 오브 트루스
 - `reactInspector/jsonPreview.ts`: JSON/hook inline summary preview 문자열 생성(primitive/object/array/map/set/dehydrated), map/set 컬렉션 preview 공통 빌더, object meta key 처리 규칙 전담
@@ -604,6 +605,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - 설정 파일: `vitest.config.ts` (`jsdom` 환경, `tests/**/*.test.ts`)
 - 현재 커버하는 리팩터링 축
   - `tests/reactInspector/applyResultFlow.test.ts`: `applyResultFlow.ts`의 empty/reset, no-result, list-only refresh, selection 옵션 적용 분기
+  - `tests/reactInspector/noResultStateFlow.test.ts`: `noResultStateFlow.ts`의 searchInput/inspectResult 문구와 hover-preview/하이라이트 처리 분기
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기

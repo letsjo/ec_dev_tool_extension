@@ -49,14 +49,13 @@ import {
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
+import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
 import {
-  buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
-  type SearchNoResultContext,
 } from './reactInspector/searchStatus';
 import {
   applyReactInspectorPaneState as applyReactInspectorPaneStateValue,
@@ -291,22 +290,16 @@ function expandAncestorPaths(indices: number[]) {
   expandAncestorPathsValue(reactComponents, indices, collapsedComponentIds);
 }
 
-/** 검색 결과가 비어있을 때 공통 UI 상태를 적용한다. */
-function applySearchNoResultState(
-  context: SearchNoResultContext,
-  options: { clearHoverPreview?: boolean } = {},
-) {
-  const uiText = buildSearchNoResultUiTextValue(reactComponents.length, context);
-  renderReactComponentList();
-  setReactDetailEmpty(uiText.detailText);
-  setReactStatus(uiText.reactStatusText, true);
-  if (options.clearHoverPreview === true) {
-    clearPageHoverPreview();
-  }
-  clearPageComponentHighlight();
-  setDomTreeStatus(uiText.domStatusText, true);
-  setDomTreeEmpty(uiText.domEmptyText);
-}
+const applySearchNoResultState = createSearchNoResultStateFlowValue({
+  getTotalComponentCount: () => reactComponents.length,
+  renderReactComponentList,
+  setReactDetailEmpty,
+  setReactStatus,
+  clearPageHoverPreview,
+  clearPageComponentHighlight,
+  setDomTreeStatus,
+  setDomTreeEmpty,
+});
 
 /** 화면 요소를 렌더링 */
 function renderReactComponentDetail(component: ReactComponentInfo) {
