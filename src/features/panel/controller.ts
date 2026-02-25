@@ -72,6 +72,7 @@ import { applySelectedComponentDetailResult as applySelectedComponentDetailResul
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
+import { createPanelTeardownFlow as createPanelTeardownFlowValue } from './lifecycle/panelTeardownFlow';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
@@ -556,16 +557,20 @@ const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue
 
 chrome.runtime.onMessage.addListener(onRuntimeMessage);
 
-function onPanelBeforeUnload() {
-  workspaceLayoutManager?.destroy();
-  workspaceLayoutManager = null;
-  if (destroyWheelScrollFallback) {
-    destroyWheelScrollFallback();
-    destroyWheelScrollFallback = null;
-  }
-  runtimeRefreshScheduler.dispose();
-  chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
-}
+const onPanelBeforeUnload = createPanelTeardownFlowValue({
+  getWorkspaceLayoutManager: () => workspaceLayoutManager,
+  setWorkspaceLayoutManager: (manager) => {
+    workspaceLayoutManager = manager;
+  },
+  getDestroyWheelScrollFallback: () => destroyWheelScrollFallback,
+  setDestroyWheelScrollFallback: (destroyer) => {
+    destroyWheelScrollFallback = destroyer;
+  },
+  runtimeRefreshScheduler,
+  removeNavigatedListener: () => {
+    chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
+  },
+});
 
 const { bootstrapPanel } = createPanelBootstrapFlowValue({
   mountPanelView,
