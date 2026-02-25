@@ -32,18 +32,14 @@ import {
 } from './reactInspector/signatures';
 import {
   buildComponentIndexById as buildComponentIndexByIdValue,
-  buildComponentSearchTexts as buildComponentSearchTextsValue,
   ensureComponentSearchTextCache as ensureComponentSearchTextCacheValue,
   expandAncestorPaths as expandAncestorPathsValue,
   getComponentFilterResult as getComponentFilterResultValue,
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
-  snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
-import { buildReactInspectResultModel as buildReactInspectResultModelValue } from './reactInspector/resultModel';
 import {
   buildReactInspectSuccessStatusText as buildReactInspectSuccessStatusTextValue,
   normalizeReactInspectApplyOptions as normalizeReactInspectApplyOptionsValue,
-  resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue,
   shouldRenderListOnlyAfterApply as shouldRenderListOnlyAfterApplyValue,
   type ReactInspectApplyOptions,
 } from './reactInspector/applyFlow';
@@ -59,12 +55,12 @@ import { createReactInspectPathBindings as createReactInspectPathBindingsValue }
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
+import { resolveReactInspectDataStage as resolveReactInspectDataStageValue } from './reactInspector/inspectDataStage';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
 import {
   resolveNextSelection as resolveNextSelectionValue,
-  resolvePreviousSelectedId as resolvePreviousSelectedIdValue,
 } from './reactInspector/selectionModel';
 import {
   buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
@@ -352,11 +348,6 @@ function applySearchNoResultState(
   setDomTreeEmpty(uiText.domEmptyText);
 }
 
-/** 현재 상태 스냅샷을 만든 */
-function snapshotCollapsedIds(): Set<string> {
-  return snapshotCollapsedIdsValue(reactComponents, collapsedComponentIds);
-}
-
 /** 화면 요소를 렌더링 */
 function renderReactComponentDetail(component: ReactComponentInfo) {
   const nextCache = renderReactComponentDetailPanelValue({
@@ -538,43 +529,6 @@ function resetReactInspector(statusText: string, isError = false) {
   );
 }
 
-/** apply 파이프라인 1단계: reactInspect 결과를 패널 상태로 정규화/적용한다. */
-function applyReactInspectDataStage(
-  result: ReactInspectResult,
-  applyOptions: ReturnType<typeof normalizeReactInspectApplyOptionsValue>,
-) {
-  const previousSelectedId = resolvePreviousSelectedIdValue(
-    applyOptions.preserveSelection,
-    reactComponents,
-    selectedReactComponentIndex,
-  );
-  const previousCollapsedIds = applyOptions.preserveCollapsed ? snapshotCollapsedIds() : new Set<string>();
-
-  const resultModel = buildReactInspectResultModelValue({
-    previousComponents: reactComponents,
-    incomingComponents: Array.isArray(result.components) ? result.components : [],
-    lightweight: applyOptions.lightweight,
-    trackUpdates: applyOptions.trackUpdates,
-  });
-  reactComponents = resultModel.reactComponents;
-  updatedComponentIds = resultModel.updatedComponentIds;
-  componentSearchIncludeDataTokens = resultModel.componentSearchIncludeDataTokens;
-  componentSearchTexts = buildComponentSearchTextsValue(
-    reactComponents,
-    componentSearchIncludeDataTokens,
-  );
-
-  collapsedComponentIds = resolveCollapsedComponentIdsValue(
-    reactComponents,
-    applyOptions.preserveCollapsed,
-    previousCollapsedIds,
-  );
-
-  return {
-    previousSelectedId,
-  };
-}
-
 /** apply 파이프라인 2단계: 검색 필터 기준으로 최종 선택 인덱스를 결정한다. */
 function resolveReactInspectSelectionStage(
   result: ReactInspectResult,
@@ -628,14 +582,31 @@ function applyReactInspectResult(
   options: ApplyReactInspectOptions = {},
 ) {
   const applyOptions = normalizeReactInspectApplyOptionsValue(options);
-  const { previousSelectedId } = applyReactInspectDataStage(result, applyOptions);
+  const dataStage = resolveReactInspectDataStageValue({
+    result,
+    preserveSelection: applyOptions.preserveSelection === true,
+    preserveCollapsed: applyOptions.preserveCollapsed === true,
+    lightweight: applyOptions.lightweight === true,
+    trackUpdates: applyOptions.trackUpdates === true,
+    reactComponents,
+    selectedReactComponentIndex,
+    collapsedComponentIds,
+  });
+  reactComponents = dataStage.reactComponents;
+  updatedComponentIds = dataStage.updatedComponentIds;
+  componentSearchIncludeDataTokens = dataStage.componentSearchIncludeDataTokens;
+  componentSearchTexts = dataStage.componentSearchTexts;
+  collapsedComponentIds = dataStage.collapsedComponentIds;
 
   if (reactComponents.length === 0) {
     resetReactInspector('React 컴포넌트를 찾지 못했습니다.', true);
     return;
   }
 
-  const nextSelection = resolveReactInspectSelectionStage(result, previousSelectedId);
+  const nextSelection = resolveReactInspectSelectionStage(
+    result,
+    dataStage.previousSelectedId,
+  );
   if (!nextSelection) {
     selectedReactComponentIndex = -1;
     applySearchNoResultState('inspectResult');
