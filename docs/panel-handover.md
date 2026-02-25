@@ -233,6 +233,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspacePanels.ts`
 - `src/features/panel/controller.ts`
 - `src/features/panel/workspace/layoutModel.ts`
+- `src/features/panel/workspace/layoutTypes.ts`
+- `src/features/panel/workspace/layoutTreeOps.ts`
+- `src/features/panel/workspace/layoutVisibility.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
@@ -280,7 +283,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 7.1 워크스페이스 모듈 분리 규칙
 
-- `layoutModel.ts`: 레이아웃 트리 모델/정규화/삽입/교체/비율 계산 같은 순수 로직
+- `layoutModel.ts`: workspace layout 모듈(`layoutTypes/layoutTreeOps/layoutVisibility`) public export 배럴 전담
+- `layoutTypes.ts`: layout 타입(`panel/split/path/drop/state`)과 node path/ratio 정규화, node 생성, 기본 레이아웃, persisted layout parse 전담
+- `layoutTreeOps.ts`: panel id 수집, remove/append/insert/swap, split ratio path 업데이트, visible prune, duplicate panel dedupe 같은 트리 변환 순수 로직 전담
+- `layoutVisibility.ts`: panel state map에서 visible panel id 목록 산출 전담
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
   - 2026-02 리팩터링: `manager.ts` 내부 thin wrapper를 제거하고 `dockPreview/panelSizing/scrollSnapshot/...` helper를 직접 결선해 호출 경로를 단순화
   - 상태 복원은 `initWorkspaceLayoutManager()`에서 `restoreWorkspaceStateSnapshot()`을 직접 적용하고, persist는 `setWorkspacePanelState`/dock drop/resize callback에서 `persistWorkspaceStateSnapshot(...)`을 직접 호출
@@ -583,6 +589,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/reactInspector/detailFetchQueue.ts`
 - `src/features/panel/runtimeRefresh/scheduler.ts`
 - `src/features/panel/workspace/layoutModel.ts`
+- `src/features/panel/workspace/layoutTypes.ts`
+- `src/features/panel/workspace/layoutTreeOps.ts`
+- `src/features/panel/workspace/layoutVisibility.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
@@ -678,6 +687,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
+  - `tests/workspace/workspaceLayoutModelModules.test.ts`: `layoutTypes.ts`/`layoutTreeOps.ts`/`layoutVisibility.ts`의 path/parse, prune/dedupe, visible id 산출 분기
   - `tests/workspace/workspaceActionHandlers.test.ts`: `actionHandlers.ts`의 summary action(toggle/close), summary 기본 click 차단, toggle bar 상태 전환 분기
   - `tests/workspace/workspaceRenderPipeline.test.ts`: `renderPipeline.ts`의 empty fallback 재사용, patch root 삽입, stale child 정리 분기
   - `tests/workspace/workspaceRenderFlow.test.ts`: `renderFlow.ts`의 panel state 반영, toggle bar 동기화, panel open toggle 분기
