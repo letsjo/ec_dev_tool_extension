@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -114,6 +114,7 @@
 DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
+custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroups.ts`로 위임합니다.
 
 새 메서드 추가 시:
 
@@ -136,6 +137,11 @@ method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `s
 
 - `pageAgentMethods.ts`: method 이름 -> 도메인 핸들러 라우팅, `fetchTargetData` 처리 전담
 - `pageAgent.ts`: React inspect/domain 핸들러 구현체를 라우터에 주입하는 조립 전담
+
+## 6.4 pageAgent Hook Group 모듈 분리 규칙
+
+- `pageAgentHookGroups.ts`: hook stack frame 파싱, primitive hook 이름 정규화, custom hook group/path 추론 전담
+- `pageAgent.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
 
 ## 7. 워크스페이스(패널 스플릿) 모델
 
@@ -319,6 +325,7 @@ method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `s
 - `src/content/pageAgentDom.ts`
 - `src/content/pageAgentBridge.ts`
 - `src/content/pageAgentMethods.ts`
+- `src/content/pageAgentHookGroups.ts`
 - `src/content/reactRuntimeHook.ts`
 - `src/background.ts`
 - `panel.html`
