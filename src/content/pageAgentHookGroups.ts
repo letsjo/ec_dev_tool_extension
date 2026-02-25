@@ -10,6 +10,7 @@ import {
 import { alignHookInspectMetadataResultLength } from "./pageAgentHookResult";
 import { buildHookInspectMetadataFromLog } from "./pageAgentHookMetadataBuild";
 import { buildPrimitiveStackCacheForHookInspect } from "./pageAgentHookPrimitiveStack";
+import { runHookInspectRender } from "./pageAgentHookRenderExecution";
 
 type AnyRecord = Record<string, any>;
 type FiberLike = AnyRecord & {
@@ -44,7 +45,6 @@ function inspectCustomHookGroupNames(
   const previousDispatcher = dispatcherRef.H;
   let currentHook = fiber.memoizedState;
   const hookLog = [];
-  let rootStackError = null;
   let suspendedToken = null;
 
   function nextHook() {
@@ -278,38 +278,17 @@ function inspectCustomHookGroupNames(
     },
   });
 
-  const originalConsoleMethods = {};
-  for (const method in console) {
-    try {
-      originalConsoleMethods[method] = console[method];
-      console[method] = function() {};
-    } catch (_) {}
-  }
-
-  try {
-    dispatcherRef.H = dispatcherProxy;
-    rootStackError = new Error();
-    let props = fiber.memoizedProps;
-    if (fiber.type !== fiber.elementType) {
-      props = resolveDefaultPropsForHookInspect(fiber.type, props);
-    }
-    if (fiber.tag === 11 && fiber.type && typeof fiber.type.render === "function") {
-      renderFn(props, fiber.ref);
-    } else {
-      renderFn(props);
-    }
-  } catch (error) {
-    if (suspendedToken && error === suspendedToken) {
-      /** unresolved Promise(use) 경로는 정상 흐름으로 간주한다. */
-    }
-  } finally {
-    dispatcherRef.H = previousDispatcher;
-    for (const restoreMethod in originalConsoleMethods) {
-      try {
-        console[restoreMethod] = originalConsoleMethods[restoreMethod];
-      } catch (_) {}
-    }
-  }
+  const rootStackError = runHookInspectRender({
+    dispatcherRef,
+    previousDispatcher,
+    dispatcherProxy,
+    fiber,
+    renderFn,
+    getSuspendedToken() {
+      return suspendedToken;
+    },
+    resolveDefaultProps: resolveDefaultPropsForHookInspect,
+  });
 
   if (hookLog.length === 0) return null;
   const result = buildHookInspectMetadataFromLog(
