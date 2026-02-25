@@ -1,6 +1,5 @@
 import {
   normalizeCollectionTokenForDisplay as normalizeCollectionTokenForDisplayValue,
-  readDisplayCollectionMeta as readDisplayCollectionMetaValue,
   resolveDisplayChildPathSegment as resolveDisplayChildPathSegmentValue,
 } from './collectionDisplay';
 import type {
@@ -12,11 +11,9 @@ import {
   createRowToggleSpacer,
 } from './jsonRowUi';
 import {
-  buildHookInlinePreview,
-  buildJsonSummaryPreview,
-  getObjectDisplayName,
   isJsonInternalMetaKey,
 } from './jsonPreview';
+import { buildObjectArraySummary } from './jsonObjectArraySummary';
 
 interface CreateObjectArrayJsonValueNodeArgs {
   value: Record<string, unknown> | unknown[];
@@ -77,35 +74,8 @@ function createObjectArrayJsonValueNode({
   };
 
   const applySummaryText = () => {
-    if (context.section === 'hooks') {
-      const preview = buildHookInlinePreview(currentValue);
-      setSummaryContent(null, preview);
-      return;
-    }
-    if (Array.isArray(currentValue)) {
-      const collectionMeta = readDisplayCollectionMetaValue(currentValue);
-      const preview = buildJsonSummaryPreview(currentValue);
-      if (collectionMeta?.type === 'map') {
-        setSummaryContent(`Map(${collectionMeta.size})`, preview);
-        return;
-      }
-      if (collectionMeta?.type === 'set') {
-        setSummaryContent(`Set(${collectionMeta.size})`, preview);
-        return;
-      }
-      setSummaryContent(`Array(${currentValue.length})`, preview);
-      return;
-    }
-    const visibleKeyCount =
-      currentValue && typeof currentValue === 'object'
-        ? Object.keys(currentValue as Record<string, unknown>).filter(
-            (key) => !isJsonInternalMetaKey(key),
-          )
-            .length
-        : 0;
-    const objectName = getObjectDisplayName(currentValue);
-    const preview = buildJsonSummaryPreview(currentValue);
-    setSummaryContent(`${objectName}(${visibleKeyCount})`, preview);
+    const summaryData = buildObjectArraySummary(currentValue, context.section);
+    setSummaryContent(summaryData.metaText, summaryData.previewText);
   };
   applySummaryText();
   details.appendChild(summary);
