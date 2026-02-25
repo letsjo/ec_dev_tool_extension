@@ -54,6 +54,7 @@ import {
 } from './reactInspector/search';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { renderDomTreeNode } from './domTree/renderer';
+import { callInspectedPageAgent } from './bridge/pageAgentClient';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -104,12 +105,6 @@ interface FetchReactInfoOptions {
   refreshDetail?: boolean;
   statusText?: string;
   onDone?: () => void;
-}
-
-interface CallPageAgentResponse {
-  ok: boolean;
-  result?: unknown;
-  error?: string;
 }
 
 let reactComponents: ReactComponentInfo[] = [];
@@ -197,37 +192,6 @@ function initDomRefs() {
   treePaneEl = getRequiredElement<HTMLDivElement>('treePane');
   reactComponentDetailEl = getRequiredElement<HTMLDivElement>('reactComponentDetail');
   workspacePanelElements = collectWorkspacePanelElements();
-}
-
-/**
- * DevTools 패널 → background → inspected page agent 호출 공통 래퍼.
- * 모든 호출에서 동일한 에러 처리 규칙을 강제해 UI 상태 분기를 단순화한다.
- */
-function callInspectedPageAgent(
-  method: string,
-  args: unknown,
-  onDone: (result: unknown | null, errorText?: string) => void,
-) {
-  const tabId = chrome.devtools.inspectedWindow.tabId;
-  chrome.runtime.sendMessage(
-    {
-      action: 'callPageAgent',
-      tabId,
-      method,
-      args,
-    },
-    (response?: CallPageAgentResponse) => {
-      if (chrome.runtime.lastError) {
-        onDone(null, chrome.runtime.lastError.message ?? '페이지 에이전트 호출 실패');
-        return;
-      }
-      if (!response || response.ok !== true) {
-        onDone(null, response?.error ?? '페이지 에이전트 호출 실패');
-        return;
-      }
-      onDone('result' in response ? (response.result ?? null) : null);
-    },
-  );
 }
 
 /** UI 상태 또는 문구를 설정 */

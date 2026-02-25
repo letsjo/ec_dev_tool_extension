@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/domTree/**`, `src/features/panel/reactInspector/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/reactInspector/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -59,6 +59,7 @@
 - 내부 순서:
   - `mountPanelView()`로 React UI 마운트
   - `initDomRefs()`로 필수 DOM 참조 수집
+  - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/상세(JSON/hook) 렌더 로직 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
@@ -69,7 +70,7 @@
 
 ### 5.1 Panel → Background → Content → PageAgent
 
-패널에서 `callInspectedPageAgent(method, args, onDone)`를 호출하면:
+패널에서 `bridge/pageAgentClient.ts`의 `callInspectedPageAgent(method, args, onDone)`를 호출하면:
 
 1. panel이 `chrome.runtime.sendMessage({ action: "callPageAgent", ... })` 전송
 2. background가 `ensureContentScript(tabId)`로 content 존재 보장
@@ -167,6 +168,11 @@
 
 - `domTree/renderer.ts`: DOM 노드 라벨 생성(`<tag>`, `</tag>`)과 트리 `<details>` 렌더링 전담
 - `controller.ts`: pageAgent 조회/오류 처리/상태 문구 갱신과 결과 적용 오케스트레이션 전담
+
+## 7.4 Panel Bridge 모듈 분리 규칙
+
+- `bridge/pageAgentClient.ts`: panel -> background 메시지 전송, 공통 에러 처리, 응답 표준화 전담
+- `controller.ts`: 비즈니스 흐름에 맞는 method/args 구성과 후속 UI 상태 업데이트 전담
 
 ## 8. 주요 UI 구성 파일 역할
 
@@ -273,6 +279,7 @@
 관련 파일 바로가기:
 
 - `src/features/panel/controller.ts`
+- `src/features/panel/bridge/pageAgentClient.ts`
 - `src/features/panel/domTree/renderer.ts`
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/search.ts`
