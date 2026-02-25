@@ -50,6 +50,9 @@ import {
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
 import {
+  createReactComponentSelector as createReactComponentSelectorValue,
+} from './reactInspector/selection';
+import {
   buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
   type SearchNoResultContext,
@@ -93,12 +96,6 @@ let panelWorkspaceEl!: HTMLElement;
 let panelContentEl!: HTMLElement;
 let workspacePanelToggleBarEl!: HTMLDivElement;
 let workspaceDockPreviewEl!: HTMLDivElement;
-
-interface SelectReactComponentOptions {
-  highlightDom?: boolean;
-  scrollIntoView?: boolean;
-  expandAncestors?: boolean;
-}
 
 interface ApplyReactInspectOptions {
   preserveSelection?: boolean;
@@ -845,40 +842,27 @@ const detailFetchQueue = createReactDetailFetchQueue({
   setReactDetailEmpty,
 });
 
-/** 선택 상태를 갱신 */
-function selectReactComponent(index: number, options: SelectReactComponentOptions = {}) {
-  if (index < 0 || index >= reactComponents.length) return;
-  const highlightDom = options.highlightDom !== false;
-  const shouldScroll = options.scrollIntoView !== false;
-  const shouldExpandAncestors = options.expandAncestors !== false;
+const scheduleScrollSelectedComponentIntoView = () => {
+  requestAnimationFrame(() => {
+    scrollSelectedComponentIntoView();
+  });
+};
 
-  clearPageHoverPreview();
-  selectedReactComponentIndex = index;
-  if (shouldExpandAncestors) {
-    expandAncestorPaths([index]);
-  }
-  renderReactComponentList();
-  if (shouldScroll) {
-    requestAnimationFrame(() => {
-      scrollSelectedComponentIntoView();
-    });
-  }
-  const component = reactComponents[index];
-  if (component.hasSerializedData === false) {
-    const lastFailedAt = detailFetchQueue.getLastFailedAt(component.id);
-    if (lastFailedAt && Date.now() - lastFailedAt < DETAIL_FETCH_RETRY_COOLDOWN_MS) {
-      setReactDetailEmpty('상세 정보가 커서 지연됩니다. 잠시 후 다시 선택하세요.');
-    } else {
-      setReactDetailEmpty('컴포넌트 상세 정보 조회 중…');
-      detailFetchQueue.request(component);
-    }
-  } else {
-    renderReactComponentDetail(component);
-  }
-  if (highlightDom) {
-    highlightPageDomForComponent(component);
-  }
-}
+const selectReactComponent = createReactComponentSelectorValue({
+  getReactComponents: () => reactComponents,
+  setSelectedComponentIndex: (index) => {
+    selectedReactComponentIndex = index;
+  },
+  clearPageHoverPreview,
+  expandAncestorPaths,
+  renderReactComponentList,
+  scheduleScrollSelectedComponentIntoView,
+  renderReactComponentDetail,
+  setReactDetailEmpty,
+  highlightPageDomForComponent,
+  detailFetchQueue,
+  detailFetchRetryCooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
+});
 
 /** 이벤트를 처리 */
 function onComponentSearchInput() {

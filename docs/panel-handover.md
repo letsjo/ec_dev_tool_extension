@@ -64,7 +64,7 @@
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
   - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
-  - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/searchStatus.ts`, `reactInspector/viewState.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/검색 상태 문구/placeholder 상태/상세(JSON/hook) 렌더 로직 위임
+  - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/searchStatus.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/검색 상태 문구/placeholder 상태/선택 시퀀스/상세(JSON/hook) 렌더 로직 위임
   - `reactInspector/detailFetchQueue.ts` 유틸로 선택 컴포넌트 상세 지연조회 큐(in-flight/queue/cooldown) 위임
   - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
@@ -224,6 +224,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `reactInspector/search.ts`: 검색 텍스트 생성, 필터링, 조상 경로 확장, 접힘 상태 스냅샷/복원 유틸 전담
 - `reactInspector/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
+- `reactInspector/selection.ts`: 선택 옵션 정규화, 선택 index 적용 후 렌더/스크롤/상세 지연조회/DOM 하이라이트 시퀀스 전담
 - `reactInspector/jsonSection.ts`: props/hooks JSON 트리 렌더, 함수 inspect 링크, dehydrated 값 지연 조회/확장 렌더 전담
 - `reactInspector/detailFetchQueue.ts`: 선택 컴포넌트 상세 데이터 지연 조회 큐, 실패 cooldown, 요청 병합(in-flight queue) 전담
 - `controller.ts`: panel 상태(`reactComponents`, `collapsedComponentIds`, `componentSearchTexts`)를 보유하고 위 유틸을 호출해 UI 오케스트레이션만 수행
@@ -373,6 +374,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/reactInspector/search.ts`
 - `src/features/panel/reactInspector/searchStatus.ts`
 - `src/features/panel/reactInspector/viewState.ts`
+- `src/features/panel/reactInspector/selection.ts`
 - `src/features/panel/reactInspector/jsonSection.ts`
 - `src/features/panel/reactInspector/detailFetchQueue.ts`
 - `src/features/panel/runtimeRefresh/scheduler.ts`
