@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentSerialization.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentSerialization.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -130,7 +130,7 @@ custom hook metadata 병합은 `src/content/pageAgentHookMetadata.ts`로 위임�
 DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
-custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group path 추론 유틸은 `src/content/pageAgentHookGrouping.ts`로, 전체 오케스트레이션은 `src/content/pageAgentHookGroups.ts`로 위임합니다.
+custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group path 추론 유틸은 `src/content/pageAgentHookGrouping.ts`로, dispatcher/ref/render 대상 해석 유틸은 `src/content/pageAgentHookRuntime.ts`로, 전체 오케스트레이션은 `src/content/pageAgentHookGroups.ts`로 위임합니다.
 
 새 메서드 추가 시:
 
@@ -158,6 +158,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `pageAgentHookStack.ts`: hook display name 정규화, stack frame 파싱, custom hook 후보 프레임 판별 유틸 전담
 - `pageAgentHookGrouping.ts`: 공통 조상 frame 탐색, primitive frame index 탐색, trimmed/all-frame group path 추론, primitive 이름 정규화 전담
+- `pageAgentHookRuntime.ts`: global hook dispatcher ref 탐색, render 함수/기본 props 해석 유틸 전담
 - `pageAgentHookGroups.ts`: stack/grouping 유틸을 조합해 dispatcher 대체 실행과 custom metadata(group/path/primitive) 오케스트레이션 전담
 - `pageAgentInspect.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
 
@@ -488,6 +489,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentHookGroups.ts`
 - `src/content/pageAgentHookStack.ts`
 - `src/content/pageAgentHookGrouping.ts`
+- `src/content/pageAgentHookRuntime.ts`
 - `src/content/pageAgentHookState.ts`
 - `src/content/pageAgentHookMetadata.ts`
 - `src/content/pageAgentInspect.ts`
