@@ -1,36 +1,16 @@
 import type { ReactComponentInfo } from '../../../shared/inspector/types';
 import type { RuntimeRefreshLookup } from './lookup';
-
-interface ReactComponentDetailRenderStateUpdate {
-  lastReactDetailComponentId: string | null;
-  lastReactDetailRenderSignature: string;
-}
-
-interface ReactComponentListRenderStateUpdate {
-  updatedComponentIds?: Set<string>;
-  lastReactListRenderSignature?: string;
-}
-
-interface ReactInspectorResetStateUpdate {
-  reactComponents: ReactComponentInfo[];
-  componentSearchTexts: string[];
-  componentSearchIncludeDataTokens: boolean;
-  collapsedComponentIds: Set<string>;
-  updatedComponentIds: Set<string>;
-  selectedReactComponentIndex: number;
-  lastReactListRenderSignature: string;
-  lastReactDetailRenderSignature: string;
-  lastReactDetailComponentId: string | null;
-}
-
-interface ReactInspectApplyStateUpdate {
-  reactComponents?: ReactComponentInfo[];
-  selectedReactComponentIndex?: number;
-  componentSearchIncludeDataTokens?: boolean;
-  componentSearchTexts?: string[];
-  collapsedComponentIds?: Set<string>;
-  updatedComponentIds?: Set<string>;
-}
+import {
+  createReactInspectorMutableState,
+  writeApplyResultStateUpdate,
+  writeDetailRenderStateUpdate,
+  writeListRenderStateUpdate,
+  writeResetStateUpdate,
+  type ReactComponentDetailRenderStateUpdate,
+  type ReactComponentListRenderStateUpdate,
+  type ReactInspectApplyStateUpdate,
+  type ReactInspectorResetStateUpdate,
+} from './controllerStateModel';
 
 export interface ReactInspectorControllerState {
   getReactComponents: () => ReactComponentInfo[];
@@ -80,126 +60,81 @@ export interface ReactInspectorControllerState {
 
 /** controller의 React inspector mutable 상태를 한 곳에서 관리한다. */
 export function createReactInspectorControllerState(): ReactInspectorControllerState {
-  let reactComponents: ReactComponentInfo[] = [];
-  let selectedReactComponentIndex = -1;
-  let storedLookup: RuntimeRefreshLookup | null = null;
-  let componentSearchQuery = '';
-  let componentSearchTexts: string[] = [];
-  let componentSearchIncludeDataTokens = true;
-  let collapsedComponentIds = new Set<string>();
-  let lastReactListRenderSignature = '';
-  let lastReactDetailRenderSignature = '';
-  let lastReactDetailComponentId: string | null = null;
-  let updatedComponentIds = new Set<string>();
-
-  function writeListRenderState(update: ReactComponentListRenderStateUpdate) {
-    if (update.updatedComponentIds) {
-      updatedComponentIds = update.updatedComponentIds;
-    }
-    if (typeof update.lastReactListRenderSignature === 'string') {
-      lastReactListRenderSignature = update.lastReactListRenderSignature;
-    }
-  }
-
-  function writeApplyResultState(update: ReactInspectApplyStateUpdate) {
-    if (update.reactComponents) {
-      reactComponents = update.reactComponents;
-    }
-    if (update.updatedComponentIds) {
-      updatedComponentIds = update.updatedComponentIds;
-    }
-    if (typeof update.componentSearchIncludeDataTokens === 'boolean') {
-      componentSearchIncludeDataTokens = update.componentSearchIncludeDataTokens;
-    }
-    if (update.componentSearchTexts) {
-      componentSearchTexts = update.componentSearchTexts;
-    }
-    if (update.collapsedComponentIds) {
-      collapsedComponentIds = update.collapsedComponentIds;
-    }
-    if (typeof update.selectedReactComponentIndex === 'number') {
-      selectedReactComponentIndex = update.selectedReactComponentIndex;
-    }
-  }
+  const state = createReactInspectorMutableState();
 
   return {
-    getReactComponents: () => reactComponents,
+    getReactComponents: () => state.reactComponents,
     setReactComponents(value) {
-      reactComponents = value;
+      state.reactComponents = value;
     },
-    getSelectedReactComponentIndex: () => selectedReactComponentIndex,
+    getSelectedReactComponentIndex: () => state.selectedReactComponentIndex,
     setSelectedReactComponentIndex(value) {
-      selectedReactComponentIndex = value;
+      state.selectedReactComponentIndex = value;
     },
-    getStoredLookup: () => storedLookup,
+    getStoredLookup: () => state.storedLookup,
     setStoredLookup(value) {
-      storedLookup = value;
+      state.storedLookup = value;
     },
-    getComponentSearchQuery: () => componentSearchQuery,
+    getComponentSearchQuery: () => state.componentSearchQuery,
     setComponentSearchQuery(value) {
-      componentSearchQuery = value;
+      state.componentSearchQuery = value;
     },
-    getComponentSearchTexts: () => componentSearchTexts,
+    getComponentSearchTexts: () => state.componentSearchTexts,
     setComponentSearchTexts(value) {
-      componentSearchTexts = value;
+      state.componentSearchTexts = value;
     },
-    getComponentSearchIncludeDataTokens: () => componentSearchIncludeDataTokens,
+    getComponentSearchIncludeDataTokens: () => state.componentSearchIncludeDataTokens,
     setComponentSearchIncludeDataTokens(value) {
-      componentSearchIncludeDataTokens = value;
+      state.componentSearchIncludeDataTokens = value;
     },
-    getCollapsedComponentIds: () => collapsedComponentIds,
+    getCollapsedComponentIds: () => state.collapsedComponentIds,
     setCollapsedComponentIds(value) {
-      collapsedComponentIds = value;
+      state.collapsedComponentIds = value;
     },
-    getLastReactListRenderSignature: () => lastReactListRenderSignature,
+    getLastReactListRenderSignature: () => state.lastReactListRenderSignature,
     setLastReactListRenderSignature(value) {
-      lastReactListRenderSignature = value;
+      state.lastReactListRenderSignature = value;
     },
-    getLastReactDetailRenderSignature: () => lastReactDetailRenderSignature,
+    getLastReactDetailRenderSignature: () => state.lastReactDetailRenderSignature,
     setLastReactDetailRenderSignature(value) {
-      lastReactDetailRenderSignature = value;
+      state.lastReactDetailRenderSignature = value;
     },
-    getLastReactDetailComponentId: () => lastReactDetailComponentId,
+    getLastReactDetailComponentId: () => state.lastReactDetailComponentId,
     setLastReactDetailComponentId(value) {
-      lastReactDetailComponentId = value;
+      state.lastReactDetailComponentId = value;
     },
-    getUpdatedComponentIds: () => updatedComponentIds,
+    getUpdatedComponentIds: () => state.updatedComponentIds,
     setUpdatedComponentIds(value) {
-      updatedComponentIds = value;
+      state.updatedComponentIds = value;
     },
     readDetailRenderState: () => ({
-      lastReactDetailComponentId,
-      lastReactDetailRenderSignature,
+      lastReactDetailComponentId: state.lastReactDetailComponentId,
+      lastReactDetailRenderSignature: state.lastReactDetailRenderSignature,
     }),
     writeDetailRenderState(update) {
-      lastReactDetailComponentId = update.lastReactDetailComponentId;
-      lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
+      writeDetailRenderStateUpdate(state, update);
     },
     readListRenderState: () => ({
-      reactComponents,
-      componentSearchQuery,
-      selectedReactComponentIndex,
-      collapsedComponentIds,
-      updatedComponentIds,
-      lastReactListRenderSignature,
+      reactComponents: state.reactComponents,
+      componentSearchQuery: state.componentSearchQuery,
+      selectedReactComponentIndex: state.selectedReactComponentIndex,
+      collapsedComponentIds: state.collapsedComponentIds,
+      updatedComponentIds: state.updatedComponentIds,
+      lastReactListRenderSignature: state.lastReactListRenderSignature,
     }),
-    writeListRenderState,
+    writeListRenderState(update) {
+      writeListRenderStateUpdate(state, update);
+    },
     writeResetState(update) {
-      reactComponents = update.reactComponents;
-      componentSearchTexts = update.componentSearchTexts;
-      componentSearchIncludeDataTokens = update.componentSearchIncludeDataTokens;
-      collapsedComponentIds = update.collapsedComponentIds;
-      updatedComponentIds = update.updatedComponentIds;
-      selectedReactComponentIndex = update.selectedReactComponentIndex;
-      lastReactListRenderSignature = update.lastReactListRenderSignature;
-      lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
-      lastReactDetailComponentId = update.lastReactDetailComponentId;
+      writeResetStateUpdate(state, update);
     },
     readApplyResultState: () => ({
-      reactComponents,
-      selectedReactComponentIndex,
-      collapsedComponentIds,
+      reactComponents: state.reactComponents,
+      selectedReactComponentIndex: state.selectedReactComponentIndex,
+      collapsedComponentIds: state.collapsedComponentIds,
     }),
-    writeApplyResultState,
+    writeApplyResultState(update) {
+      writeApplyResultStateUpdate(state, update);
+    },
   };
 }
