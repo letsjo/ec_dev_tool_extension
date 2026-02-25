@@ -1,4 +1,9 @@
 // @ts-nocheck
+import {
+  getReactLikeTypeName,
+  summarizeChildrenValue,
+} from "./pageAgentSerializerSummary";
+
 type AnyRecord = Record<string, any>;
 type SerializerOptions = {
   maxSerializeCalls?: number;
@@ -17,78 +22,6 @@ type FiberLike = AnyRecord & {
 const OBJECT_CLASS_NAME_META_KEY = "__ecObjectClassName";
 
 export { resolveSpecialCollectionPathSegment } from "./pageAgentCollectionPath";
-
-/** 필요한 값/상태를 계산해 반환 */
-function getReactLikeTypeName(type: unknown) {
-  if (!type) return "Unknown";
-  if (typeof type === "string") return type;
-  if (typeof type === "function") return type.displayName || type.name || "Anonymous";
-  if (typeof type === "object") {
-    if (typeof type.displayName === "string" && type.displayName) return type.displayName;
-    if (typeof type.render === "function") return type.render.displayName || type.render.name || "Anonymous";
-    if (type.type) return getReactLikeTypeName(type.type);
-  }
-  return "Unknown";
-}
-
-/** 해당 기능 흐름을 처리 */
-function summarizeChildrenValue(value: unknown, depth: number | undefined) {
-  const level = typeof depth === "number" ? depth : 0;
-  if (value == null) return value;
-  if (typeof value === "string") return value.length > 120 ? value.slice(0, 120) + "…" : value;
-  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return value;
-  if (typeof value === "function") return "[Function " + (value.name || "") + "]";
-
-  if (Array.isArray(value)) {
-    if (level >= 2) return "[ChildrenArray len=" + String(value.length) + "]";
-    const maxLen = Math.min(value.length, 6);
-    const arr = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      arr.push(summarizeChildrenValue(value[i], level + 1));
-    }
-    if (value.length > maxLen) {
-      arr.push("[+" + String(value.length - maxLen) + " more]");
-    }
-    return arr;
-  }
-
-  if (typeof value === "object") {
-    if (value.$$typeof && ("type" in value || "props" in value)) {
-      const typeName = getReactLikeTypeName(value.type);
-      const keyText = value.key == null ? "" : " key=" + String(value.key);
-      return "[ReactElement " + typeName + keyText + "]";
-    }
-
-    if (level >= 2) return "[ChildrenObject]";
-
-    const out = {};
-    const keys = Object.keys(value);
-    const maxKeys = Math.min(keys.length, 4);
-    for (let j = 0; j < maxKeys; j += 1) {
-      const key = keys[j];
-      if (
-        key === "_owner"
-        || key === "_store"
-        || key === "__self"
-        || key === "__source"
-        || key === "_debugOwner"
-        || key === "_debugSource"
-      ) {
-        out[key] = key === "_owner" ? "[ReactOwner]" : "[ReactInternal]";
-        continue;
-      }
-      try {
-        out[key] = summarizeChildrenValue(value[key], level + 1);
-      } catch (e) {
-        out[key] = "[Thrown: " + String(e && e.message) + "]";
-      }
-    }
-    if (keys.length > maxKeys) out.__truncated__ = "[+" + String(keys.length - maxKeys) + " keys]";
-    return out;
-  }
-
-  return String(value);
-}
 
 /** 해당 기능 흐름을 처리 */
 export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) {
