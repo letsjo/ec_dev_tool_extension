@@ -38,7 +38,6 @@ import {
 import { initWheelScrollFallback } from './workspace/wheelScrollFallback';
 import {
   buildReactComponentDetailRenderSignature as buildReactComponentDetailRenderSignatureValue,
-  buildReactComponentUpdateFingerprint as buildReactComponentUpdateFingerprintValue,
   buildReactListRenderSignature as buildReactListRenderSignatureValue,
 } from './reactInspector/signatures';
 import {
@@ -51,6 +50,7 @@ import {
   restoreCollapsedById as restoreCollapsedByIdValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
+import { buildReactInspectResultModel as buildReactInspectResultModelValue } from './reactInspector/resultModel';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -512,14 +512,6 @@ function buildReactComponentDetailRenderSignature(component: ReactComponentInfo)
 }
 
 /** 파생 데이터나 요약 값을 구성 */
-function buildReactComponentUpdateFingerprint(
-  component: ReactComponentInfo,
-  metadataOnly = false,
-): string {
-  return buildReactComponentUpdateFingerprintValue(component, metadataOnly);
-}
-
-/** 파생 데이터나 요약 값을 구성 */
 function buildReactListRenderSignature(
   filterResult: ComponentFilterResult,
   matchedIndexSet: Set<number>,
@@ -948,54 +940,16 @@ function applyReactInspectResult(
     selectedReactComponentIndex,
   );
   const previousCollapsedIds = preserveCollapsed ? snapshotCollapsedIds() : new Set<string>();
-  const previousComponentById = new Map<string, ReactComponentInfo>(
-    reactComponents.map((component) => [component.id, component]),
-  );
-  const previousFingerprintById = trackUpdates
-    ? new Map<string, string>(
-        reactComponents.map((component) => [
-          component.id,
-          buildReactComponentUpdateFingerprint(component, lightweight),
-        ]),
-      )
-    : null;
 
-  // 경량/전체 모드에 따라 이전 데이터 재사용 여부를 결정해 렌더 비용을 줄인다.
-  reactComponents = (Array.isArray(result.components) ? result.components : []).map(
-    (component) => ({
-      ...(() => {
-        const previous = previousComponentById.get(component.id);
-        const hasSerializedData = component.hasSerializedData !== false;
-        const shouldReusePreviousData = lightweight && !hasSerializedData && Boolean(previous);
-        return {
-          ...component,
-          parentId: component.parentId ?? null,
-          props: shouldReusePreviousData ? previous?.props : component.props,
-          hooks: shouldReusePreviousData ? previous?.hooks : component.hooks,
-          hookCount:
-            typeof component.hookCount === 'number'
-              ? component.hookCount
-              : shouldReusePreviousData
-                ? (previous?.hookCount ?? 0)
-                : 0,
-          hasSerializedData:
-            hasSerializedData || (shouldReusePreviousData && previous?.hasSerializedData !== false),
-        };
-      })(),
-    }),
-  );
-  // 경량 갱신 시 변경된 컴포넌트를 시각적으로 표시하기 위한 id 집합을 만든다.
-  updatedComponentIds = new Set<string>();
-  if (trackUpdates && previousFingerprintById && previousFingerprintById.size > 0) {
-    reactComponents.forEach((component) => {
-      const previousFingerprint = previousFingerprintById.get(component.id);
-      const nextFingerprint = buildReactComponentUpdateFingerprint(component, lightweight);
-      if (previousFingerprint !== nextFingerprint) {
-        updatedComponentIds.add(component.id);
-      }
-    });
-  }
-  componentSearchIncludeDataTokens = !lightweight;
+  const resultModel = buildReactInspectResultModelValue({
+    previousComponents: reactComponents,
+    incomingComponents: Array.isArray(result.components) ? result.components : [],
+    lightweight,
+    trackUpdates,
+  });
+  reactComponents = resultModel.reactComponents;
+  updatedComponentIds = resultModel.updatedComponentIds;
+  componentSearchIncludeDataTokens = resultModel.componentSearchIncludeDataTokens;
   componentSearchTexts = buildComponentSearchTextsValue(
     reactComponents,
     componentSearchIncludeDataTokens,
