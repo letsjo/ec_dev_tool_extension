@@ -79,14 +79,7 @@ import {
   resolveInspectFunctionPathCompletion as resolveInspectFunctionPathCompletionValue,
   resolveSerializedPathValueFromCompletion as resolveSerializedPathValueFromCompletionValue,
 } from './reactInspector/pathCompletion';
-import {
-  buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
-  type ReactInspectPathMode,
-} from './reactInspector/pathRequest';
-import {
-  resolveReactInspectPathRequestCompletion as resolveReactInspectPathRequestCompletionValue,
-  type ReactInspectPathRequestCompletion,
-} from './reactInspector/pathRequestCompletion';
+import { createReactInspectPathRequester as createReactInspectPathRequesterValue } from './reactInspector/pathRequestRunner';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -418,37 +411,10 @@ const {
   },
 });
 
-interface RequestReactInspectPathOptions {
-  component: ReactComponentInfo;
-  section: JsonSectionKind;
-  path: JsonPathSegment[];
-  mode: ReactInspectPathMode;
-  serializeLimit?: number;
-  onDone: (completion: ReactInspectPathRequestCompletion) => void;
-}
-
-/**
- * reactInspectPath 공통 요청 헬퍼.
- * selector/pickPoint fallback 계산과 응답 형식 검증을 한 곳에서 처리한다.
- */
-function requestReactInspectPath(options: RequestReactInspectPathOptions) {
-  const args = buildReactInspectPathRequestArgsValue({
-    component: options.component,
-    section: options.section,
-    path: options.path,
-    mode: options.mode,
-    serializeLimit: options.serializeLimit,
-    storedLookup: lastReactLookup,
-  });
-  callInspectedPageAgent(
-    'reactInspectPath',
-    args,
-    (res, errorText) => {
-      const completion = resolveReactInspectPathRequestCompletionValue(res, errorText);
-      options.onDone(completion);
-    },
-  );
-}
+const requestReactInspectPath = createReactInspectPathRequesterValue({
+  callInspectedPageAgent,
+  getStoredLookup: () => lastReactLookup,
+});
 
 /** 경로 기준 inspect 동작을 수행 */
 function inspectFunctionAtPath(
