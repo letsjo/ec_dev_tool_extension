@@ -50,7 +50,7 @@ import { createReactInspectPathBindings as createReactInspectPathBindingsValue }
 import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './reactInspector/listRenderFlow';
 import { createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue } from './reactInspector/detailRenderFlow';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
-import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
+import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './reactInspector/searchInputBindingFlow';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
 import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './reactInspector/detailQueueFlow';
 import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './reactInspector/resetStateFlow';
@@ -409,24 +409,22 @@ const selectReactComponent = createReactComponentSelectorValue({
   detailFetchRetryCooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
 });
 
-/** 이벤트를 처리 */
-function onComponentSearchInput() {
-  componentSearchQuery = componentSearchInputEl.value;
-  handleComponentSearchInputValue({
-    componentSearchQuery,
-    reactComponents,
-    selectedReactComponentIndex,
-    getComponentFilterResult,
-    applySearchNoResultState: (options) => {
-      applySearchNoResultState('searchInput', options);
-    },
-    expandAncestorPaths,
-    selectReactComponent,
-    renderReactComponentList,
-    setReactStatus,
-    buildSearchSummaryStatusText: buildSearchSummaryStatusTextValue,
-  });
-}
+const onComponentSearchInput = createReactComponentSearchInputFlowValue({
+  getSearchInputValue: () => componentSearchInputEl.value,
+  setComponentSearchQuery: (query) => {
+    componentSearchQuery = query;
+  },
+  getComponentSearchQuery: () => componentSearchQuery,
+  getReactComponents: () => reactComponents,
+  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
+  getComponentFilterResult,
+  applySearchNoResultState,
+  expandAncestorPaths,
+  selectReactComponent,
+  renderReactComponentList,
+  setReactStatus,
+  buildSearchSummaryStatusText: buildSearchSummaryStatusTextValue,
+});
 
 const resetReactInspector = createReactInspectorResetStateFlowValue({
   writeState: (update) => {
