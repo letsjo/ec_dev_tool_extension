@@ -50,6 +50,7 @@ import {
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
+import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { renderDomTreeNode } from './domTree/renderer';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import {
@@ -122,9 +123,6 @@ let lastReactListRenderSignature = '';
 let lastReactDetailRenderSignature = '';
 let lastReactDetailComponentId: string | null = null;
 let updatedComponentIds = new Set<string>();
-let detailFetchInFlight = false;
-let detailFetchQueuedComponentId: string | null = null;
-let detailFetchLastFailedAtById = new Map<string, number>();
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 const PAGE_FUNCTION_INSPECT_REGISTRY_KEY = '__EC_DEV_TOOL_FUNCTION_INSPECT_REGISTRY__';
@@ -817,100 +815,17 @@ function applySelectedComponentDetail(result: ReactComponentDetailResult): boole
   return true;
 }
 
-/** 비동기 상세 데이터를 요청 */
-function requestSelectedComponentDetail(component: ReactComponentInfo) {
-  const componentId = component.id;
-  if (!componentId) return;
-  if (detailFetchInFlight) {
-    detailFetchQueuedComponentId = componentId;
-    return;
-  }
-
-  const lastFailedAt = detailFetchLastFailedAtById.get(componentId);
-  if (lastFailedAt && Date.now() - lastFailedAt < DETAIL_FETCH_RETRY_COOLDOWN_MS) {
-    return;
-  }
-
-  const lookup = getLookupForRuntimeRefresh();
-  const selector = component.domSelector ?? lookup.selector;
-  const pickPoint = component.domSelector ? undefined : lookup.pickPoint;
-  detailFetchInFlight = true;
-
-  callInspectedPageAgent(
-    'reactInspect',
-    {
-      selector,
-      pickPoint: pickPoint ?? null,
-      includeSerializedData: false,
-      selectedComponentId: componentId,
-    },
-    (res, errorText) => {
-      const finish = () => {
-        detailFetchInFlight = false;
-
-        const queuedComponentId = detailFetchQueuedComponentId;
-        detailFetchQueuedComponentId = null;
-        if (!queuedComponentId || queuedComponentId === componentId) return;
-        const queuedComponent = reactComponents.find(
-          (candidate) => candidate.id === queuedComponentId,
-        );
-        if (!queuedComponent || queuedComponent.hasSerializedData !== false) return;
-        requestSelectedComponentDetail(queuedComponent);
-      };
-
-      const selected =
-        selectedReactComponentIndex >= 0 ? reactComponents[selectedReactComponentIndex] : null;
-      const isCurrentSelection = selected?.id === componentId;
-
-      if (errorText) {
-        detailFetchLastFailedAtById.set(componentId, Date.now());
-        if (isCurrentSelection) {
-          setReactDetailEmpty(`상세 정보 조회 실패: ${errorText}`);
-        }
-        finish();
-        return;
-      }
-
-      if (!isReactInspectResult(res)) {
-        const reason = '응답 형식 오류';
-        detailFetchLastFailedAtById.set(componentId, Date.now());
-        if (isCurrentSelection) {
-          setReactDetailEmpty(`상세 정보 조회 실패: ${reason}`);
-        }
-        finish();
-        return;
-      }
-
-      const detailedComponent = res.components.find((candidate) => candidate.id === componentId);
-      if (!detailedComponent || detailedComponent.hasSerializedData === false) {
-        detailFetchLastFailedAtById.set(componentId, Date.now());
-        if (isCurrentSelection) {
-          setReactDetailEmpty('선택 컴포넌트를 갱신하지 못했습니다. 다시 선택해 주세요.');
-        }
-        finish();
-        return;
-      }
-
-      const applied = applySelectedComponentDetail({
-        ok: true,
-        componentId,
-        props: detailedComponent.props,
-        hooks: detailedComponent.hooks,
-        hookCount: detailedComponent.hookCount,
-      });
-      if (applied) {
-        detailFetchLastFailedAtById.delete(componentId);
-      } else {
-        detailFetchLastFailedAtById.set(componentId, Date.now());
-        if (isCurrentSelection) {
-          setReactDetailEmpty('선택 컴포넌트를 갱신하지 못했습니다. 다시 선택해 주세요.');
-        }
-      }
-
-      finish();
-    },
-  );
-}
+const detailFetchQueue = createReactDetailFetchQueue({
+  cooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
+  callInspectedPageAgent,
+  getLookup: () => getLookupForRuntimeRefresh(),
+  getSelectedComponent: () =>
+    selectedReactComponentIndex >= 0 ? reactComponents[selectedReactComponentIndex] : null,
+  findComponentById: (componentId) =>
+    reactComponents.find((candidate) => candidate.id === componentId),
+  applySelectedComponentDetail,
+  setReactDetailEmpty,
+});
 
 /** 선택 상태를 갱신 */
 function selectReactComponent(index: number, options: SelectReactComponentOptions = {}) {
@@ -932,12 +847,12 @@ function selectReactComponent(index: number, options: SelectReactComponentOption
   }
   const component = reactComponents[index];
   if (component.hasSerializedData === false) {
-    const lastFailedAt = detailFetchLastFailedAtById.get(component.id);
+    const lastFailedAt = detailFetchQueue.getLastFailedAt(component.id);
     if (lastFailedAt && Date.now() - lastFailedAt < DETAIL_FETCH_RETRY_COOLDOWN_MS) {
       setReactDetailEmpty('상세 정보가 커서 지연됩니다. 잠시 후 다시 선택하세요.');
     } else {
       setReactDetailEmpty('컴포넌트 상세 정보 조회 중…');
-      requestSelectedComponentDetail(component);
+      detailFetchQueue.request(component);
     }
   } else {
     renderReactComponentDetail(component);
@@ -991,9 +906,7 @@ function resetReactInspector(statusText: string, isError = false) {
   componentSearchIncludeDataTokens = true;
   collapsedComponentIds = new Set<string>();
   updatedComponentIds = new Set<string>();
-  detailFetchInFlight = false;
-  detailFetchQueuedComponentId = null;
-  detailFetchLastFailedAtById = new Map<string, number>();
+  detailFetchQueue.reset();
   selectedReactComponentIndex = -1;
   lastReactListRenderSignature = '';
   lastReactDetailRenderSignature = '';
