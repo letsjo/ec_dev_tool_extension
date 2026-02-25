@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, 선택 element selector/path 정보 계산, main world 스크립트 주입, pageAgent 브리지, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -164,7 +164,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentHookGrouping.ts`: 공통 조상 frame 탐색, primitive frame index 탐색, trimmed/all-frame group path 추론, primitive 이름 정규화 전담
 - `pageAgentHookRuntime.ts`: global hook dispatcher ref 탐색, render 함수/기본 props 해석 유틸 전담
 - `pageAgentHookResult.ts`: custom hook metadata 배열 결과(`groupNames/groupPaths/primitive*`) 길이 정렬(pad/truncate) 전담
-- `pageAgentHookGroups.ts`: stack/grouping/runtime/result 유틸을 조합해 dispatcher 대체 실행과 custom metadata(group/path/primitive) 오케스트레이션 전담
+- `pageAgentHookMetadataBuild.ts`: hookLog + stack 비교 결과를 custom hook metadata 배열(`groupNames/groupPaths/primitive*`)로 변환하는 루프 전담
+- `pageAgentHookGroups.ts`: stack/grouping/runtime/result/metadata-build 유틸을 조합해 dispatcher 대체 실행과 custom metadata(group/path/primitive) 오케스트레이션 전담
 - `pageAgentInspect.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
 
 ## 6.5 pageAgent Inspect 모듈 분리 규칙
@@ -535,6 +536,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentHookGrouping.ts`
 - `src/content/pageAgentHookRuntime.ts`
 - `src/content/pageAgentHookResult.ts`
+- `src/content/pageAgentHookMetadataBuild.ts`
 - `src/content/pageAgentHookState.ts`
 - `src/content/pageAgentHookMetadata.ts`
 - `src/content/pageAgentInspect.ts`

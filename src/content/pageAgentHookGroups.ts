@@ -1,21 +1,14 @@
 // @ts-nocheck
 import {
-  parseErrorStackFrames,
   parseHookDisplayName,
 } from "./pageAgentHookStack";
-import {
-  findCommonAncestorFrameIndex,
-  findPrimitiveFrameIndex,
-  inferGroupPathFromAllFrames,
-  inferGroupPathFromTrimmedStack,
-  normalizePrimitiveHookName,
-} from "./pageAgentHookGrouping";
 import {
   getDispatcherRefFromGlobalHook,
   resolveDefaultPropsForHookInspect,
   resolveRenderFunctionForHookInspect,
 } from "./pageAgentHookRuntime";
 import { alignHookInspectMetadataResultLength } from "./pageAgentHookResult";
+import { buildHookInspectMetadataFromLog } from "./pageAgentHookMetadataBuild";
 
 type AnyRecord = Record<string, any>;
 type FiberLike = AnyRecord & {
@@ -367,43 +360,13 @@ function inspectCustomHookGroupNames(
   }
 
   if (hookLog.length === 0) return null;
-  const rootFrames = parseErrorStackFrames(rootStackError);
-  const groupNames = [];
-  const groupPaths = [];
-  const primitiveNames = [];
-  const primitiveValues = [];
-  const primitiveHasValue = [];
-
-  for (let logIndex = 0; logIndex < hookLog.length; logIndex += 1) {
-    const entry = hookLog[logIndex];
-    const hookFrames = parseErrorStackFrames(entry.stackError);
-    const rootIndex = findCommonAncestorFrameIndex(rootFrames, hookFrames);
-    const primitiveIndex = findPrimitiveFrameIndex(hookFrames, entry, primitiveStackCache);
-
-    let trimmedStack = null;
-    if (rootIndex !== -1 && primitiveIndex !== -1 && rootIndex - primitiveIndex >= 2) {
-      trimmedStack = hookFrames.slice(primitiveIndex, rootIndex - 1);
-    }
-
-    let groupPath = inferGroupPathFromTrimmedStack(trimmedStack, entry, componentName);
-    if (!groupPath || groupPath.length === 0) {
-      groupPath = inferGroupPathFromAllFrames(hookFrames, entry, componentName);
-    }
-
-    groupPaths.push(groupPath && groupPath.length > 0 ? groupPath : null);
-    groupNames.push(groupPath && groupPath.length > 0 ? groupPath[groupPath.length - 1] : null);
-    primitiveNames.push(normalizePrimitiveHookName(entry.primitive, entry.dispatcherHookName));
-    primitiveValues.push(entry.value);
-    primitiveHasValue.push(true);
-  }
-
-  return alignHookInspectMetadataResultLength({
-    groupNames,
-    groupPaths,
-    primitiveNames,
-    primitiveValues,
-    primitiveHasValue,
-  }, expectedCount);
+  const result = buildHookInspectMetadataFromLog(
+    hookLog,
+    rootStackError,
+    componentName,
+    primitiveStackCache,
+  );
+  return alignHookInspectMetadataResultLength(result, expectedCount);
 }
 
 export { parseHookDisplayName, inspectCustomHookGroupNames };
