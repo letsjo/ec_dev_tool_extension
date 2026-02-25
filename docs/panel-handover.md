@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, 선택 element selector/path 정보 계산, main world 스크립트 주입, pageAgent 브리지, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -171,6 +171,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentHookGroups.ts`: stack/grouping/runtime/result/metadata-build/dispatcher/primitive-stack/render-execution 유틸을 조합해 custom metadata(group/path/primitive) 오케스트레이션 전담
 - `pageAgentInspectSelection.ts`: reactInspect 결과 목록에서 selectedIndex 결정 규칙(선호 fiber, target match, dom selector fallback, non-host fallback) 전담
 - `pageAgentInspectPathValue.ts`: inspectPath path 순회와 special collection segment 해석 전담
+- `pageAgentInspectPathMode.ts`: inspectPath mode(`serializeValue`/`inspectFunction`) 분기별 응답 구성 전담
 - `pageAgentInspectDomInfo.ts`: fiber -> host element 탐색 및 DOM selector/path/containsTarget 계산 전담
 - `pageAgentInspectTarget.ts`: selector/pickPoint 기준 target element/nearest/root 해석과 inspectPath 대상 fiber fallback 탐색 전담
 - `pageAgentInspectComponentWalk.ts`: root fiber DFS 순회와 component row payload 구성, target match 후보 인덱스 계산 전담
@@ -180,6 +181,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `pageAgentInspectSelection.ts`: inspect 결과 selectedIndex 계산 로직 전담
 - `pageAgentInspectPathValue.ts`: `reactInspectPath` path 순회와 collection token 해석 전담
+- `pageAgentInspectPathMode.ts`: `reactInspectPath` mode별 serialize/function inspect 응답 구성 전담
 - `pageAgentInspectDomInfo.ts`: host element 탐색 캐시/순환 방지와 DOM 메타데이터(selector/path/tag/containsTarget) 계산 전담
 - `pageAgentInspectTarget.ts`: target element/nearest/root resolution과 inspectPath targetFiber 조회 fallback 전담
 - `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산 전담
@@ -558,6 +560,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentInspect.ts`
 - `src/content/pageAgentInspectSelection.ts`
 - `src/content/pageAgentInspectPathValue.ts`
+- `src/content/pageAgentInspectPathMode.ts`
 - `src/content/pageAgentInspectDomInfo.ts`
 - `src/content/pageAgentInspectTarget.ts`
 - `src/content/pageAgentInspectComponentWalk.ts`

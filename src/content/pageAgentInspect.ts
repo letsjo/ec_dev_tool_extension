@@ -8,6 +8,7 @@ import {
   resolveInspectRootContext,
 } from "./pageAgentInspectTarget";
 import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
+import { resolveInspectPathModeResponse } from "./pageAgentInspectPathMode";
 
 type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
@@ -255,28 +256,13 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         return pathResolved;
       }
       const value = pathResolved.value;
-
-      if (mode === "serializeValue") {
-        const serialize = makeSerializer({
-          maxSerializeCalls: serializeLimit,
-          maxDepth: 2,
-          maxArrayLength: 100,
-          maxObjectKeys: 100,
-          maxMapEntries: 80,
-          maxSetEntries: 80,
-        });
-        return {
-          ok: true,
-          value: serialize(value),
-        };
-      }
-
-      if (typeof value !== "function") {
-        return { ok: false, error: "선택 값이 함수가 아닙니다.", valueType: typeof value };
-      }
-
-      const inspectRefKey = registerFunctionForInspect(value);
-      return { ok: true, name: value.name || "(anonymous)", inspectRefKey };
+      return resolveInspectPathModeResponse({
+        mode,
+        value,
+        serializeLimit,
+        makeSerializer,
+        registerFunctionForInspect,
+      });
     } catch (e) {
       return { ok: false, error: String(e && e.message) };
     }
