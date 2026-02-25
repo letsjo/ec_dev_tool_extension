@@ -8,6 +8,7 @@ import {
   buildCollectionPreviewFromValue,
   type CollectionPreviewBudget,
 } from './jsonCollectionPreview';
+import { buildArrayPreview, buildObjectPreview } from './jsonObjectPreview';
 
 const OBJECT_CLASS_NAME_META_KEY = '__ecObjectClassName';
 
@@ -93,35 +94,27 @@ export function buildJsonSummaryPreview(
   if (value === null || typeof value !== 'object') return formatPrimitive(value);
 
   if (Array.isArray(value)) {
-    if (value.length === 0) return '[]';
-    if (depth >= 1) return `Array(${value.length})`;
-    const maxLen = Math.min(value.length, 3);
-    const previewItems: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      previewItems.push(buildJsonSummaryPreview(value[i], depth + 1, budget));
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = value.length > maxLen ? ', …' : '';
-    return `[${previewItems.join(', ')}${suffix}]`;
+    return buildArrayPreview({
+      value,
+      depth,
+      budget,
+      renderValue: buildJsonSummaryPreview,
+      maxDepth: 1,
+      maxLen: 3,
+      collapsedText: `Array(${value.length})`,
+    });
   }
 
-  const objectName = getObjectDisplayName(value);
-  const entries = Object.entries(value as Record<string, unknown>).filter(
-    ([key]) => !isJsonInternalMetaKey(key),
-  );
-  if (entries.length === 0) return objectName === 'Object' ? '{}' : `${objectName} {}`;
-  if (depth >= 1) return `${objectName}(${entries.length})`;
-
-  const maxLen = Math.min(entries.length, 3);
-  const parts: string[] = [];
-  for (let i = 0; i < maxLen; i += 1) {
-    const [key, child] = entries[i];
-    parts.push(`${key}: ${buildJsonSummaryPreview(child, depth + 1, budget)}`);
-    if (budget.remaining <= 0) break;
-  }
-  const suffix = entries.length > maxLen ? ', …' : '';
-  const objectBody = `{${parts.join(', ')}${suffix}}`;
-  return objectName === 'Object' ? objectBody : `${objectName} ${objectBody}`;
+  return buildObjectPreview({
+    value: value as Record<string, unknown>,
+    depth,
+    budget,
+    renderValue: buildJsonSummaryPreview,
+    maxDepth: 1,
+    maxLen: 3,
+    isInternalMetaKey: isJsonInternalMetaKey,
+    getObjectDisplayName,
+  });
 }
 
 /** 파생 데이터나 요약 값을 구성 */
@@ -173,35 +166,28 @@ export function buildHookInlinePreview(
   }
 
   if (Array.isArray(value)) {
-    if (value.length === 0) return '[]';
-    if (depth >= 2) return '[…]';
-    const maxLen = Math.min(value.length, 9);
-    const items: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      items.push(buildHookInlinePreview(value[i], depth + 1, budget));
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = value.length > maxLen ? ', …' : '';
-    return `[${items.join(', ')}${suffix}]`;
+    return buildArrayPreview({
+      value,
+      depth,
+      budget,
+      renderValue: buildHookInlinePreview,
+      maxDepth: 2,
+      maxLen: 9,
+      collapsedText: '[…]',
+    });
   }
 
   if (typeof value === 'object') {
-    const objectName = getObjectDisplayName(value);
-    const entries = Object.entries(value as Record<string, unknown>).filter(
-      ([key]) => !isJsonInternalMetaKey(key),
-    );
-    if (entries.length === 0) return objectName === 'Object' ? '{}' : `${objectName} {}`;
-    if (depth >= 1) return `${objectName}(${entries.length})`;
-    const maxLen = Math.min(entries.length, 3);
-    const parts: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      const [key, child] = entries[i];
-      parts.push(`${key}: ${buildHookInlinePreview(child, depth + 1, budget)}`);
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = entries.length > maxLen ? ', …' : '';
-    const objectBody = `{${parts.join(', ')}${suffix}}`;
-    return objectName === 'Object' ? objectBody : `${objectName} ${objectBody}`;
+    return buildObjectPreview({
+      value: value as Record<string, unknown>,
+      depth,
+      budget,
+      renderValue: buildHookInlinePreview,
+      maxDepth: 1,
+      maxLen: 3,
+      isInternalMetaKey: isJsonInternalMetaKey,
+      getObjectDisplayName,
+    });
   }
 
   return String(value);
