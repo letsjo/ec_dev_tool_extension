@@ -65,6 +65,78 @@ export function readDehydratedPreviewText(value: unknown): string {
   return '{…}';
 }
 
+/** size 입력을 음수/NaN 없는 안전한 collection size로 정규화한다. */
+function toSafeCollectionSize(rawSize: unknown): number {
+  return typeof rawSize === 'number' && Number.isFinite(rawSize)
+    ? Math.max(0, Math.floor(rawSize))
+    : 0;
+}
+
+interface CollectionPreviewBudget {
+  remaining: number;
+}
+
+/** map-like entries를 preview 문자열로 정규화한다. */
+function buildMapCollectionPreview({
+  size,
+  entries,
+  depth,
+  budget,
+  maxLen,
+  renderValue,
+}: {
+  size: number;
+  entries: unknown[];
+  depth: number;
+  budget: CollectionPreviewBudget;
+  maxLen: number;
+  renderValue: (value: unknown, depth: number, budget: CollectionPreviewBudget) => string;
+}): string {
+  if (size === 0 || entries.length === 0) return `Map(${size}) {}`;
+  if (depth >= 1) return `Map(${size})`;
+
+  const boundedLen = Math.min(entries.length, maxLen);
+  const parts: string[] = [];
+  for (let i = 0; i < boundedLen; i += 1) {
+    const pair = readMapTokenEntryPairValue(entries[i]);
+    parts.push(
+      `${renderValue(pair.key, depth + 1, budget)} => ${renderValue(pair.value, depth + 1, budget)}`,
+    );
+    if (budget.remaining <= 0) break;
+  }
+  const suffix = size > boundedLen ? ', …' : '';
+  return `Map(${size}) {${parts.join(', ')}${suffix}}`;
+}
+
+/** set-like entries를 preview 문자열로 정규화한다. */
+function buildSetCollectionPreview({
+  size,
+  entries,
+  depth,
+  budget,
+  maxLen,
+  renderValue,
+}: {
+  size: number;
+  entries: unknown[];
+  depth: number;
+  budget: CollectionPreviewBudget;
+  maxLen: number;
+  renderValue: (value: unknown, depth: number, budget: CollectionPreviewBudget) => string;
+}): string {
+  if (size === 0 || entries.length === 0) return `Set(${size}) {}`;
+  if (depth >= 1) return `Set(${size})`;
+
+  const boundedLen = Math.min(entries.length, maxLen);
+  const parts: string[] = [];
+  for (let i = 0; i < boundedLen; i += 1) {
+    parts.push(renderValue(entries[i], depth + 1, budget));
+    if (budget.remaining <= 0) break;
+  }
+  const suffix = size > boundedLen ? ', …' : '';
+  return `Set(${size}) {${parts.join(', ')}${suffix}}`;
+}
+
 /** 파생 데이터나 요약 값을 구성 */
 export function buildJsonSummaryPreview(
   value: unknown,
@@ -78,74 +150,48 @@ export function buildJsonSummaryPreview(
   if (isCircularRefToken(value)) return `[Circular #${value.refId}]`;
   if (isDehydratedToken(value)) return readDehydratedPreviewText(value);
   if (isMapToken(value)) {
-    const size =
-      typeof value.size === 'number' && Number.isFinite(value.size)
-        ? Math.max(0, Math.floor(value.size))
-        : 0;
-    const rawEntries = Array.isArray(value.entries) ? value.entries : [];
-    if (size === 0 || rawEntries.length === 0) return `Map(${size}) {}`;
-    if (depth >= 1) return `Map(${size})`;
-
-    const maxLen = Math.min(rawEntries.length, 2);
-    const parts: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      const pair = readMapTokenEntryPairValue(rawEntries[i]);
-      parts.push(
-        `${buildJsonSummaryPreview(pair.key, depth + 1, budget)} => ${buildJsonSummaryPreview(pair.value, depth + 1, budget)}`,
-      );
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = size > maxLen ? ', …' : '';
-    return `Map(${size}) {${parts.join(', ')}${suffix}}`;
+    return buildMapCollectionPreview({
+      size: toSafeCollectionSize(value.size),
+      entries: Array.isArray(value.entries) ? value.entries : [],
+      depth,
+      budget,
+      maxLen: 2,
+      renderValue: buildJsonSummaryPreview,
+    });
   }
   if (isSetToken(value)) {
-    const size =
-      typeof value.size === 'number' && Number.isFinite(value.size)
-        ? Math.max(0, Math.floor(value.size))
-        : 0;
-    const rawEntries = Array.isArray(value.entries) ? value.entries : [];
-    if (size === 0 || rawEntries.length === 0) return `Set(${size}) {}`;
-    if (depth >= 1) return `Set(${size})`;
-
-    const maxLen = Math.min(rawEntries.length, 3);
-    const parts: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      parts.push(buildJsonSummaryPreview(rawEntries[i], depth + 1, budget));
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = size > maxLen ? ', …' : '';
-    return `Set(${size}) {${parts.join(', ')}${suffix}}`;
+    return buildSetCollectionPreview({
+      size: toSafeCollectionSize(value.size),
+      entries: Array.isArray(value.entries) ? value.entries : [],
+      depth,
+      budget,
+      maxLen: 3,
+      renderValue: buildJsonSummaryPreview,
+    });
   }
   if (value === null || typeof value !== 'object') return formatPrimitive(value);
 
   if (Array.isArray(value)) {
     const collectionMeta = readDisplayCollectionMetaValue(value);
     if (collectionMeta?.type === 'map') {
-      if (collectionMeta.size === 0 || value.length === 0) return `Map(${collectionMeta.size}) {}`;
-      if (depth >= 1) return `Map(${collectionMeta.size})`;
-      const maxLen = Math.min(value.length, 2);
-      const parts: string[] = [];
-      for (let i = 0; i < maxLen; i += 1) {
-        const pair = readMapTokenEntryPairValue(value[i]);
-        parts.push(
-          `${buildJsonSummaryPreview(pair.key, depth + 1, budget)} => ${buildJsonSummaryPreview(pair.value, depth + 1, budget)}`,
-        );
-        if (budget.remaining <= 0) break;
-      }
-      const suffix = collectionMeta.size > maxLen ? ', …' : '';
-      return `Map(${collectionMeta.size}) {${parts.join(', ')}${suffix}}`;
+      return buildMapCollectionPreview({
+        size: toSafeCollectionSize(collectionMeta.size),
+        entries: value,
+        depth,
+        budget,
+        maxLen: 2,
+        renderValue: buildJsonSummaryPreview,
+      });
     }
     if (collectionMeta?.type === 'set') {
-      if (collectionMeta.size === 0 || value.length === 0) return `Set(${collectionMeta.size}) {}`;
-      if (depth >= 1) return `Set(${collectionMeta.size})`;
-      const maxLen = Math.min(value.length, 3);
-      const parts: string[] = [];
-      for (let i = 0; i < maxLen; i += 1) {
-        parts.push(buildJsonSummaryPreview(value[i], depth + 1, budget));
-        if (budget.remaining <= 0) break;
-      }
-      const suffix = collectionMeta.size > maxLen ? ', …' : '';
-      return `Set(${collectionMeta.size}) {${parts.join(', ')}${suffix}}`;
+      return buildSetCollectionPreview({
+        size: toSafeCollectionSize(collectionMeta.size),
+        entries: value,
+        depth,
+        budget,
+        maxLen: 3,
+        renderValue: buildJsonSummaryPreview,
+      });
     }
     if (value.length === 0) return '[]';
     if (depth >= 1) return `Array(${value.length})`;
@@ -194,41 +240,24 @@ export function buildHookInlinePreview(
   if (isCircularRefToken(value)) return '{…}';
   if (isDehydratedToken(value)) return readDehydratedPreviewText(value);
   if (isMapToken(value)) {
-    const size =
-      typeof value.size === 'number' && Number.isFinite(value.size)
-        ? Math.max(0, Math.floor(value.size))
-        : 0;
-    const rawEntries = Array.isArray(value.entries) ? value.entries : [];
-    if (size === 0 || rawEntries.length === 0) return `Map(${size}) {}`;
-    if (depth >= 1) return `Map(${size})`;
-    const maxLen = Math.min(rawEntries.length, 2);
-    const parts: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      const pair = readMapTokenEntryPairValue(rawEntries[i]);
-      parts.push(
-        `${buildHookInlinePreview(pair.key, depth + 1, budget)} => ${buildHookInlinePreview(pair.value, depth + 1, budget)}`,
-      );
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = size > maxLen ? ', …' : '';
-    return `Map(${size}) {${parts.join(', ')}${suffix}}`;
+    return buildMapCollectionPreview({
+      size: toSafeCollectionSize(value.size),
+      entries: Array.isArray(value.entries) ? value.entries : [],
+      depth,
+      budget,
+      maxLen: 2,
+      renderValue: buildHookInlinePreview,
+    });
   }
   if (isSetToken(value)) {
-    const size =
-      typeof value.size === 'number' && Number.isFinite(value.size)
-        ? Math.max(0, Math.floor(value.size))
-        : 0;
-    const rawEntries = Array.isArray(value.entries) ? value.entries : [];
-    if (size === 0 || rawEntries.length === 0) return `Set(${size}) {}`;
-    if (depth >= 1) return `Set(${size})`;
-    const maxLen = Math.min(rawEntries.length, 3);
-    const parts: string[] = [];
-    for (let i = 0; i < maxLen; i += 1) {
-      parts.push(buildHookInlinePreview(rawEntries[i], depth + 1, budget));
-      if (budget.remaining <= 0) break;
-    }
-    const suffix = size > maxLen ? ', …' : '';
-    return `Set(${size}) {${parts.join(', ')}${suffix}}`;
+    return buildSetCollectionPreview({
+      size: toSafeCollectionSize(value.size),
+      entries: Array.isArray(value.entries) ? value.entries : [],
+      depth,
+      budget,
+      maxLen: 3,
+      renderValue: buildHookInlinePreview,
+    });
   }
   if (value === null) return 'null';
   if (value === undefined) return 'undefined';
@@ -251,31 +280,24 @@ export function buildHookInlinePreview(
   if (Array.isArray(value)) {
     const collectionMeta = readDisplayCollectionMetaValue(value);
     if (collectionMeta?.type === 'map') {
-      if (collectionMeta.size === 0 || value.length === 0) return `Map(${collectionMeta.size}) {}`;
-      if (depth >= 1) return `Map(${collectionMeta.size})`;
-      const maxLen = Math.min(value.length, 2);
-      const parts: string[] = [];
-      for (let i = 0; i < maxLen; i += 1) {
-        const pair = readMapTokenEntryPairValue(value[i]);
-        parts.push(
-          `${buildHookInlinePreview(pair.key, depth + 1, budget)} => ${buildHookInlinePreview(pair.value, depth + 1, budget)}`,
-        );
-        if (budget.remaining <= 0) break;
-      }
-      const suffix = collectionMeta.size > maxLen ? ', …' : '';
-      return `Map(${collectionMeta.size}) {${parts.join(', ')}${suffix}}`;
+      return buildMapCollectionPreview({
+        size: toSafeCollectionSize(collectionMeta.size),
+        entries: value,
+        depth,
+        budget,
+        maxLen: 2,
+        renderValue: buildHookInlinePreview,
+      });
     }
     if (collectionMeta?.type === 'set') {
-      if (collectionMeta.size === 0 || value.length === 0) return `Set(${collectionMeta.size}) {}`;
-      if (depth >= 1) return `Set(${collectionMeta.size})`;
-      const maxLen = Math.min(value.length, 4);
-      const parts: string[] = [];
-      for (let i = 0; i < maxLen; i += 1) {
-        parts.push(buildHookInlinePreview(value[i], depth + 1, budget));
-        if (budget.remaining <= 0) break;
-      }
-      const suffix = collectionMeta.size > maxLen ? ', …' : '';
-      return `Set(${collectionMeta.size}) {${parts.join(', ')}${suffix}}`;
+      return buildSetCollectionPreview({
+        size: toSafeCollectionSize(collectionMeta.size),
+        entries: value,
+        depth,
+        budget,
+        maxLen: 4,
+        renderValue: buildHookInlinePreview,
+      });
     }
     if (value.length === 0) return '[]';
     if (depth >= 2) return '[…]';

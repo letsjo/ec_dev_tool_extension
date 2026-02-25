@@ -310,7 +310,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/collectionDisplay.ts`: map/set serializer token의 display path/meta 부착과 child path 역매핑, collection normalize 규칙 전담
 - `reactInspector/hookTreeModel.ts`: hook row 정규화(index/name/groupPath/badge)와 explicit/fallback hook tree 모델 구성 전담
 - `reactInspector/jsonTokenNodes.ts`: function token inspect 링크 렌더와 circular ref 지연 확장(details toggle) 렌더 규칙 전담
-- `reactInspector/jsonPreview.ts`: JSON/hook inline summary preview 문자열 생성(primitive/object/array/map/set/dehydrated)과 object meta key 처리 규칙 전담
+- `reactInspector/jsonPreview.ts`: JSON/hook inline summary preview 문자열 생성(primitive/object/array/map/set/dehydrated), map/set 컬렉션 preview 공통 빌더, object meta key 처리 규칙 전담
 - `reactInspector/jsonDehydratedNode.ts`: dehydrated token summary/details 렌더와 toggle 시 runtime serialize refresh 치환 흐름 전담
 - `reactInspector/jsonRowUi.ts`: details toggle 버튼, row toggle spacer, expandable key/value row UI 이벤트/레이아웃 전담
 - `reactInspector/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
