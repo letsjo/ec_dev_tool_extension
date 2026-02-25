@@ -599,3 +599,4 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - 현재 커버하는 리팩터링 축
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, internal meta 필터링
+  - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
