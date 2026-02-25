@@ -193,6 +193,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/workspace/layoutModel.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/dockPreview.ts`
+- `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
 - `src/features/panel/workspace/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
@@ -223,6 +224,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `layoutModel.ts`: 레이아웃 트리 모델/정규화/삽입/교체/비율 계산 같은 순수 로직
 - `manager.ts`: 워크스페이스 DOM patch 렌더, 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
+- `panelSizing.ts`: 접힘 split row(`grid-template-rows`) 계산과 패널 body width/height 동기화 전담
 - `scrollSnapshot.ts`: 레이아웃 patch 전후 스크롤 위치 캡처/복원 로직 전담
 - `storage.ts`: 워크스페이스 localStorage read/write 유틸
 - `wheelScrollFallback.ts`: 패널 wheel capture 보정 리스너 설치/해제
@@ -456,6 +458,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/workspace/layoutModel.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/dockPreview.ts`
+- `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
 - `src/features/panel/workspace/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
