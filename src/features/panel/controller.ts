@@ -61,6 +61,7 @@ import {
 } from './reactInspector/lookup';
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
+import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -506,30 +507,20 @@ const selectReactComponent = createReactComponentSelectorValue({
 /** 이벤트를 처리 */
 function onComponentSearchInput() {
   componentSearchQuery = componentSearchInputEl.value;
-
-  if (reactComponents.length === 0) {
-    renderReactComponentList();
-    return;
-  }
-
-  const filterResult = getComponentFilterResult();
-  if (filterResult.visibleIndices.length === 0) {
-    applySearchNoResultState('searchInput', { clearHoverPreview: true });
-    return;
-  }
-
-  if (componentSearchQuery.trim()) {
-    expandAncestorPaths(filterResult.matchedIndices);
-  }
-
-  if (!filterResult.visibleIndices.includes(selectedReactComponentIndex)) {
-    const nextIndex = filterResult.matchedIndices[0] ?? filterResult.visibleIndices[0];
-    selectReactComponent(nextIndex);
-    return;
-  }
-
-  renderReactComponentList();
-  setReactStatus(buildSearchSummaryStatusTextValue(filterResult, reactComponents.length));
+  handleComponentSearchInputValue({
+    componentSearchQuery,
+    reactComponents,
+    selectedReactComponentIndex,
+    getComponentFilterResult,
+    applySearchNoResultState: (options) => {
+      applySearchNoResultState('searchInput', options);
+    },
+    expandAncestorPaths,
+    selectReactComponent,
+    renderReactComponentList,
+    setReactStatus,
+    buildSearchSummaryStatusText: buildSearchSummaryStatusTextValue,
+  });
 }
 
 /** 해당 기능 흐름을 처리 */
