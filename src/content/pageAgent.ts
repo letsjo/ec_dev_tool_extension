@@ -37,6 +37,13 @@ import {
   findNearestFiber,
   getReactFiberFromElement,
 } from "./pageAgentFiberElement";
+import {
+  findPreferredSelectedFiber,
+  findRootFiber,
+  getFiberKind,
+  getFiberName,
+  isInspectableTag,
+} from "./pageAgentFiberDescribe";
 
 const BRIDGE_SOURCE = "EC_DEV_TOOL_PAGE_AGENT_BRIDGE";
 const BRIDGE_ACTION_REQUEST = "request";
@@ -96,72 +103,6 @@ const registerFunctionForInspect = (value: Function) =>
     seqKey: FUNCTION_INSPECT_SEQ_KEY,
     maxFunctionInspectRefs: MAX_FUNCTION_INSPECT_REFS,
   });
-
-/** 조건에 맞는 대상을 탐색 */
-function findRootFiber(fiber: FiberLike) {
-  let current = fiber;
-  let guard = 0;
-  while (current && current.return && guard < 260) {
-    current = current.return;
-    guard += 1;
-  }
-  if (current && current.tag === 3 && current.stateNode && current.stateNode.current) {
-    return current.stateNode.current;
-  }
-  return current || fiber;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getFiberKind(tag: number) {
-  const map = {
-    0: "FunctionComponent",
-    1: "ClassComponent",
-    5: "HostComponent",
-    11: "ForwardRef",
-    14: "MemoComponent",
-    15: "SimpleMemoComponent",
-  };
-  return map[tag] || "Tag#" + String(tag);
-}
-
-/** 입력/참조를 실제 대상으로 해석 */
-function resolveTypeName(type: unknown) {
-  if (!type) return "";
-  if (typeof type === "string") return type;
-  if (typeof type === "function") return type.displayName || type.name || "Anonymous";
-  if (typeof type === "object") {
-    if (typeof type.displayName === "string" && type.displayName) return type.displayName;
-    if (typeof type.render === "function") return type.render.displayName || type.render.name || "Anonymous";
-    if (type.type) return resolveTypeName(type.type);
-  }
-  return "";
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getFiberName(fiber: FiberLike) {
-  return resolveTypeName(fiber.type) || resolveTypeName(fiber.elementType) || getFiberKind(fiber.tag);
-}
-
-/** React 컴포넌트 트리에 포함할 수 있는 fiber tag인지 판별 */
-function isInspectableTag(tag: number) {
-  return tag === 0 || tag === 1 || tag === 5 || tag === 11 || tag === 14 || tag === 15;
-}
-
-/** 조건에 맞는 대상을 탐색 */
-function findPreferredSelectedFiber(startFiber: FiberLike) {
-  let current = startFiber;
-  let firstInspectable = null;
-  let guard = 0;
-  while (current && guard < 320) {
-    if (isInspectableTag(current.tag)) {
-      if (!firstInspectable) firstInspectable = current;
-      if (current.tag !== 5) return current;
-    }
-    current = current.return;
-    guard += 1;
-  }
-  return firstInspectable;
-}
 
 /** 필요한 값/상태를 계산해 반환 */
 function getHooksRootValue(fiber: FiberLike | null | undefined, options: AnyRecord | null | undefined) {
