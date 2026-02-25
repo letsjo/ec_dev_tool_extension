@@ -247,6 +247,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLayoutState.ts`
+- `src/features/panel/workspace/managerInteractionHandlers.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/dragOverTarget.ts`
@@ -302,10 +303,12 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
   - 2026-02 리팩터링: `manager.ts` 내부 thin wrapper를 제거하고 `dockPreview/panelSizing/scrollSnapshot/...` helper를 직접 결선해 호출 경로를 단순화
   - 상태 복원/패널 상태 변경/dock drop/split ratio persist 규칙은 `managerLayoutState.ts`로 위임
+  - panel/container interaction handler 매핑은 `managerInteractionHandlers.ts`로 위임
   - DOM 렌더 단계의 empty fallback + patch 후처리(삽입/정리)는 `renderPipeline.ts`로 위임
   - panel 가시 상태 반영 + scroll/size/toggle 후처리 + panel open 토글은 `renderFlow.ts`로 위임
   - summary/toggle bar 액션 해석(toggle/close/visible 전환)은 `actionHandlers.ts`로 위임
 - `managerLayoutState.ts`: workspace mutable 상태(root/panel map) 보관, restore/reconcile, panel state 전이, dock drop 적용, split ratio persist 규칙 전담
+- `managerInteractionHandlers.ts`: drag-drop/resize/action handler를 panel/container interaction binding 입력 형태로 조합하는 결선 전담
 - `dockDropApply.ts`: dock drop target(`center|left|right|top|bottom`)에 따른 layout tree 변경(교체/삽입/append) 순수 계산 전담
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
 - `dragOverTarget.ts`: dragover pointer 좌표 기준 drop target/preview rect 계산 전담
@@ -626,6 +629,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLayoutState.ts`
+- `src/features/panel/workspace/managerInteractionHandlers.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/dragOverTarget.ts`
@@ -738,6 +742,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceInteractionBindings.test.ts`: `interactionBindings.ts`의 panel/container 이벤트 바인딩과 cleanup unbind 분기
   - `tests/workspace/workspaceLayoutReconcile.test.ts`: `layoutReconcile.ts`의 prune/dedupe/visible panel append 정합화 분기
   - `tests/workspace/workspaceManagerLayoutState.test.ts`: `managerLayoutState.ts`의 panel state 전이/도킹 적용/split ratio persist와 persist+render 호출 규칙 분기
+  - `tests/workspace/workspaceManagerInteractionHandlers.test.ts`: `managerInteractionHandlers.ts`의 panel/container 핸들러 매핑 결선 분기
   - `tests/pane/paneSetters.test.ts`: `paneSetters.ts`의 output/react/dom pane setter와 list/detail empty signature 결선 분기
   - `tests/reactInspector/jsonObjectPreview.test.ts`: `jsonObjectPreview.ts`의 배열 depth collapse, entry cap, object meta key 필터 preview 분기
   - `tests/reactInspector/jsonObjectArraySummary.test.ts`: `jsonObjectArraySummary.ts`의 hooks/props summary meta 계산(map/set/array/object) 분기

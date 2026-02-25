@@ -13,6 +13,7 @@ import {
   bindWorkspaceInteractionBindings,
 } from './interactionBindings';
 import { createWorkspaceActionHandlers } from './actionHandlers';
+import { createWorkspaceManagerInteractionHandlers } from './managerInteractionHandlers';
 import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
 import { createWorkspaceDragDropFlow } from './dragDropFlow';
 import { syncWorkspacePanelBodySizes } from './panelSizing';
@@ -111,23 +112,11 @@ export function createWorkspaceLayoutManager({
     setWorkspacePanelState: workspaceLayoutState.setWorkspacePanelState,
   });
 
-  const panelInteractionHandlers = {
-    onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
-    onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
-    onSummaryAction: workspaceActionHandlers.onWorkspaceSummaryAction,
-    onSummaryClick: workspaceActionHandlers.onWorkspaceSummaryClick,
-    onActionButtonMouseDown: workspaceActionHandlers.onWorkspaceActionButtonMouseDown,
-    onActionButtonDragStart: workspaceActionHandlers.onWorkspaceActionButtonDragStart,
-  };
-
-  const containerInteractionHandlers = {
-    onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
-    onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
-    onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
-    onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
-    onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
-    onWorkspacePanelToggleButtonClick: workspaceActionHandlers.onWorkspacePanelToggleButtonClick,
-  };
+  const { panelHandlers, containerHandlers } = createWorkspaceManagerInteractionHandlers({
+    workspaceDragDropFlow,
+    workspaceResizeFlow,
+    workspaceActionHandlers,
+  });
 
   /**
    * 워크스페이스 상호작용(드래그/리사이즈/토글/옵저버) 초기화 진입점.
@@ -145,8 +134,8 @@ export function createWorkspaceLayoutManager({
       panelContentEl,
       workspacePanelToggleBarEl,
       workspacePanelElements,
-      panelHandlers: panelInteractionHandlers,
-      containerHandlers: containerInteractionHandlers,
+      panelHandlers,
+      containerHandlers,
     });
     workspacePanelBodySizeObserver.start();
     renderWorkspaceLayout();
