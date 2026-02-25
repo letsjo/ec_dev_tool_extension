@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
+
 type AnyRecord = Record<string, any>;
 type PathSegment = string | number;
 type PickPoint = { x: number; y: number };
@@ -70,84 +72,18 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
     registerFunctionForInspect,
   } = options;
 
-  /** 해당 기능 흐름을 처리 */
-  function rootHasComponentId(rootFiber: FiberLike | null | undefined, componentId: string | null | undefined, fiberIdMap: WeakMap<object, string>) {
-    if (!rootFiber || !componentId) return false;
-    const stack = [rootFiber];
-    let guard = 0;
-    while (stack.length > 0 && guard < maxTraversal) {
-      const node = stack.pop();
-      if (!node) {
-        guard += 1;
-        continue;
-      }
-      if (isInspectableTag(node.tag)) {
-        const stableId = getStableFiberId(node, fiberIdMap);
-        if (stableId === componentId) {
-          return true;
-        }
-      }
-      if (node.sibling) stack.push(node.sibling);
-      if (node.child) stack.push(node.child);
-      guard += 1;
-    }
-    return false;
-  }
-
-  /** 조건에 맞는 대상을 탐색 */
-  function findRootFiberByComponentId(componentId: string | null | undefined, fiberIdMap: WeakMap<object, string>) {
-    if (!componentId) return null;
-    const rootEl = document.body || document.documentElement;
-    if (!rootEl) return null;
-
-    const queue = [rootEl];
-    let cursor = 0;
-    let guard = 0;
-    const maxScan = 7000;
-    const visitedRoots = typeof WeakSet === "function" ? new WeakSet() : [];
-
-    function hasVisited(root: FiberLike | null | undefined) {
-      if (!root) return true;
-      if (visitedRoots instanceof WeakSet) return visitedRoots.has(root);
-      for (let i = 0; i < visitedRoots.length; i += 1) {
-        if (visitedRoots[i] === root) return true;
-      }
-      return false;
-    }
-
-    function markVisited(root: FiberLike | null | undefined) {
-      if (!root) return;
-      if (visitedRoots instanceof WeakSet) {
-        visitedRoots.add(root);
-        return;
-      }
-      visitedRoots.push(root);
-    }
-
-    while (cursor < queue.length && guard < maxScan) {
-      const current = queue[cursor++];
-      const fiber = getReactFiberFromElement(current);
-      if (fiber) {
-        const rootFiber = findRootFiber(fiber);
-        if (rootFiber && !hasVisited(rootFiber)) {
-          markVisited(rootFiber);
-          if (rootHasComponentId(rootFiber, componentId, fiberIdMap)) {
-            return rootFiber;
-          }
-        }
-      }
-
-      const children = current.children;
-      if (children && children.length) {
-        for (let c = 0; c < children.length; c += 1) {
-          queue.push(children[c]);
-        }
-      }
-      guard += 1;
-    }
-
-    return null;
-  }
+  const {
+    rootHasComponentId,
+    findRootFiberByComponentId,
+    findFiberByComponentId,
+    findFiberByComponentIdAcrossDocument,
+  } = createPageAgentFiberSearchHelpers({
+    maxTraversal,
+    isInspectableTag,
+    getStableFiberId,
+    getReactFiberFromElement,
+    findRootFiber,
+  });
 
   /** 필요한 값/상태를 계산해 반환 */
   function getHostElementFromFiber(fiber: FiberLike | null | undefined, cache: Map<object, Element | null>, visiting: Set<object>) {
@@ -383,87 +319,6 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
     } catch (e) {
       return { error: String(e && e.message) };
     }
-  }
-
-  /** 조건에 맞는 대상을 탐색 */
-  function findFiberByComponentId(rootFiber: FiberLike | null | undefined, targetId: string | null | undefined, fiberIdMap: WeakMap<object, string>) {
-    if (!rootFiber || !targetId) return null;
-    const stack = [rootFiber];
-    let guard = 0;
-    let inspectableIndex = 0;
-
-    while (stack.length > 0 && guard < maxTraversal) {
-      const node = stack.pop();
-      if (!node) {
-        guard += 1;
-        continue;
-      }
-      if (isInspectableTag(node.tag)) {
-        const legacyId = String(inspectableIndex);
-        const stableId = getStableFiberId(node, fiberIdMap);
-        if (stableId === targetId || legacyId === targetId) return node;
-        inspectableIndex += 1;
-      }
-      if (node.sibling) stack.push(node.sibling);
-      if (node.child) stack.push(node.child);
-      guard += 1;
-    }
-
-    return null;
-  }
-
-  /** 조건에 맞는 대상을 탐색 */
-  function findFiberByComponentIdAcrossDocument(targetId: string | null | undefined, fiberIdMap: WeakMap<object, string>) {
-    if (!targetId) return null;
-    const rootEl = document.body || document.documentElement;
-    if (!rootEl) return null;
-
-    const queue = [rootEl];
-    let cursor = 0;
-    let guard = 0;
-    const maxScan = 8000;
-    const visitedRoots = typeof WeakSet === "function" ? new WeakSet() : [];
-
-    function hasVisited(root: FiberLike | null | undefined) {
-      if (!root) return true;
-      if (visitedRoots instanceof WeakSet) return visitedRoots.has(root);
-      for (let i = 0; i < visitedRoots.length; i += 1) {
-        if (visitedRoots[i] === root) return true;
-      }
-      return false;
-    }
-
-    function markVisited(root: FiberLike | null | undefined) {
-      if (!root) return;
-      if (visitedRoots instanceof WeakSet) {
-        visitedRoots.add(root);
-        return;
-      }
-      visitedRoots.push(root);
-    }
-
-    while (cursor < queue.length && guard < maxScan) {
-      const current = queue[cursor++];
-      const fiber = getReactFiberFromElement(current);
-      if (fiber) {
-        const rootFiber = findRootFiber(fiber);
-        if (rootFiber && !hasVisited(rootFiber)) {
-          markVisited(rootFiber);
-          const found = findFiberByComponentId(rootFiber, targetId, fiberIdMap);
-          if (found) return found;
-        }
-      }
-
-      const children = current.children;
-      if (children && children.length) {
-        for (let i = 0; i < children.length; i += 1) {
-          queue.push(children[i]);
-        }
-      }
-      guard += 1;
-    }
-
-    return null;
   }
 
   /** 경로 기준 inspect 동작을 수행 */
