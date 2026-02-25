@@ -175,7 +175,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectDomInfo.ts`: fiber -> host element 탐색 및 DOM selector/path/containsTarget 계산 전담
 - `pageAgentInspectTarget.ts`: selector/pickPoint 기준 target element/nearest/root 해석과 inspectPath 대상 fiber fallback 탐색 전담
 - `pageAgentInspectComponentWalk.ts`: root fiber DFS 순회와 component row payload 구성, target match 후보 인덱스 계산 전담
-- `pageAgentInspect.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
+- `pageAgentInspect.ts`: inspect flow factory 결선(`components/path`)과 dependency 주입 전담
 
 ## 6.5 pageAgent Inspect 모듈 분리 규칙
 
@@ -183,6 +183,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectPathValue.ts`: `reactInspectPath` path 순회와 collection token 해석 전담
 - `pageAgentInspectPathMode.ts`: `reactInspectPath` mode별 serialize/function inspect 응답 구성 전담
 - `pageAgentInspectPathFlow.ts`: `reactInspectPath` 대상 fiber 해석 + path resolution + mode 응답 조립 오케스트레이션 전담
+- `pageAgentInspectComponentsFlow.ts`: `reactInspect` root 해석 + fiber walk + selectedIndex 계산 오케스트레이션 전담
 - `pageAgentInspectDomInfo.ts`: host element 탐색 캐시/순환 방지와 DOM 메타데이터(selector/path/tag/containsTarget) 계산 전담
 - `pageAgentInspectTarget.ts`: target element/nearest/root resolution과 inspectPath targetFiber 조회 fallback 전담
 - `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산 전담

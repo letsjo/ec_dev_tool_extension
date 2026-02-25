@@ -1,12 +1,7 @@
 // @ts-nocheck
 import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
+import { createInspectReactComponentsFlow } from "./pageAgentInspectComponentsFlow";
 import { createInspectReactPathFlow } from "./pageAgentInspectPathFlow";
-import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
-import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
-import {
-  resolveInspectRootContext,
-} from "./pageAgentInspectTarget";
-import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
 
 type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
@@ -105,114 +100,28 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
     registerFunctionForInspect,
   });
 
-  /** 경로 기준 inspect 동작을 수행 */
-  function inspectReactComponents(args: AnyRecord | null | undefined) {
-    const selector = typeof args?.selector === "string" ? args.selector : "";
-    const pickPoint = args?.pickPoint;
-    const includeSerializedData = args?.includeSerializedData !== false;
-    const selectedComponentId = typeof args?.selectedComponentId === "string" && args.selectedComponentId
-      ? args.selectedComponentId
-      : null;
-
-    try {
-      const resolvedRoot = resolveInspectRootContext({
-        selector,
-        pickPoint,
-        resolveTargetElement,
-        findNearestFiber,
-        findAnyFiberInDocument,
-        findRootFiber,
-      });
-      if (!resolvedRoot.ok) {
-        if (resolvedRoot.reason === "missingNearest") {
-          return { error: "React fiber를 찾을 수 없습니다. (React 16+ 필요)", selector, pickPoint };
-        }
-        return { error: "React root fiber를 찾을 수 없습니다.", selector };
-      }
-      const { targetEl, nearest } = resolvedRoot;
-      let { rootFiber } = resolvedRoot;
-
-      const hostCache = new Map();
-      const visiting = new Set();
-      const fiberIdMap = getFiberIdMap();
-
-      if (selectedComponentId && !includeSerializedData && !selector && !rootHasComponentId(rootFiber, selectedComponentId, fiberIdMap)) {
-        const matchedRoot = findRootFiberByComponentId(selectedComponentId, fiberIdMap);
-        if (matchedRoot) {
-          rootFiber = matchedRoot;
-        }
-      }
-
-      const walked = walkInspectableComponents({
-        rootFiber,
-        targetEl,
-        includeSerializedData,
-        selectedComponentId,
-        maxTraversal,
-        maxComponents,
-        isInspectableTag,
-        getDomInfoForFiber(fiber) {
-          return getDomInfoForFiber({
-            fiber,
-            hostCache,
-            visiting,
-            selectedEl: targetEl,
-            buildCssSelector,
-            getElementPath,
-          });
-        },
-        getStableFiberId,
-        fiberIdMap,
-        getHooksInfo,
-        getHooksCount,
-        serializePropsForFiber,
-        makeSerializer,
-        getFiberName,
-        getFiberKind,
-      });
-      const { components, idByFiber, targetMatchedIndex } = walked;
-
-      if (components.length === 0) {
-        return { error: "분석 가능한 React 컴포넌트를 찾지 못했습니다.", selector };
-      }
-
-      const preferredFiber = findPreferredSelectedFiber(nearest.fiber);
-      const selectedIndex = resolveSelectedComponentIndex({
-        components,
-        idByFiber,
-        preferredFiber,
-        targetMatchedIndex,
-        resolvePreferredFiberDomInfo() {
-          return preferredFiber
-            ? getDomInfoForFiber({
-              fiber: preferredFiber,
-              hostCache,
-              visiting,
-              selectedEl: targetEl,
-              buildCssSelector,
-              getElementPath,
-            })
-            : null;
-        },
-      });
-
-      return {
-        selector,
-        selectedIndex,
-        sourceElement: nearest.sourceElement ? {
-          selector: buildCssSelector(nearest.sourceElement),
-          domPath: getElementPath(nearest.sourceElement),
-          tagName: String(nearest.sourceElement.tagName || "").toLowerCase(),
-        } : null,
-        rootSummary: {
-          totalComponents: components.length,
-        },
-        components,
-      };
-    } catch (e) {
-      return { error: String(e && e.message) };
-    }
-  }
+  const inspectReactComponents = createInspectReactComponentsFlow({
+    maxTraversal,
+    maxComponents,
+    buildCssSelector,
+    getElementPath,
+    resolveTargetElement,
+    findNearestFiber,
+    findAnyFiberInDocument,
+    findRootFiber,
+    findPreferredSelectedFiber,
+    getFiberIdMap,
+    rootHasComponentId,
+    findRootFiberByComponentId,
+    isInspectableTag,
+    getStableFiberId,
+    getHooksInfo,
+    getHooksCount,
+    serializePropsForFiber,
+    makeSerializer,
+    getFiberName,
+    getFiberKind,
+  });
 
   return {
     inspectReactComponents,
