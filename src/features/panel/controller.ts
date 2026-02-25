@@ -65,7 +65,6 @@ import {
   type FetchReactInfoOptions,
 } from './reactInspector/fetchOptions';
 import {
-  resolveInspectPathLookup as resolveInspectPathLookupValue,
   resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
   resolveStoredLookup as resolveStoredLookupValue,
   type RuntimeRefreshLookup,
@@ -81,6 +80,10 @@ import {
   buildOpenFunctionInSourcesSuccessStatusText as buildOpenFunctionInSourcesSuccessStatusTextValue,
   resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
 } from './reactInspector/openInSources';
+import {
+  buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
+  type ReactInspectPathMode,
+} from './reactInspector/pathRequest';
 import {
   parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
   parseSerializedPathResponse as parseSerializedPathResponseValue,
@@ -416,8 +419,6 @@ const {
   },
 });
 
-type ReactInspectPathMode = 'inspectFunction' | 'serializeValue';
-
 interface RequestReactInspectPathOptions {
   component: ReactComponentInfo;
   section: JsonSectionKind;
@@ -432,20 +433,17 @@ interface RequestReactInspectPathOptions {
  * selector/pickPoint fallback 계산과 응답 형식 검증을 한 곳에서 처리한다.
  */
 function requestReactInspectPath(options: RequestReactInspectPathOptions) {
-  const lookup = resolveInspectPathLookupValue(options.component.domSelector, lastReactLookup);
+  const args = buildReactInspectPathRequestArgsValue({
+    component: options.component,
+    section: options.section,
+    path: options.path,
+    mode: options.mode,
+    serializeLimit: options.serializeLimit,
+    storedLookup: lastReactLookup,
+  });
   callInspectedPageAgent(
     'reactInspectPath',
-    {
-      componentId: options.component.id,
-      selector: lookup.selector,
-      pickPoint: lookup.pickPoint,
-      section: options.section,
-      path: options.path,
-      mode: options.mode,
-      ...(typeof options.serializeLimit === 'number'
-        ? { serializeLimit: options.serializeLimit }
-        : {}),
-    },
+    args,
     (res, errorText) => {
       const failure = resolveReactInspectPathRequestFailureValue(res, errorText);
       if (failure) {
