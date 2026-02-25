@@ -216,6 +216,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/toggleBar.ts`
 - `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/splitResize.ts`
+- `src/features/panel/workspace/splitResizeSession.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
 - `src/features/panel/workspace/statePersistence.ts`
 - `src/features/panel/workspace/storage.ts`
@@ -256,6 +257,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `toggleBar.ts`: footer 토글바 active/aria 상태 렌더와 panel summary 토글 버튼(▾/▸) 문구 동기화 전담
 - `panelSizing.ts`: 접힘 split row(`grid-template-rows`) 계산과 패널 body width/height 동기화 전담
 - `splitResize.ts`: split divider pointerdown 상태 복원, pointer 좌표->ratio 계산, split ratio CSS 반영 전담
+- `splitResizeSession.ts`: split resize drag 시작/종료 시 전역 pointer 리스너와 body cursor/userSelect 상태 제어 전담
 - `scrollSnapshot.ts`: 레이아웃 patch 전후 스크롤 위치 캡처/복원 로직 전담
 - `statePersistence.ts`: workspace panel 상태(`visible|closed`)와 layout tree의 localStorage 저장/복원 전담
 - `storage.ts`: 워크스페이스 localStorage read/write 유틸
@@ -511,6 +513,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/toggleBar.ts`
 - `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/splitResize.ts`
+- `src/features/panel/workspace/splitResizeSession.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
 - `src/features/panel/workspace/statePersistence.ts`
 - `src/features/panel/workspace/storage.ts`

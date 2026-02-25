@@ -63,6 +63,10 @@ import {
   type WorkspaceResizeDragState,
 } from './splitResize';
 import {
+  startWorkspaceSplitResizeSession as startWorkspaceSplitResizeSessionValue,
+  stopWorkspaceSplitResizeSession as stopWorkspaceSplitResizeSessionValue,
+} from './splitResizeSession';
+import {
   persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,
   restoreWorkspaceStateSnapshot as restoreWorkspaceStateSnapshotValue,
 } from './statePersistence';
@@ -502,15 +506,11 @@ export function createWorkspaceLayoutManager({
     const state = workspaceResizeDragState;
     if (!state) return;
 
-    window.removeEventListener('pointermove', onWorkspaceSplitResizePointerMove);
-    window.removeEventListener('pointerup', onWorkspaceSplitResizePointerUp);
-    window.removeEventListener('pointercancel', onWorkspaceSplitResizePointerCancel);
-
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-
-    const dividerEl = state.splitEl.querySelector<HTMLElement>(':scope > .workspace-split-divider');
-    dividerEl?.classList.remove('dragging');
+    stopWorkspaceSplitResizeSessionValue(state, {
+      onPointerMove: onWorkspaceSplitResizePointerMove,
+      onPointerUp: onWorkspaceSplitResizePointerUp,
+      onPointerCancel: onWorkspaceSplitResizePointerCancel,
+    });
 
     if (shouldPersist) {
       workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(
@@ -540,17 +540,11 @@ export function createWorkspaceLayoutManager({
     if (!nextDragState) return;
     workspaceResizeDragState = nextDragState;
 
-    const dividerEl = nextDragState.splitEl.querySelector<HTMLElement>(
-      ':scope > .workspace-split-divider',
-    );
-
-    dividerEl?.classList.add('dragging');
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = nextDragState.axis === 'row' ? 'col-resize' : 'row-resize';
-
-    window.addEventListener('pointermove', onWorkspaceSplitResizePointerMove);
-    window.addEventListener('pointerup', onWorkspaceSplitResizePointerUp);
-    window.addEventListener('pointercancel', onWorkspaceSplitResizePointerCancel);
+    startWorkspaceSplitResizeSessionValue(nextDragState, {
+      onPointerMove: onWorkspaceSplitResizePointerMove,
+      onPointerUp: onWorkspaceSplitResizePointerUp,
+      onPointerCancel: onWorkspaceSplitResizePointerCancel,
+    });
     event.preventDefault();
   }
 
