@@ -1,14 +1,12 @@
 // @ts-nocheck
 import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
+import { createInspectReactPathFlow } from "./pageAgentInspectPathFlow";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
-import { resolveInspectPathValue } from "./pageAgentInspectPathValue";
 import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
 import {
-  resolveInspectPathTargetFiber,
   resolveInspectRootContext,
 } from "./pageAgentInspectTarget";
 import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
-import { resolveInspectPathModeResponse } from "./pageAgentInspectPathMode";
 
 type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
@@ -91,6 +89,20 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
     getStableFiberId,
     getReactFiberFromElement,
     findRootFiber,
+  });
+
+  const inspectReactPath = createInspectReactPathFlow({
+    resolveTargetElement,
+    findNearestFiber,
+    findAnyFiberInDocument,
+    findRootFiber,
+    getFiberIdMap,
+    findFiberByComponentId,
+    findFiberByComponentIdAcrossDocument,
+    getHooksRootValue,
+    resolveSpecialCollectionPathSegment,
+    makeSerializer,
+    registerFunctionForInspect,
   });
 
   /** 경로 기준 inspect 동작을 수행 */
@@ -199,72 +211,6 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
       };
     } catch (e) {
       return { error: String(e && e.message) };
-    }
-  }
-
-  /** 경로 기준 inspect 동작을 수행 */
-  function inspectReactPath(args: AnyRecord | null | undefined) {
-    const componentId = typeof args?.componentId === "string" ? args.componentId : "";
-    const selector = typeof args?.selector === "string" ? args.selector : "";
-    const pickPoint = args?.pickPoint;
-    const section = args?.section === "hooks" ? "hooks" : "props";
-    const path = Array.isArray(args?.path) ? args.path : [];
-    const mode = args?.mode === "inspectFunction" ? "inspectFunction" : "serializeValue";
-    const serializeLimit = Number.isFinite(args?.serializeLimit) ? Math.max(1000, Math.floor(args.serializeLimit)) : 45000;
-
-    try {
-      if (!componentId) {
-        return { ok: false, error: "componentId가 필요합니다." };
-      }
-
-      const resolvedRoot = resolveInspectRootContext({
-        selector,
-        pickPoint,
-        resolveTargetElement,
-        findNearestFiber,
-        findAnyFiberInDocument,
-        findRootFiber,
-      });
-      if (!resolvedRoot.ok) {
-        if (resolvedRoot.reason === "missingNearest") {
-          return { ok: false, error: "React fiber를 찾지 못했습니다." };
-        }
-        return { ok: false, error: "React root fiber를 찾지 못했습니다." };
-      }
-      const fiberIdMap = getFiberIdMap();
-      const { rootFiber } = resolvedRoot;
-      const targetFiber = resolveInspectPathTargetFiber({
-        rootFiber,
-        componentId,
-        fiberIdMap,
-        findFiberByComponentId,
-        findFiberByComponentIdAcrossDocument,
-      });
-      if (!targetFiber) {
-        return { ok: false, error: "대상 컴포넌트를 찾지 못했습니다." };
-      }
-
-      const rootValue = section === "props"
-        ? targetFiber.memoizedProps
-        : getHooksRootValue(targetFiber, { includeCustomGroups: true });
-      const pathResolved = resolveInspectPathValue({
-        initialValue: rootValue,
-        path,
-        resolveSpecialCollectionPathSegment,
-      });
-      if (!pathResolved.ok) {
-        return pathResolved;
-      }
-      const value = pathResolved.value;
-      return resolveInspectPathModeResponse({
-        mode,
-        value,
-        serializeLimit,
-        makeSerializer,
-        registerFunctionForInspect,
-      });
-    } catch (e) {
-      return { ok: false, error: String(e && e.message) };
     }
   }
 

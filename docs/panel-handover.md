@@ -182,6 +182,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectSelection.ts`: inspect 결과 selectedIndex 계산 로직 전담
 - `pageAgentInspectPathValue.ts`: `reactInspectPath` path 순회와 collection token 해석 전담
 - `pageAgentInspectPathMode.ts`: `reactInspectPath` mode별 serialize/function inspect 응답 구성 전담
+- `pageAgentInspectPathFlow.ts`: `reactInspectPath` 대상 fiber 해석 + path resolution + mode 응답 조립 오케스트레이션 전담
 - `pageAgentInspectDomInfo.ts`: host element 탐색 캐시/순환 방지와 DOM 메타데이터(selector/path/tag/containsTarget) 계산 전담
 - `pageAgentInspectTarget.ts`: target element/nearest/root resolution과 inspectPath targetFiber 조회 fallback 전담
 - `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산 전담
