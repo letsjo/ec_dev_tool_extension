@@ -145,7 +145,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 6.1 pageAgent DOM 모듈 분리 규칙
 
-- `pageAgentDom.ts`: DOM selector/path 계산, DOM 트리 직렬화, component highlight/hover preview 상태 복원 전담
+- `pageAgentDomTree.ts`: DOM tree 직렬화(getDomTree) 전담
+- `pageAgentDom.ts`: DOM selector/path 계산, DOM tree handler 결선, component highlight/hover preview 상태 복원 전담
 - `pageAgent.ts`: 요청 method 라우팅/핸들러 조립 전담
 
 ## 6.2 pageAgent Bridge 모듈 분리 규칙
@@ -626,5 +627,6 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, internal meta 필터링
+  - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 대상 미발견 에러 처리와 DOM tree 직렬화 기본 경로
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
   - `tests/content/pageAgentSerializationStrategies.test.ts`: array/map/set/object serializer strategy의 truncation/예외 처리/내부키 매핑
