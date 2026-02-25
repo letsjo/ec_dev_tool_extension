@@ -64,7 +64,7 @@
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
   - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
-  - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/lookup.ts`, `reactInspector/searchStatus.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/selectionModel.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/lookup 저장·refresh lookup 계산·inspectPath fallback/검색 캐시 생성·보정/검색 상태 문구/placeholder 상태/선택 시퀀스/선택 인덱스 계산/상세(JSON/hook) 렌더 로직 위임
+  - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/lookup.ts`, `reactInspector/pathResponse.ts`, `reactInspector/searchStatus.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/selectionModel.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/lookup 저장·refresh lookup 계산·inspectPath fallback/inspectPath 성공 payload 파싱/검색 캐시 생성·보정/검색 상태 문구/placeholder 상태/선택 시퀀스/선택 인덱스 계산/상세(JSON/hook) 렌더 로직 위임
   - `controller.ts`의 `applyReactInspectResult`는 내부를 3단계(data stage → selection stage → render stage) 헬퍼로 분리해 오케스트레이션만 담당
   - `controller.ts`의 `fetchReactInfo`는 request stage(`applyReactFetchRequestStage`)와 response stage(`applyReactFetchResponseStage`)로 분리해 오케스트레이션만 담당
   - `controller.ts`의 reactInspectPath 호출(`inspectFunctionAtPath`, `fetchSerializedValueAtPath`)은 공통 helper(`requestReactInspectPath`)로 요청/응답 검증 규칙을 재사용
@@ -229,6 +229,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `reactInspector/applyFlow.ts`: apply 옵션 정규화, preserveCollapsed 기준 접힘 상태 복원/초기화, 상태 문구·후속 렌더 액션 결정 전담
 - `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, runtime refresh/element selection 프리셋 팩토리 전담
 - `reactInspector/lookup.ts`: `lastReactLookup` 저장 갱신(keepLookup 규칙), runtime refresh 기본 lookup 계산, inspectPath selector/pickPoint fallback 계산 전담
+- `reactInspector/pathResponse.ts`: `reactInspectPath` 성공 응답(`inspectFunction`, `serializeValue`) payload 파싱과 기본값 규칙 전담
 - `reactInspector/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
 - `reactInspector/selection.ts`: 선택 옵션 정규화, 선택 index 적용 후 렌더/스크롤/상세 지연조회/DOM 하이라이트 시퀀스 전담
@@ -384,6 +385,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/reactInspector/applyFlow.ts`
 - `src/features/panel/reactInspector/fetchOptions.ts`
 - `src/features/panel/reactInspector/lookup.ts`
+- `src/features/panel/reactInspector/pathResponse.ts`
 - `src/features/panel/reactInspector/searchStatus.ts`
 - `src/features/panel/reactInspector/viewState.ts`
 - `src/features/panel/reactInspector/selection.ts`

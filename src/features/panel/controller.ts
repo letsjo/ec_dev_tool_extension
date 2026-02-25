@@ -71,6 +71,10 @@ import {
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import {
+  parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
+  parseSerializedPathResponse as parseSerializedPathResponseValue,
+} from './reactInspector/pathResponse';
+import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
 import {
@@ -476,13 +480,12 @@ function inspectFunctionAtPath(
         setReactStatus('함수 이동 실패: 알 수 없는 오류', true);
         return;
       }
-      const name = typeof res.name === 'string' ? res.name : '(anonymous)';
-      const inspectRefKey = typeof res.inspectRefKey === 'string' ? res.inspectRefKey : '';
-      if (!inspectRefKey) {
+      const payload = parseInspectFunctionPathResponseValue(res);
+      if (!payload) {
         setReactStatus('함수 이동 실패: inspect reference를 찾지 못했습니다.', true);
         return;
       }
-      openFunctionInSources(inspectRefKey, name);
+      openFunctionInSources(payload.inspectRefKey, payload.functionName);
     },
   });
 }
@@ -533,7 +536,7 @@ function fetchSerializedValueAtPath(
         onDone(null);
         return;
       }
-      onDone('value' in res ? (res as { value: unknown }).value : null);
+      onDone(parseSerializedPathResponseValue(res));
     },
   });
 }
