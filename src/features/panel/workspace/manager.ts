@@ -58,10 +58,10 @@ import {
   createWorkspaceResizeDragStateFromTarget as createWorkspaceResizeDragStateFromTargetValue,
   type WorkspaceResizeDragState,
 } from './splitResize';
-import { readStoredJson, writeStoredJson } from './storage';
-
-const WORKSPACE_LAYOUT_STORAGE_KEY = 'ecDevTool.workspaceLayout.v1';
-const WORKSPACE_PANEL_STATE_STORAGE_KEY = 'ecDevTool.workspacePanelState.v1';
+import {
+  persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,
+  restoreWorkspaceStateSnapshot as restoreWorkspaceStateSnapshotValue,
+} from './statePersistence';
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -118,11 +118,7 @@ export function createWorkspaceLayoutManager({
    * - split/panel 트리 레이아웃
    */
   function persistWorkspaceState() {
-    const serializablePanelState = Object.fromEntries(
-      WORKSPACE_PANEL_IDS.map((panelId) => [panelId, workspacePanelStateById.get(panelId) ?? 'visible']),
-    ) as Record<WorkspacePanelId, WorkspacePanelState>;
-    writeStoredJson(WORKSPACE_PANEL_STATE_STORAGE_KEY, serializablePanelState);
-    writeStoredJson(WORKSPACE_LAYOUT_STORAGE_KEY, workspaceLayoutRoot);
+    persistWorkspaceStateSnapshotValue(workspacePanelStateById, workspaceLayoutRoot);
   }
 
   /**
@@ -130,23 +126,9 @@ export function createWorkspaceLayoutManager({
    * 과거 버전의 `minimized` 값은 현재 모델(`visible|closed`)로 안전 변환한다.
    */
   function restoreWorkspaceState() {
-    const storedState = readStoredJson<Record<string, unknown>>(WORKSPACE_PANEL_STATE_STORAGE_KEY);
-    workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
-    WORKSPACE_PANEL_IDS.forEach((panelId) => {
-      const raw = storedState?.[panelId];
-      if (raw === 'visible' || raw === 'closed') {
-        workspacePanelStateById.set(panelId, raw);
-        return;
-      }
-      if (raw === 'minimized') {
-        workspacePanelStateById.set(panelId, 'visible');
-        return;
-      }
-      workspacePanelStateById.set(panelId, 'visible');
-    });
-
-    const storedLayout = readStoredJson<unknown>(WORKSPACE_LAYOUT_STORAGE_KEY);
-    workspaceLayoutRoot = parseWorkspaceLayoutNode(storedLayout) ?? createDefaultWorkspaceLayout();
+    const restored = restoreWorkspaceStateSnapshotValue();
+    workspacePanelStateById = restored.workspacePanelStateById;
+    workspaceLayoutRoot = restored.workspaceLayoutRoot;
   }
 
   /** 화면 요소를 렌더링 */
