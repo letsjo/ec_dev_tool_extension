@@ -1,4 +1,4 @@
-import { isWorkspacePanelId, WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '../workspacePanels';
+import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
 import {
   appendPanelToWorkspaceLayout,
   collectPanelIdsFromLayout,
@@ -21,26 +21,12 @@ import {
   showWorkspaceDockPreview,
 } from './dockPreview';
 import {
-  captureWorkspaceScrollSnapshots,
-  restoreWorkspaceScrollSnapshots,
-} from './scrollSnapshot';
-import {
-  syncWorkspacePanelBodySizes,
-  syncWorkspaceSplitCollapsedRows,
-} from './panelSizing';
-import {
   bindWorkspaceInteractionBindings,
 } from './interactionBindings';
 import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
 import { createWorkspaceDragDropFlow } from './dragDropFlow';
-import {
-  renderWorkspacePanelToggleBar,
-  updateWorkspacePanelControlState,
-} from './toggleBar';
-import {
-  resetWorkspacePanelSplitClasses,
-} from './layoutDom';
-import { renderWorkspaceLayoutPipeline } from './renderPipeline';
+import { syncWorkspacePanelBodySizes } from './panelSizing';
+import { createWorkspaceRenderFlow } from './renderFlow';
 import {
   applyWorkspaceSplitRatioStyle,
   computeWorkspaceResizeRatioFromPointer,
@@ -103,15 +89,15 @@ export function createWorkspaceLayoutManager({
     });
   }
 
-  /** 레이아웃을 재구성하지 않고 패널 접기/펼치기 상태만 반영 */
-  function toggleWorkspacePanelOpenState(panelId: WorkspacePanelId) {
-    const panelEl = workspacePanelElements.get(panelId);
-    if (!panelEl || panelEl.hidden) return;
-    panelEl.open = !panelEl.open;
-    updateWorkspacePanelControlState(workspacePanelElements, panelId);
-    syncWorkspaceSplitCollapsedRows(panelContentEl);
-    syncWorkspacePanelBodySizes(workspacePanelElements);
-  }
+  const { renderWorkspaceLayout, toggleWorkspacePanelOpenState } = createWorkspaceRenderFlow({
+    panelContentEl,
+    workspaceDockPreviewEl,
+    workspacePanelToggleBarEl,
+    workspacePanelElements,
+    getWorkspaceLayoutRoot: () => workspaceLayoutRoot,
+    getWorkspacePanelStateById: () => workspacePanelStateById,
+    reconcileWorkspaceLayout,
+  });
 
   /** 초기화 */
   function initWorkspacePanelBodySizeObserver() {
@@ -127,41 +113,6 @@ export function createWorkspaceLayoutManager({
     workspacePanelElements.forEach((panelEl) => {
       workspacePanelBodySizeObserver?.observe(panelEl);
     });
-  }
-
-  /**
-   * 워크스페이스 레이아웃 렌더 파이프라인.
-   * 1) 패널 가시 상태를 DOM에 먼저 반영한다.
-   * 2) split 트리를 patch(재사용 우선)해서 DOM churn을 최소화한다.
-   * 3) 접힘 높이/토글바/패널 body 사이즈/스크롤 위치를 후처리로 복원한다.
-   */
-  function renderWorkspaceLayout() {
-    resetWorkspacePanelSplitClasses(workspacePanelElements);
-    reconcileWorkspaceLayout();
-
-    WORKSPACE_PANEL_IDS.forEach((panelId) => {
-      const panelEl = workspacePanelElements.get(panelId);
-      if (!panelEl) return;
-      const state = workspacePanelStateById.get(panelId) ?? 'visible';
-      panelEl.hidden = state !== 'visible';
-      panelEl.dataset.panelState = state;
-      updateWorkspacePanelControlState(workspacePanelElements, panelId);
-    });
-
-    const scrollSnapshots = captureWorkspaceScrollSnapshots(panelContentEl);
-    const renderResult = renderWorkspaceLayoutPipeline({
-      panelContentEl,
-      workspaceDockPreviewEl,
-      workspaceLayoutRoot,
-      workspacePanelElements,
-    });
-
-    if (renderResult.hasLayoutRoot) {
-      syncWorkspaceSplitCollapsedRows(panelContentEl);
-    }
-    renderWorkspacePanelToggleBar(workspacePanelToggleBarEl, workspacePanelStateById);
-    syncWorkspacePanelBodySizes(workspacePanelElements);
-    restoreWorkspaceScrollSnapshots(scrollSnapshots);
   }
 
   /**
