@@ -252,6 +252,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/interactionBindings.ts`
 - `src/features/panel/workspace/toggleBar.ts`
 - `src/features/panel/workspace/panelSizing.ts`
+- `src/features/panel/workspace/panelBodySizeObserver.ts`
 - `src/features/panel/workspace/splitResize.ts`
 - `src/features/panel/workspace/splitResizeSession.ts`
 - `src/features/panel/workspace/resizeFlow.ts`
@@ -308,6 +309,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `interactionBindings.ts`: panel/container 이벤트 바인딩 묶음 조립과 통합 unbind cleanup 반환 전담
 - `toggleBar.ts`: footer 토글바 active/aria 상태 렌더와 panel summary 토글 버튼(▾/▸) 문구 동기화 전담
 - `panelSizing.ts`: 접힘 split row(`grid-template-rows`) 계산과 패널 body width/height 동기화 전담
+- `panelBodySizeObserver.ts`: workspace panel/body `ResizeObserver` start/stop 생명주기와 observe 대상(panel content + panel elements) 결선 전담
 - `splitResize.ts`: split divider pointerdown 상태 복원, pointer 좌표->ratio 계산, split ratio CSS 반영 전담
 - `splitResizeSession.ts`: split resize drag 시작/종료 시 전역 pointer 리스너와 body cursor/userSelect 상태 제어 전담
 - `resizeFlow.ts`: split resize pointer down/move/up/cancel 이벤트 전이와 split ratio persist 콜백 오케스트레이션 전담
@@ -612,6 +614,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/interactionBindings.ts`
 - `src/features/panel/workspace/toggleBar.ts`
 - `src/features/panel/workspace/panelSizing.ts`
+- `src/features/panel/workspace/panelBodySizeObserver.ts`
 - `src/features/panel/workspace/splitResize.ts`
 - `src/features/panel/workspace/splitResizeSession.ts`
 - `src/features/panel/workspace/resizeFlow.ts`
@@ -695,6 +698,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceActionHandlers.test.ts`: `actionHandlers.ts`의 summary action(toggle/close), summary 기본 click 차단, toggle bar 상태 전환 분기
   - `tests/workspace/workspaceRenderPipeline.test.ts`: `renderPipeline.ts`의 empty fallback 재사용, patch root 삽입, stale child 정리 분기
   - `tests/workspace/workspaceRenderFlow.test.ts`: `renderFlow.ts`의 panel state 반영, toggle bar 동기화, panel open toggle 분기
+  - `tests/workspace/workspacePanelBodySizeObserver.test.ts`: `panelBodySizeObserver.ts`의 observe 대상 등록과 start/stop disconnect 생명주기 분기
   - `tests/workspace/workspaceInteractionBindings.test.ts`: `interactionBindings.ts`의 panel/container 이벤트 바인딩과 cleanup unbind 분기
   - `tests/pane/paneSetters.test.ts`: `paneSetters.ts`의 output/react/dom pane setter와 list/detail empty signature 결선 분기
   - `tests/reactInspector/jsonObjectPreview.test.ts`: `jsonObjectPreview.ts`의 배열 depth collapse, entry cap, object meta key 필터 preview 분기

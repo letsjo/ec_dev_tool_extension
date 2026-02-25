@@ -27,6 +27,7 @@ import { createWorkspaceActionHandlers } from './actionHandlers';
 import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
 import { createWorkspaceDragDropFlow } from './dragDropFlow';
 import { syncWorkspacePanelBodySizes } from './panelSizing';
+import { createWorkspacePanelBodySizeObserver } from './panelBodySizeObserver';
 import { createWorkspaceRenderFlow } from './renderFlow';
 import {
   applyWorkspaceSplitRatioStyle,
@@ -67,7 +68,6 @@ export function createWorkspaceLayoutManager({
 }: WorkspaceLayoutManagerElements): WorkspaceLayoutManager {
   let workspaceLayoutRoot: WorkspaceLayoutNode | null = null;
   let workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
-  let workspacePanelBodySizeObserver: ResizeObserver | null = null;
   let unbindWorkspaceInteractions: (() => void) | null = null;
 
   /**
@@ -100,21 +100,13 @@ export function createWorkspaceLayoutManager({
     reconcileWorkspaceLayout,
   });
 
-  /** 초기화 */
-  function initWorkspacePanelBodySizeObserver() {
-    if (typeof ResizeObserver === 'undefined') return;
-    if (workspacePanelBodySizeObserver) {
-      workspacePanelBodySizeObserver.disconnect();
-    }
-
-    workspacePanelBodySizeObserver = new ResizeObserver(() => {
+  const workspacePanelBodySizeObserver = createWorkspacePanelBodySizeObserver({
+    panelContentEl,
+    workspacePanelElements,
+    onResize() {
       syncWorkspacePanelBodySizes(workspacePanelElements);
-    });
-    workspacePanelBodySizeObserver.observe(panelContentEl);
-    workspacePanelElements.forEach((panelEl) => {
-      workspacePanelBodySizeObserver?.observe(panelEl);
-    });
-  }
+    },
+  });
 
   /**
    * 단일 패널의 가시 상태를 변경하고 레이아웃 트리에 반영한다.
@@ -224,7 +216,7 @@ export function createWorkspaceLayoutManager({
       panelHandlers: panelInteractionHandlers,
       containerHandlers: containerInteractionHandlers,
     });
-    initWorkspacePanelBodySizeObserver();
+    workspacePanelBodySizeObserver.start();
     renderWorkspaceLayout();
   }
 
@@ -233,10 +225,7 @@ export function createWorkspaceLayoutManager({
     unbindWorkspaceInteractions?.();
     unbindWorkspaceInteractions = null;
 
-    if (workspacePanelBodySizeObserver) {
-      workspacePanelBodySizeObserver.disconnect();
-      workspacePanelBodySizeObserver = null;
-    }
+    workspacePanelBodySizeObserver.stop();
 
     workspaceResizeFlow.stopWorkspaceSplitResize(false);
     hideWorkspaceDockPreview(workspaceDockPreviewEl);
