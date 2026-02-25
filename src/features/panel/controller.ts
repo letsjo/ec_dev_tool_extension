@@ -48,6 +48,7 @@ import {
 } from './reactInspector/lookup';
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
 import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './reactInspector/listRenderFlow';
+import { createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue } from './reactInspector/detailRenderFlow';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
@@ -304,21 +305,25 @@ const applySearchNoResultState = createSearchNoResultStateFlowValue({
   setDomTreeEmpty,
 });
 
+const renderReactComponentDetailFlow = createReactComponentDetailRenderFlowValue({
+  readState: () => ({
+    lastReactDetailComponentId,
+    lastReactDetailRenderSignature,
+  }),
+  writeState: (update) => {
+    lastReactDetailComponentId = update.lastReactDetailComponentId;
+    lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
+  },
+  reactComponentDetailEl,
+  buildRenderSignature: buildReactComponentDetailRenderSignature,
+  clearPaneContent: clearPaneContentValue,
+  createJsonSection,
+  renderReactComponentDetailPanel: renderReactComponentDetailPanelValue,
+});
+
 /** 화면 요소를 렌더링 */
 function renderReactComponentDetail(component: ReactComponentInfo) {
-  const nextCache = renderReactComponentDetailPanelValue({
-    component,
-    cache: {
-      componentId: lastReactDetailComponentId,
-      renderSignature: lastReactDetailRenderSignature,
-    },
-    reactComponentDetailEl,
-    buildRenderSignature: buildReactComponentDetailRenderSignature,
-    clearPaneContent: clearPaneContentValue,
-    createJsonSection,
-  });
-  lastReactDetailComponentId = nextCache.componentId;
-  lastReactDetailRenderSignature = nextCache.renderSignature;
+  renderReactComponentDetailFlow(component);
 }
 
 const renderReactComponentListFlow = createReactComponentListRenderFlowValue({

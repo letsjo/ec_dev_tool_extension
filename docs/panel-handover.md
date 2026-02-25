@@ -331,6 +331,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/selectionModel.ts`: preserveSelection/selectedIndex/filterResult를 조합해 최종 선택 인덱스와 선택 변경 여부 계산 전담
 - `reactInspector/listTreeRenderer.ts`: Components Tree의 계층 구조 구성(parent/child), DOM 렌더, 접힘 토글, 스크롤 앵커 보정 전담
 - `reactInspector/detailRenderer.ts`: 선택 컴포넌트 상세 패널 DOM 렌더와 render signature 캐시 판정 전담
+- `reactInspector/detailRenderFlow.ts`: detail render cache 읽기/쓰기와 detailRenderer 호출 결선 전담
 - `reactInspector/detailApply.ts`: 선택 컴포넌트 상세 응답 병합, 검색 캐시 패치, 선택 상세 재렌더 조건 처리 전담
 - `reactInspector/detailQueueFlow.ts`: 상세 응답 병합(detailApply)과 detailFetchQueue 의존성 결선(lookup/selected/find/apply) 조립 전담
 - `reactInspector/jsonSection.ts`: props/hooks JSON 트리 오케스트레이션, 함수 inspect 링크, token/object-array 렌더러 조합 전담
@@ -611,6 +612,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - 현재 커버하는 리팩터링 축
   - `tests/reactInspector/applyResultFlow.test.ts`: `applyResultFlow.ts`의 empty/reset, no-result, list-only refresh, selection 옵션 적용 분기
   - `tests/reactInspector/listRenderFlow.test.ts`: `listRenderFlow.ts`의 empty/filter empty/signature skip/updated 강제 렌더 분기
+  - `tests/reactInspector/detailRenderFlow.test.ts`: `detailRenderFlow.ts`의 detail cache read/write와 renderer 호출 결선 분기
   - `tests/reactInspector/detailQueueFlow.test.ts`: `detailQueueFlow.ts`의 detail 병합 상태 반영과 detailFetchQueue 결선(getSelected/findById/apply) 분기
   - `tests/reactInspector/resetStateFlow.test.ts`: `resetStateFlow.ts`의 상태/캐시 초기화와 reset pane 상태 반영 분기
   - `tests/reactInspector/noResultStateFlow.test.ts`: `noResultStateFlow.ts`의 searchInput/inspectResult 문구와 hover-preview/하이라이트 처리 분기
