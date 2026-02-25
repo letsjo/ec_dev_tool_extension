@@ -7,14 +7,12 @@
  * 3. Components Tree, Inspector, Selected Element/DOM Path/DOM Tree, Raw Result를 렌더링한다.
  * 4. 스플릿/검색/선택/하이라이트/런타임 갱신 상태를 동기화한다.
  */
-import { isReactInspectResult } from '../../shared/inspector/guards';
 import type {
   ComponentFilterResult,
   JsonSectionKind,
   PickPoint,
   ReactComponentDetailResult,
   ReactComponentInfo,
-  ReactInspectResult,
 } from '../../shared/inspector/types';
 import type { WorkspacePanelId } from './workspacePanels';
 import {
@@ -38,11 +36,8 @@ import {
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
 } from './reactInspector/search';
 import {
-  buildReactInspectSuccessStatusText as buildReactInspectSuccessStatusTextValue,
-  normalizeReactInspectApplyOptions as normalizeReactInspectApplyOptionsValue,
-  shouldRenderListOnlyAfterApply as shouldRenderListOnlyAfterApplyValue,
-  type ReactInspectApplyOptions,
-} from './reactInspector/applyFlow';
+  createReactInspectResultApplyFlow as createReactInspectResultApplyFlowValue,
+} from './reactInspector/applyResultFlow';
 import {
   createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
@@ -55,13 +50,9 @@ import { createReactInspectPathBindings as createReactInspectPathBindingsValue }
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
-import { resolveReactInspectDataStage as resolveReactInspectDataStageValue } from './reactInspector/inspectDataStage';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
-import {
-  resolveNextSelection as resolveNextSelectionValue,
-} from './reactInspector/selectionModel';
 import {
   buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
@@ -107,8 +98,6 @@ let panelWorkspaceEl!: HTMLElement;
 let panelContentEl!: HTMLElement;
 let workspacePanelToggleBarEl!: HTMLDivElement;
 let workspaceDockPreviewEl!: HTMLDivElement;
-
-type ApplyReactInspectOptions = ReactInspectApplyOptions;
 
 let reactComponents: ReactComponentInfo[] = [];
 let selectedReactComponentIndex = -1;
@@ -483,91 +472,41 @@ function resetReactInspector(statusText: string, isError = false) {
   );
 }
 
-/** apply 파이프라인 2단계: 검색 필터 기준으로 최종 선택 인덱스를 결정한다. */
-function resolveReactInspectSelectionStage(
-  result: ReactInspectResult,
-  previousSelectedId: string | null,
-) {
-  const filterResult = getComponentFilterResult();
-  return resolveNextSelectionValue({
-    reactComponents,
-    filterResult,
-    previousSelectedId,
-    requestedSelectedIndex:
-      typeof result.selectedIndex === 'number' ? result.selectedIndex : undefined,
-  });
-}
-
-/** apply 파이프라인 3단계: 상태 문구 반영 후 리스트 렌더/선택 반영을 수행한다. */
-function applyReactInspectRenderStage(
-  applyOptions: ReturnType<typeof normalizeReactInspectApplyOptionsValue>,
-  nextSelection: NonNullable<ReturnType<typeof resolveNextSelectionValue>>,
-) {
-  selectedReactComponentIndex = nextSelection.selectedIndex;
-
-  setReactStatus(
-    buildReactInspectSuccessStatusTextValue(reactComponents.length, applyOptions.statusText),
-  );
-
-  if (shouldRenderListOnlyAfterApplyValue(applyOptions.refreshDetail, nextSelection.selectedChanged)) {
-    renderReactComponentList();
-    return;
-  }
-
-  selectReactComponent(selectedReactComponentIndex, {
-    highlightDom: applyOptions.highlightSelection,
-    scrollIntoView: applyOptions.scrollSelectionIntoView,
-    expandAncestors: applyOptions.expandSelectionAncestors,
-  });
-}
-
-/**
- * React inspect 응답을 상태/리스트/선택/상세 패널에 반영하는 핵심 파이프라인.
- *
- * 큰 흐름:
- * 1) 이전 선택/접힘/지문(fingerprint) 스냅샷
- * 2) 신규 컴포넌트 배열 정규화(경량 모드면 기존 props/hooks 재사용)
- * 3) 변경 감지 집합(updatedComponentIds) 계산
- * 4) 검색 필터 기준으로 유효한 선택 인덱스 재결정
- * 5) 필요 시 선택 컴포넌트 상세/하이라이트를 갱신
- */
-function applyReactInspectResult(
-  result: ReactInspectResult,
-  options: ApplyReactInspectOptions = {},
-) {
-  const applyOptions = normalizeReactInspectApplyOptionsValue(options);
-  const dataStage = resolveReactInspectDataStageValue({
-    result,
-    preserveSelection: applyOptions.preserveSelection === true,
-    preserveCollapsed: applyOptions.preserveCollapsed === true,
-    lightweight: applyOptions.lightweight === true,
-    trackUpdates: applyOptions.trackUpdates === true,
+const applyReactInspectResult = createReactInspectResultApplyFlowValue({
+  readState: () => ({
     reactComponents,
     selectedReactComponentIndex,
     collapsedComponentIds,
-  });
-  reactComponents = dataStage.reactComponents;
-  updatedComponentIds = dataStage.updatedComponentIds;
-  componentSearchIncludeDataTokens = dataStage.componentSearchIncludeDataTokens;
-  componentSearchTexts = dataStage.componentSearchTexts;
-  collapsedComponentIds = dataStage.collapsedComponentIds;
-
-  if (reactComponents.length === 0) {
-    resetReactInspector('React 컴포넌트를 찾지 못했습니다.', true);
-    return;
-  }
-
-  const nextSelection = resolveReactInspectSelectionStage(
-    result,
-    dataStage.previousSelectedId,
-  );
-  if (!nextSelection) {
-    selectedReactComponentIndex = -1;
-    applySearchNoResultState('inspectResult');
-    return;
-  }
-  applyReactInspectRenderStage(applyOptions, nextSelection);
-}
+  }),
+  writeState: (update) => {
+    if (update.reactComponents) {
+      reactComponents = update.reactComponents;
+    }
+    if (update.updatedComponentIds) {
+      updatedComponentIds = update.updatedComponentIds;
+    }
+    if (typeof update.componentSearchIncludeDataTokens === 'boolean') {
+      componentSearchIncludeDataTokens = update.componentSearchIncludeDataTokens;
+    }
+    if (update.componentSearchTexts) {
+      componentSearchTexts = update.componentSearchTexts;
+    }
+    if (update.collapsedComponentIds) {
+      collapsedComponentIds = update.collapsedComponentIds;
+    }
+    if (typeof update.selectedReactComponentIndex === 'number') {
+      selectedReactComponentIndex = update.selectedReactComponentIndex;
+    }
+  },
+  getComponentFilterResult,
+  setReactStatus,
+  renderReactComponentList,
+  selectReactComponent,
+  applySearchNoResultState: (context) => {
+    applySearchNoResultState(context);
+  },
+  resetReactInspector,
+});
 
 const { fetchReactInfo } = createReactInspectFetchFlowValue({
   callInspectedPageAgent,

@@ -296,6 +296,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/search.ts`: 검색 텍스트 생성, 검색 캐시 생성/부분 갱신/길이 보정, 필터링, 조상 경로 확장, 접힘 상태 스냅샷/복원 유틸 전담
 - `reactInspector/resultModel.ts`: reactInspect 응답 컴포넌트 정규화(경량 모드 재사용), fingerprint 기반 변경 id 집합 계산 전담
 - `reactInspector/applyFlow.ts`: apply 옵션 정규화, preserveCollapsed 기준 접힘 상태 복원/초기화, 상태 문구·후속 렌더 액션 결정 전담
+- `reactInspector/applyResultFlow.ts`: reactInspect data/selection/render 3단계 파이프라인 오케스트레이션과 controller 상태 반영 결선 전담
 - `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, runtime refresh/element selection 프리셋 팩토리 전담
 - `reactInspector/fetchFlow.ts`: `reactInspect` fetch request/response stage(lookup 저장, loading pane 전환, 브리지 호출, 응답 파이프라인 연결) 오케스트레이션 전담
 - `reactInspector/inspectDataStage.ts`: reactInspect data stage(이전 선택 id/접힘 스냅샷, 결과 모델 적용, 검색 캐시 재생성, 접힘 상태 복원) 순수 계산 전담
@@ -601,6 +602,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - 테스트 러너: `vitest` (`npm test`)
 - 설정 파일: `vitest.config.ts` (`jsdom` 환경, `tests/**/*.test.ts`)
 - 현재 커버하는 리팩터링 축
+  - `tests/reactInspector/applyResultFlow.test.ts`: `applyResultFlow.ts`의 empty/reset, no-result, list-only refresh, selection 옵션 적용 분기
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, internal meta 필터링
