@@ -591,3 +591,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/reactRuntimeHook.ts`
 - `src/background.ts`
 - `panel.html`
+
+## 12. 단위 테스트(Phase 58+)
+
+- 테스트 러너: `vitest` (`npm test`)
+- 설정 파일: `vitest.config.ts` (`jsdom` 환경, `tests/**/*.test.ts`)
+- 현재 커버하는 리팩터링 축
+  - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출

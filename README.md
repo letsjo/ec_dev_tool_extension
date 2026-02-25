@@ -11,7 +11,10 @@
 ```bash
 npm install
 npm run build
+npm test
 ```
+
+- `npm test`: Vitest 단위 테스트 실행
 
 1. Chrome에서 `chrome://extensions` 열기
 2. "개발자 모드" 켜기

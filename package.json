@@ -4,17 +4,20 @@
   "description": "Chrome DevTools panel for ec_dev_manager and other dev objects",
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.287",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "@types/chrome": "^0.0.287",
+    "jsdom": "^27.0.1",
     "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
   }
 }
