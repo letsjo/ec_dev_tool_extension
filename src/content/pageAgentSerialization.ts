@@ -3,16 +3,12 @@ import {
   getReactLikeTypeName,
   summarizeChildrenValue,
 } from "./pageAgentSerializerSummary";
+import {
+  resolveSerializerLimits,
+  type SerializerOptions,
+} from "./pageAgentSerializerOptions";
 
 type AnyRecord = Record<string, any>;
-type SerializerOptions = {
-  maxSerializeCalls?: number;
-  maxDepth?: number;
-  maxArrayLength?: number;
-  maxObjectKeys?: number;
-  maxMapEntries?: number;
-  maxSetEntries?: number;
-};
 
 type FiberLike = AnyRecord & {
   tag?: number;
@@ -29,37 +25,14 @@ export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOp
   const seenList = [];
   let nextId = 1;
 
-  const normalizedOptions =
-    typeof optionsOrMaxSerializeCalls === "number"
-      ? { maxSerializeCalls: optionsOrMaxSerializeCalls }
-      : (optionsOrMaxSerializeCalls || {});
-
-  const MAX_SERIALIZE_CALLS =
-    typeof normalizedOptions.maxSerializeCalls === "number" &&
-    normalizedOptions.maxSerializeCalls > 0
-      ? normalizedOptions.maxSerializeCalls
-      : 30000;
-  const MAX_DEPTH =
-    typeof normalizedOptions.maxDepth === "number" && normalizedOptions.maxDepth >= 0
-      ? Math.floor(normalizedOptions.maxDepth)
-      : 4;
-  const MAX_ARRAY_LENGTH =
-    typeof normalizedOptions.maxArrayLength === "number" &&
-    normalizedOptions.maxArrayLength > 0
-      ? Math.floor(normalizedOptions.maxArrayLength)
-      : 120;
-  const MAX_OBJECT_KEYS =
-    typeof normalizedOptions.maxObjectKeys === "number" && normalizedOptions.maxObjectKeys > 0
-      ? Math.floor(normalizedOptions.maxObjectKeys)
-      : 140;
-  const MAX_MAP_ENTRIES =
-    typeof normalizedOptions.maxMapEntries === "number" && normalizedOptions.maxMapEntries > 0
-      ? Math.floor(normalizedOptions.maxMapEntries)
-      : 120;
-  const MAX_SET_ENTRIES =
-    typeof normalizedOptions.maxSetEntries === "number" && normalizedOptions.maxSetEntries > 0
-      ? Math.floor(normalizedOptions.maxSetEntries)
-      : 120;
+  const {
+    maxSerializeCalls: MAX_SERIALIZE_CALLS,
+    maxDepth: MAX_DEPTH,
+    maxArrayLength: MAX_ARRAY_LENGTH,
+    maxObjectKeys: MAX_OBJECT_KEYS,
+    maxMapEntries: MAX_MAP_ENTRIES,
+    maxSetEntries: MAX_SET_ENTRIES,
+  } = resolveSerializerLimits(optionsOrMaxSerializeCalls);
 
   let serializeCalls = 0;
   let limitReached = false;
