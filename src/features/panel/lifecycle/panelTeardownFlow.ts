@@ -6,6 +6,8 @@ interface CreatePanelTeardownFlowOptions {
   setWorkspaceLayoutManager: (manager: WorkspaceLayoutManager | null) => void;
   getDestroyWheelScrollFallback: () => (() => void) | null;
   setDestroyWheelScrollFallback: (destroyer: (() => void) | null) => void;
+  getRemoveRuntimeMessageListener: () => (() => void) | null;
+  setRemoveRuntimeMessageListener: (removeListener: (() => void) | null) => void;
   runtimeRefreshScheduler: RuntimeRefreshScheduler;
   removeNavigatedListener: () => void;
 }
@@ -17,6 +19,8 @@ export function createPanelTeardownFlow(options: CreatePanelTeardownFlowOptions)
     setWorkspaceLayoutManager,
     getDestroyWheelScrollFallback,
     setDestroyWheelScrollFallback,
+    getRemoveRuntimeMessageListener,
+    setRemoveRuntimeMessageListener,
     runtimeRefreshScheduler,
     removeNavigatedListener,
   } = options;
@@ -30,6 +34,12 @@ export function createPanelTeardownFlow(options: CreatePanelTeardownFlowOptions)
     if (destroyWheelScrollFallback) {
       destroyWheelScrollFallback();
       setDestroyWheelScrollFallback(null);
+    }
+
+    const removeRuntimeMessageListener = getRemoveRuntimeMessageListener();
+    if (removeRuntimeMessageListener) {
+      removeRuntimeMessageListener();
+      setRemoveRuntimeMessageListener(null);
     }
 
     runtimeRefreshScheduler.dispose();

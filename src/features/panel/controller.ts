@@ -10,8 +10,6 @@
 import type {
   ComponentFilterResult,
   JsonSectionKind,
-  PickPoint,
-  ReactComponentDetailResult,
   ReactComponentInfo,
 } from '../../shared/inspector/types';
 import type { WorkspacePanelId } from './workspacePanels';
@@ -44,7 +42,6 @@ import {
 } from './reactInspector/fetchOptions';
 import {
   resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
-  type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
 import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './reactInspector/listRenderFlow';
@@ -56,6 +53,7 @@ import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } f
 import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './reactInspector/detailQueueFlow';
 import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './reactInspector/resetStateFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
+import { createReactInspectorControllerState } from './reactInspector/controllerState';
 import {
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
 } from './reactInspector/searchStatus';
@@ -72,6 +70,8 @@ import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } f
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
 import { renderPanelFatalErrorView as renderPanelFatalErrorViewValue } from './lifecycle/fatalErrorView';
 import { createPanelTeardownFlow as createPanelTeardownFlowValue } from './lifecycle/panelTeardownFlow';
+import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializationValue } from './lifecycle/panelWorkspaceInitialization';
+import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from './lifecycle/runtimeMessageBinding';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
@@ -100,22 +100,13 @@ let panelContentEl!: HTMLElement;
 let workspacePanelToggleBarEl!: HTMLDivElement;
 let workspaceDockPreviewEl!: HTMLDivElement;
 
-let reactComponents: ReactComponentInfo[] = [];
-let selectedReactComponentIndex = -1;
-let lastReactLookup: { selector: string; pickPoint?: PickPoint } | null = null;
-let componentSearchQuery = '';
 let pickerModeActive = false;
-let componentSearchTexts: string[] = [];
-let componentSearchIncludeDataTokens = true;
-let collapsedComponentIds = new Set<string>();
-let lastReactListRenderSignature = '';
-let lastReactDetailRenderSignature = '';
-let lastReactDetailComponentId: string | null = null;
-let updatedComponentIds = new Set<string>();
+const reactInspectorState = createReactInspectorControllerState();
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 
 let destroyWheelScrollFallback: (() => void) | null = null;
+let removeRuntimeMessageListener: (() => void) | null = null;
 let workspacePanelElements = new Map<WorkspacePanelId, HTMLDetailsElement>();
 let workspaceLayoutManager: WorkspaceLayoutManager | null = null;
 
@@ -179,13 +170,17 @@ function setReactStatus(text: string, isError = false) {
 
 /** UI 상태 또는 문구를 설정 */
 function setReactListEmpty(text: string) {
-  lastReactListRenderSignature = setPaneEmptyStateValue(reactComponentListEl, text);
+  reactInspectorState.setLastReactListRenderSignature(
+    setPaneEmptyStateValue(reactComponentListEl, text),
+  );
 }
 
 /** UI 상태 또는 문구를 설정 */
 function setReactDetailEmpty(text: string) {
-  lastReactDetailRenderSignature = setPaneEmptyStateValue(reactComponentDetailEl, text);
-  lastReactDetailComponentId = null;
+  reactInspectorState.setLastReactDetailRenderSignature(
+    setPaneEmptyStateValue(reactComponentDetailEl, text),
+  );
+  reactInspectorState.setLastReactDetailComponentId(null);
 }
 
 const reactInspectorPaneSetters = {
@@ -230,7 +225,7 @@ const {
 const { inspectFunctionAtPath, fetchSerializedValueAtPath } =
   createReactInspectPathBindingsValue({
     callInspectedPageAgent,
-    getStoredLookup: () => lastReactLookup,
+    getStoredLookup: reactInspectorState.getStoredLookup,
     setReactStatus,
   });
 
@@ -245,10 +240,10 @@ function buildReactListRenderSignature(
   matchedIndexSet: Set<number>,
 ): string {
   return buildReactListRenderSignatureValue(
-    reactComponents,
-    componentSearchQuery,
-    selectedReactComponentIndex,
-    collapsedComponentIds,
+    reactInspectorState.getReactComponents(),
+    reactInspectorState.getComponentSearchQuery(),
+    reactInspectorState.getSelectedReactComponentIndex(),
+    reactInspectorState.getCollapsedComponentIds(),
     filterResult,
     matchedIndexSet,
   );
@@ -273,27 +268,37 @@ function createJsonSection(
 
 /** 필요한 값/상태를 계산해 반환 */
 function getComponentFilterResult(): ComponentFilterResult {
-  componentSearchTexts = ensureComponentSearchTextCacheValue(
-    reactComponents,
-    componentSearchQuery,
-    componentSearchTexts,
-    componentSearchIncludeDataTokens,
+  reactInspectorState.setComponentSearchTexts(
+    ensureComponentSearchTextCacheValue(
+      reactInspectorState.getReactComponents(),
+      reactInspectorState.getComponentSearchQuery(),
+      reactInspectorState.getComponentSearchTexts(),
+      reactInspectorState.getComponentSearchIncludeDataTokens(),
+    ),
   );
-  return getComponentFilterResultValue(reactComponents, componentSearchQuery, componentSearchTexts);
+  return getComponentFilterResultValue(
+    reactInspectorState.getReactComponents(),
+    reactInspectorState.getComponentSearchQuery(),
+    reactInspectorState.getComponentSearchTexts(),
+  );
 }
 
 /** 파생 데이터나 요약 값을 구성 */
 function buildComponentIndexById(): Map<string, number> {
-  return buildComponentIndexByIdValue(reactComponents);
+  return buildComponentIndexByIdValue(reactInspectorState.getReactComponents());
 }
 
 /** 부모 경로를 확장 */
 function expandAncestorPaths(indices: number[]) {
-  expandAncestorPathsValue(reactComponents, indices, collapsedComponentIds);
+  expandAncestorPathsValue(
+    reactInspectorState.getReactComponents(),
+    indices,
+    reactInspectorState.getCollapsedComponentIds(),
+  );
 }
 
 const applySearchNoResultState = createSearchNoResultStateFlowValue({
-  getTotalComponentCount: () => reactComponents.length,
+  getTotalComponentCount: () => reactInspectorState.getReactComponents().length,
   renderReactComponentList,
   setReactDetailEmpty,
   setReactStatus,
@@ -304,14 +309,8 @@ const applySearchNoResultState = createSearchNoResultStateFlowValue({
 });
 
 const renderReactComponentDetailFlow = createReactComponentDetailRenderFlowValue({
-  readState: () => ({
-    lastReactDetailComponentId,
-    lastReactDetailRenderSignature,
-  }),
-  writeState: (update) => {
-    lastReactDetailComponentId = update.lastReactDetailComponentId;
-    lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
-  },
+  readState: reactInspectorState.readDetailRenderState,
+  writeState: reactInspectorState.writeDetailRenderState,
   reactComponentDetailEl,
   buildRenderSignature: buildReactComponentDetailRenderSignature,
   clearPaneContent: clearPaneContentValue,
@@ -325,22 +324,8 @@ function renderReactComponentDetail(component: ReactComponentInfo) {
 }
 
 const renderReactComponentListFlow = createReactComponentListRenderFlowValue({
-  readState: () => ({
-    reactComponents,
-    componentSearchQuery,
-    selectedReactComponentIndex,
-    collapsedComponentIds,
-    updatedComponentIds,
-    lastReactListRenderSignature,
-  }),
-  writeState: (update) => {
-    if (typeof update.lastReactListRenderSignature === 'string') {
-      lastReactListRenderSignature = update.lastReactListRenderSignature;
-    }
-    if (update.updatedComponentIds) {
-      updatedComponentIds = update.updatedComponentIds;
-    }
-  },
+  readState: reactInspectorState.readListRenderState,
+  writeState: reactInspectorState.writeListRenderState,
   setReactListEmpty,
   buildReactComponentListEmptyText: buildReactComponentListEmptyTextValue,
   getComponentFilterResult,
@@ -363,29 +348,25 @@ function renderReactComponentList() {
 const { detailFetchQueue } = createReactDetailQueueFlowValue({
   cooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
   callInspectedPageAgent,
-  getLookup: () => resolveRuntimeRefreshLookupValue(lastReactLookup),
-  getReactComponents: () => reactComponents,
-  setReactComponents: (nextComponents) => {
-    reactComponents = nextComponents;
-  },
-  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
-  getComponentSearchTexts: () => componentSearchTexts,
-  getComponentSearchIncludeDataTokens: () => componentSearchIncludeDataTokens,
+  getLookup: () => resolveRuntimeRefreshLookupValue(reactInspectorState.getStoredLookup()),
+  getReactComponents: reactInspectorState.getReactComponents,
+  setReactComponents: reactInspectorState.setReactComponents,
+  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
+  getComponentSearchTexts: reactInspectorState.getComponentSearchTexts,
+  getComponentSearchIncludeDataTokens: reactInspectorState.getComponentSearchIncludeDataTokens,
   patchComponentSearchTextCacheAt: patchComponentSearchTextCacheAtValue,
   renderReactComponentDetail,
   setReactDetailEmpty,
 });
 
 const { selectReactComponent } = createReactComponentSelectionBindingFlowValue({
-  getReactComponents: () => reactComponents,
-  setSelectedComponentIndex: (index) => {
-    selectedReactComponentIndex = index;
-  },
+  getReactComponents: reactInspectorState.getReactComponents,
+  setSelectedComponentIndex: reactInspectorState.setSelectedReactComponentIndex,
   clearPageHoverPreview,
   expandAncestorPaths,
   renderReactComponentList,
   getReactComponentListEl: () => reactComponentListEl,
-  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
+  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
   renderReactComponentDetail,
   setReactDetailEmpty,
   highlightPageDomForComponent,
@@ -395,12 +376,10 @@ const { selectReactComponent } = createReactComponentSelectionBindingFlowValue({
 
 const onComponentSearchInput = createReactComponentSearchInputFlowValue({
   getSearchInputValue: () => componentSearchInputEl.value,
-  setComponentSearchQuery: (query) => {
-    componentSearchQuery = query;
-  },
-  getComponentSearchQuery: () => componentSearchQuery,
-  getReactComponents: () => reactComponents,
-  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
+  setComponentSearchQuery: reactInspectorState.setComponentSearchQuery,
+  getComponentSearchQuery: reactInspectorState.getComponentSearchQuery,
+  getReactComponents: reactInspectorState.getReactComponents,
+  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
   getComponentFilterResult,
   applySearchNoResultState,
   expandAncestorPaths,
@@ -411,17 +390,7 @@ const onComponentSearchInput = createReactComponentSearchInputFlowValue({
 });
 
 const resetReactInspector = createReactInspectorResetStateFlowValue({
-  writeState: (update) => {
-    reactComponents = update.reactComponents;
-    componentSearchTexts = update.componentSearchTexts;
-    componentSearchIncludeDataTokens = update.componentSearchIncludeDataTokens;
-    collapsedComponentIds = update.collapsedComponentIds;
-    updatedComponentIds = update.updatedComponentIds;
-    selectedReactComponentIndex = update.selectedReactComponentIndex;
-    lastReactListRenderSignature = update.lastReactListRenderSignature;
-    lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
-    lastReactDetailComponentId = update.lastReactDetailComponentId;
-  },
+  writeState: reactInspectorState.writeResetState,
   resetDetailFetchQueue: () => {
     detailFetchQueue.reset();
   },
@@ -436,31 +405,8 @@ const resetReactInspector = createReactInspectorResetStateFlowValue({
 });
 
 const applyReactInspectResult = createReactInspectResultApplyFlowValue({
-  readState: () => ({
-    reactComponents,
-    selectedReactComponentIndex,
-    collapsedComponentIds,
-  }),
-  writeState: (update) => {
-    if (update.reactComponents) {
-      reactComponents = update.reactComponents;
-    }
-    if (update.updatedComponentIds) {
-      updatedComponentIds = update.updatedComponentIds;
-    }
-    if (typeof update.componentSearchIncludeDataTokens === 'boolean') {
-      componentSearchIncludeDataTokens = update.componentSearchIncludeDataTokens;
-    }
-    if (update.componentSearchTexts) {
-      componentSearchTexts = update.componentSearchTexts;
-    }
-    if (update.collapsedComponentIds) {
-      collapsedComponentIds = update.collapsedComponentIds;
-    }
-    if (typeof update.selectedReactComponentIndex === 'number') {
-      selectedReactComponentIndex = update.selectedReactComponentIndex;
-    }
-  },
+  readState: reactInspectorState.readApplyResultState,
+  writeState: reactInspectorState.writeApplyResultState,
   getComponentFilterResult,
   setReactStatus,
   renderReactComponentList,
@@ -473,12 +419,10 @@ const applyReactInspectResult = createReactInspectResultApplyFlowValue({
 
 const { fetchReactInfo } = createReactInspectFetchFlowValue({
   callInspectedPageAgent,
-  getStoredLookup: () => lastReactLookup,
-  setStoredLookup: (lookup) => {
-    lastReactLookup = lookup;
-  },
-  getReactComponents: () => reactComponents,
-  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
+  getStoredLookup: reactInspectorState.getStoredLookup,
+  setStoredLookup: reactInspectorState.setStoredLookup,
+  getReactComponents: reactInspectorState.getReactComponents,
+  getSelectedReactComponentIndex: reactInspectorState.getSelectedReactComponentIndex,
   clearPageHoverPreview,
   clearPageComponentHighlight,
   applyLoadingPaneState: () => {
@@ -494,10 +438,8 @@ const { fetchReactInfo } = createReactInspectFetchFlowValue({
 const { runtimeRefreshScheduler, onInspectedPageNavigated } =
   createPanelRuntimeRefreshFlowValue({
     isPickerModeActive: () => pickerModeActive,
-    getStoredLookup: () => lastReactLookup,
-    setStoredLookup: (lookup) => {
-      lastReactLookup = lookup;
-    },
+    getStoredLookup: reactInspectorState.getStoredLookup,
+    setStoredLookup: reactInspectorState.setStoredLookup,
     runRefresh: (lookup, background, onDone) => {
       fetchReactInfo(
         lookup.selector,
@@ -531,7 +473,14 @@ const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue
   },
 });
 
-chrome.runtime.onMessage.addListener(onRuntimeMessage);
+removeRuntimeMessageListener = bindRuntimeMessageListenerValue(onRuntimeMessage, {
+  addListener(listener) {
+    chrome.runtime.onMessage.addListener(listener);
+  },
+  removeListener(listener) {
+    chrome.runtime.onMessage.removeListener(listener);
+  },
+});
 
 const onPanelBeforeUnload = createPanelTeardownFlowValue({
   getWorkspaceLayoutManager: () => workspaceLayoutManager,
@@ -542,26 +491,38 @@ const onPanelBeforeUnload = createPanelTeardownFlowValue({
   setDestroyWheelScrollFallback: (destroyer) => {
     destroyWheelScrollFallback = destroyer;
   },
+  getRemoveRuntimeMessageListener: () => removeRuntimeMessageListener,
+  setRemoveRuntimeMessageListener: (removeListener) => {
+    removeRuntimeMessageListener = removeListener;
+  },
   runtimeRefreshScheduler,
   removeNavigatedListener: () => {
     chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
   },
 });
 
+const { initializeWorkspaceLayout, initializeWheelFallback } =
+  createPanelWorkspaceInitializationValue({
+    getPanelWorkspaceEl: () => panelWorkspaceEl,
+    getPanelContentEl: () => panelContentEl,
+    getWorkspacePanelToggleBarEl: () => workspacePanelToggleBarEl,
+    getWorkspaceDockPreviewEl: () => workspaceDockPreviewEl,
+    getWorkspacePanelElements: () => workspacePanelElements,
+    createWorkspaceLayoutManager,
+    initWheelScrollFallback,
+    setWorkspaceLayoutManager: (manager) => {
+      workspaceLayoutManager = manager;
+    },
+    setDestroyWheelScrollFallback: (destroyer) => {
+      destroyWheelScrollFallback = destroyer;
+    },
+  });
+
 const { bootstrapPanel } = createPanelBootstrapFlowValue({
   mountPanelView,
   initDomRefs,
-  initializeWorkspaceLayout: () => {
-    workspaceLayoutManager = createWorkspaceLayoutManager({
-      panelContentEl,
-      workspacePanelToggleBarEl,
-      workspaceDockPreviewEl,
-      workspacePanelElements,
-    });
-  },
-  initializeWheelFallback: () => {
-    destroyWheelScrollFallback = initWheelScrollFallback(panelWorkspaceEl);
-  },
+  initializeWorkspaceLayout,
+  initializeWheelFallback,
   setPickerModeActive,
   populateTargetSelect,
   setElementOutput,

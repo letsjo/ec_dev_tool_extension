@@ -7,6 +7,7 @@ describe('createPanelTeardownFlow', () => {
       destroy: vi.fn(),
     };
     let destroyWheelScrollFallback: (() => void) | null = vi.fn();
+    let removeRuntimeMessageListener: (() => void) | null = vi.fn();
     const runtimeRefreshScheduler = {
       schedule: vi.fn(),
       refresh: vi.fn(),
@@ -23,6 +24,10 @@ describe('createPanelTeardownFlow', () => {
       getDestroyWheelScrollFallback: () => destroyWheelScrollFallback,
       setDestroyWheelScrollFallback: (destroyer) => {
         destroyWheelScrollFallback = destroyer;
+      },
+      getRemoveRuntimeMessageListener: () => removeRuntimeMessageListener,
+      setRemoveRuntimeMessageListener: (removeListener) => {
+        removeRuntimeMessageListener = removeListener;
       },
       runtimeRefreshScheduler,
       removeNavigatedListener,
@@ -32,6 +37,7 @@ describe('createPanelTeardownFlow', () => {
 
     expect(workspaceLayoutManager).toBeNull();
     expect(destroyWheelScrollFallback).toBeNull();
+    expect(removeRuntimeMessageListener).toBeNull();
     expect(runtimeRefreshScheduler.dispose).toHaveBeenCalledTimes(1);
     expect(removeNavigatedListener).toHaveBeenCalledTimes(1);
   });
@@ -39,6 +45,7 @@ describe('createPanelTeardownFlow', () => {
   it('handles already-cleared resources safely', () => {
     let workspaceLayoutManager: { destroy: () => void } | null = null;
     let destroyWheelScrollFallback: (() => void) | null = null;
+    let removeRuntimeMessageListener: (() => void) | null = null;
     const runtimeRefreshScheduler = {
       schedule: vi.fn(),
       refresh: vi.fn(),
@@ -55,6 +62,10 @@ describe('createPanelTeardownFlow', () => {
       getDestroyWheelScrollFallback: () => destroyWheelScrollFallback,
       setDestroyWheelScrollFallback: (destroyer) => {
         destroyWheelScrollFallback = destroyer;
+      },
+      getRemoveRuntimeMessageListener: () => removeRuntimeMessageListener,
+      setRemoveRuntimeMessageListener: (removeListener) => {
+        removeRuntimeMessageListener = removeListener;
       },
       runtimeRefreshScheduler,
       removeNavigatedListener,
