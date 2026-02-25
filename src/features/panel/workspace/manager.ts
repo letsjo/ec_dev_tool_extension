@@ -28,6 +28,10 @@ import {
   hideWorkspaceDockPreview as hideWorkspaceDockPreviewValue,
   showWorkspaceDockPreview as showWorkspaceDockPreviewValue,
 } from './dockPreview';
+import {
+  captureWorkspaceScrollSnapshots as captureWorkspaceScrollSnapshotsValue,
+  restoreWorkspaceScrollSnapshots as restoreWorkspaceScrollSnapshotsValue,
+} from './scrollSnapshot';
 import { readStoredJson, writeStoredJson } from './storage';
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = 'ecDevTool.workspaceLayout.v1';
@@ -40,12 +44,6 @@ interface WorkspaceResizeDragState {
   splitRect: DOMRect;
   dividerSize: number;
   ratio: number;
-}
-
-interface WorkspaceScrollSnapshot {
-  element: HTMLElement;
-  top: number;
-  left: number;
 }
 
 export interface WorkspaceLayoutManagerElements {
@@ -227,37 +225,15 @@ export function createWorkspaceLayoutManager({
   }
 
   /** 현재 워크스페이스 내 스크롤 위치를 캡처 */
-  function captureWorkspaceScrollSnapshots(): WorkspaceScrollSnapshot[] {
-    const snapshots: WorkspaceScrollSnapshot[] = [];
-    const seen = new Set<HTMLElement>();
-    const allElements = panelContentEl.querySelectorAll<HTMLElement>('*');
-    allElements.forEach((el) => {
-      if (seen.has(el)) return;
-      if (el.scrollTop === 0 && el.scrollLeft === 0) return;
-      const hasScrollableRange =
-        el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1;
-      if (!hasScrollableRange) return;
-      snapshots.push({
-        element: el,
-        top: el.scrollTop,
-        left: el.scrollLeft,
-      });
-      seen.add(el);
-    });
-    return snapshots;
+  function captureWorkspaceScrollSnapshots() {
+    return captureWorkspaceScrollSnapshotsValue(panelContentEl);
   }
 
   /** 캡처한 스크롤 위치를 복원 */
-  function restoreWorkspaceScrollSnapshots(snapshots: WorkspaceScrollSnapshot[]) {
-    snapshots.forEach(({ element, top, left }) => {
-      if (!element.isConnected) return;
-      if (element.scrollTop !== top) {
-        element.scrollTop = top;
-      }
-      if (element.scrollLeft !== left) {
-        element.scrollLeft = left;
-      }
-    });
+  function restoreWorkspaceScrollSnapshots(
+    snapshots: ReturnType<typeof captureWorkspaceScrollSnapshots>,
+  ) {
+    restoreWorkspaceScrollSnapshotsValue(snapshots);
   }
 
   /** 현재 workspace 루트 DOM 노드를 반환 */
