@@ -49,6 +49,10 @@ import {
 } from './containerBindings';
 import { resolveWorkspaceDragOverTarget as resolveWorkspaceDragOverTargetValue } from './dragOverTarget';
 import {
+  renderWorkspacePanelToggleBar as renderWorkspacePanelToggleBarValue,
+  updateWorkspacePanelControlState as updateWorkspacePanelControlStateValue,
+} from './toggleBar';
+import {
   createWorkspaceSplitElement as createWorkspaceSplitElementValue,
   resetWorkspacePanelSplitClasses as resetWorkspacePanelSplitClassesValue,
 } from './layoutDom';
@@ -132,30 +136,12 @@ export function createWorkspaceLayoutManager({
   }
 
   /** 화면 요소를 렌더링 */
-  function renderWorkspacePanelToggleBar() {
-    const toggleButtons = workspacePanelToggleBarEl.querySelectorAll<HTMLButtonElement>(
-      '.workspace-toggle-btn[data-panel-toggle]',
-    );
-    toggleButtons.forEach((button) => {
-      const panelIdRaw = button.dataset.panelToggle;
-      if (!isWorkspacePanelId(panelIdRaw)) return;
-      const state = workspacePanelStateById.get(panelIdRaw) ?? 'visible';
-      button.classList.toggle('active', state !== 'closed');
-      button.setAttribute('aria-pressed', state !== 'closed' ? 'true' : 'false');
-    });
-  }
+  const renderWorkspacePanelToggleBar = () =>
+    renderWorkspacePanelToggleBarValue(workspacePanelToggleBarEl, workspacePanelStateById);
 
   /** UI 상태 또는 문구를 설정 */
-  function updateWorkspacePanelControlState(panelId: WorkspacePanelId) {
-    const panelEl = workspacePanelElements.get(panelId);
-    if (!panelEl) return;
-    const toggleBtn = panelEl.querySelector<HTMLButtonElement>(
-      `.workspace-panel-action[data-panel-action="toggle"][data-panel-target="${panelId}"]`,
-    );
-    if (!toggleBtn) return;
-    toggleBtn.textContent = panelEl.open ? '▾' : '▸';
-    toggleBtn.title = panelEl.open ? '접기' : '펼치기';
-  }
+  const updateWorkspacePanelControlState = (panelId: WorkspacePanelId) =>
+    updateWorkspacePanelControlStateValue(workspacePanelElements, panelId);
 
   /** 레이아웃/상태를 동기화 */
   function syncWorkspaceSplitCollapsedRows() {
