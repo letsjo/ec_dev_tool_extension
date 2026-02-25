@@ -1,13 +1,12 @@
-import type {
-  JsonPathSegment,
-  JsonSectionKind,
-  ReactComponentInfo,
-} from '../../../shared/inspector/types';
 import {
   normalizeCollectionTokenForDisplay as normalizeCollectionTokenForDisplayValue,
   readDisplayCollectionMeta as readDisplayCollectionMetaValue,
   resolveDisplayChildPathSegment as resolveDisplayChildPathSegmentValue,
 } from './collectionDisplay';
+import type {
+  FetchSerializedValueAtPathHandler,
+  JsonRenderContext as JsonObjectArrayRenderContext,
+} from './jsonRenderTypes';
 import {
   createExpandableValueRow,
   createRowToggleSpacer,
@@ -18,22 +17,6 @@ import {
   getObjectDisplayName,
   isJsonInternalMetaKey,
 } from './jsonPreview';
-
-interface JsonObjectArrayRenderContext {
-  component: ReactComponentInfo;
-  section: JsonSectionKind;
-  path: JsonPathSegment[];
-  refMap: Map<number, unknown>;
-  refStack: number[];
-  allowInspect: boolean;
-}
-
-type FetchSerializedValueAtPathHandler = (
-  component: ReactComponentInfo,
-  section: JsonSectionKind,
-  path: JsonPathSegment[],
-  onDone: (value: unknown | null) => void,
-) => void;
 
 interface CreateObjectArrayJsonValueNodeArgs {
   value: Record<string, unknown> | unknown[];

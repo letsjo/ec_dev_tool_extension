@@ -12,6 +12,11 @@ import {
   type HookRowItem,
   type HookTreeNode,
 } from './hookTreeModel';
+import type {
+  FetchSerializedValueAtPathHandler,
+  InspectFunctionAtPathHandler,
+  JsonRenderContext,
+} from './jsonRenderTypes';
 import {
   createCircularRefNode as createCircularRefNodeValue,
   createFunctionTokenNode as createFunctionTokenNodeValue,
@@ -27,28 +32,6 @@ import {
   isJsonInternalMetaKey,
 } from './jsonPreview';
 import { createObjectArrayJsonValueNode } from './jsonObjectArrayNode';
-
-type InspectFunctionAtPathHandler = (
-  component: ReactComponentInfo,
-  section: JsonSectionKind,
-  path: JsonPathSegment[],
-) => void;
-
-type FetchSerializedValueAtPathHandler = (
-  component: ReactComponentInfo,
-  section: JsonSectionKind,
-  path: JsonPathSegment[],
-  onDone: (value: unknown | null) => void,
-) => void;
-
-interface JsonRenderContext {
-  component: ReactComponentInfo;
-  section: JsonSectionKind;
-  path: JsonPathSegment[];
-  refMap: Map<number, unknown>;
-  refStack: number[];
-  allowInspect: boolean;
-}
 
 /**
  * controller의 pageAgent 브리지를 모듈 외부에 두고,

@@ -1,27 +1,13 @@
 import { isCircularRefToken, isFunctionToken } from '../../../shared/inspector/guards';
 import type {
-  JsonPathSegment,
-  JsonSectionKind,
-  ReactComponentInfo,
-} from '../../../shared/inspector/types';
-
-interface JsonTokenRenderContext {
-  component: ReactComponentInfo;
-  section: JsonSectionKind;
-  path: JsonPathSegment[];
-  refMap: Map<number, unknown>;
-  refStack: number[];
-  allowInspect: boolean;
-}
+  InspectFunctionAtPathHandler,
+  JsonRenderContext as JsonTokenRenderContext,
+} from './jsonRenderTypes';
 
 interface CreateFunctionTokenNodeOptions {
   value: unknown;
   context: JsonTokenRenderContext;
-  onInspectFunctionAtPath: (
-    component: ReactComponentInfo,
-    section: JsonSectionKind,
-    path: JsonPathSegment[],
-  ) => void;
+  onInspectFunctionAtPath: InspectFunctionAtPathHandler;
 }
 
 interface CreateCircularRefNodeOptions {

@@ -1,25 +1,10 @@
 import { isDehydratedToken } from '../../../shared/inspector/guards';
 import type {
-  JsonPathSegment,
-  JsonSectionKind,
-  ReactComponentInfo,
-} from '../../../shared/inspector/types';
+  FetchSerializedValueAtPathHandler,
+  JsonInspectPathContext as JsonDehydratedRenderContext,
+} from './jsonRenderTypes';
 import { normalizeCollectionTokenForDisplay as normalizeCollectionTokenForDisplayValue } from './collectionDisplay';
 import { readDehydratedPreviewText } from './jsonPreview';
-
-type FetchSerializedValueAtPathHandler = (
-  component: ReactComponentInfo,
-  section: JsonSectionKind,
-  path: JsonPathSegment[],
-  onDone: (value: unknown | null) => void,
-) => void;
-
-export interface JsonDehydratedRenderContext {
-  component: ReactComponentInfo;
-  section: JsonSectionKind;
-  path: JsonPathSegment[];
-  allowInspect: boolean;
-}
 
 export interface CreateDehydratedTokenNodeOptions {
   value: unknown;
