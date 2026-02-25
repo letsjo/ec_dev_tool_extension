@@ -56,7 +56,6 @@ import {
   applyWorkspaceSplitRatioStyle as applyWorkspaceSplitRatioStyleValue,
   computeWorkspaceResizeRatioFromPointer as computeWorkspaceResizeRatioFromPointerValue,
   createWorkspaceResizeDragStateFromTarget as createWorkspaceResizeDragStateFromTargetValue,
-  type WorkspaceResizeDragState,
 } from './splitResize';
 import {
   startWorkspaceSplitResizeSession as startWorkspaceSplitResizeSessionValue,
@@ -66,6 +65,7 @@ import {
   persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,
   restoreWorkspaceStateSnapshot as restoreWorkspaceStateSnapshotValue,
 } from './statePersistence';
+import { createWorkspaceResizeFlow as createWorkspaceResizeFlowValue } from './resizeFlow';
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -91,7 +91,6 @@ export function createWorkspaceLayoutManager({
 }: WorkspaceLayoutManagerElements): WorkspaceLayoutManager {
   let workspaceLayoutRoot: WorkspaceLayoutNode | null = null;
   let workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
-  let workspaceResizeDragState: WorkspaceResizeDragState | null = null;
   let workspacePanelBodySizeObserver: ResizeObserver | null = null;
 
   /**
@@ -327,82 +326,19 @@ export function createWorkspaceLayoutManager({
     showWorkspaceDockPreview,
     applyWorkspaceDockDrop,
   });
-
-  /** 이벤트를 처리 */
-  function onWorkspaceSplitResizePointerMove(event: PointerEvent) {
-    const state = workspaceResizeDragState;
-    if (!state) return;
-    const nextRatio = computeWorkspaceResizeRatioFromPointerValue(state, event);
-    if (nextRatio === null) return;
-    state.ratio = nextRatio;
-    applyWorkspaceSplitRatioStyleValue(state.splitEl, nextRatio);
-    event.preventDefault();
-  }
-
-  /** 해당 기능 흐름을 처리 */
-  function stopWorkspaceSplitResize(shouldPersist: boolean) {
-    const state = workspaceResizeDragState;
-    if (!state) return;
-
-    stopWorkspaceSplitResizeSessionValue(state, {
-      onPointerMove: onWorkspaceSplitResizePointerMove,
-      onPointerUp: onWorkspaceSplitResizePointerUp,
-      onPointerCancel: onWorkspaceSplitResizePointerCancel,
-    });
-
-    if (shouldPersist) {
-      workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(
-        workspaceLayoutRoot,
-        state.splitPath,
-        state.ratio,
-      );
+  const workspaceResizeFlow = createWorkspaceResizeFlowValue({
+    createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTargetValue,
+    startWorkspaceSplitResizeSession: startWorkspaceSplitResizeSessionValue,
+    stopWorkspaceSplitResizeSession: stopWorkspaceSplitResizeSessionValue,
+    computeWorkspaceResizeRatioFromPointer: computeWorkspaceResizeRatioFromPointerValue,
+    applyWorkspaceSplitRatioStyle: applyWorkspaceSplitRatioStyleValue,
+    parseWorkspaceNodePath,
+    defaultSplitRatio: WORKSPACE_DOCK_SPLIT_RATIO,
+    onPersistSplitRatio(splitPath, ratio) {
+      workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(workspaceLayoutRoot, splitPath, ratio);
       persistWorkspaceState();
-    }
-    workspaceResizeDragState = null;
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceSplitResizePointerUp() {
-    stopWorkspaceSplitResize(true);
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceSplitResizePointerCancel() {
-    stopWorkspaceSplitResize(false);
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceSplitResizePointerDown(event: PointerEvent) {
-    if (event.button !== 0) return;
-    const nextDragState = createWorkspaceResizeDragStateFromTargetValue(event.target);
-    if (!nextDragState) return;
-    workspaceResizeDragState = nextDragState;
-
-    startWorkspaceSplitResizeSessionValue(nextDragState, {
-      onPointerMove: onWorkspaceSplitResizePointerMove,
-      onPointerUp: onWorkspaceSplitResizePointerUp,
-      onPointerCancel: onWorkspaceSplitResizePointerCancel,
-    });
-    event.preventDefault();
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceSplitDividerDoubleClick(event: MouseEvent) {
-    const target = event.target as HTMLElement | null;
-    const dividerEl = target?.closest<HTMLElement>('.workspace-split-divider');
-    if (!dividerEl) return;
-
-    const splitEl = dividerEl.parentElement;
-    if (!(splitEl instanceof HTMLElement)) return;
-
-    const splitPath = parseWorkspaceNodePath(splitEl.dataset.splitPath ?? '');
-    const nextRatio = WORKSPACE_DOCK_SPLIT_RATIO;
-
-    applyWorkspaceSplitRatioStyleValue(splitEl, nextRatio);
-    workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(workspaceLayoutRoot, splitPath, nextRatio);
-    persistWorkspaceState();
-    event.preventDefault();
-  }
+    },
+  });
 
   /** 이벤트를 처리 */
   function onWorkspaceSummaryAction(event: MouseEvent) {
@@ -478,8 +414,8 @@ export function createWorkspaceLayoutManager({
       onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
       onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
       onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
-      onWorkspaceSplitResizePointerDown,
-      onWorkspaceSplitDividerDoubleClick,
+      onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
+      onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
       onWorkspacePanelToggleButtonClick,
     });
     initWorkspacePanelBodySizeObserver();
@@ -492,8 +428,8 @@ export function createWorkspaceLayoutManager({
       onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
       onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
       onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
-      onWorkspaceSplitResizePointerDown,
-      onWorkspaceSplitDividerDoubleClick,
+      onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
+      onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
       onWorkspacePanelToggleButtonClick,
     });
 
@@ -511,7 +447,7 @@ export function createWorkspaceLayoutManager({
       workspacePanelBodySizeObserver = null;
     }
 
-    stopWorkspaceSplitResize(false);
+    workspaceResizeFlow.stopWorkspaceSplitResize(false);
     hideWorkspaceDockPreview();
     workspaceDragDropFlow.onWorkspacePanelDragEnd();
   }
