@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/reactInspector/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -62,9 +62,10 @@
   - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/상세(JSON/hook) 렌더 로직 위임
+  - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
   - `workspace/wheelScrollFallback.ts`의 `initWheelScrollFallback(...)`로 스크롤 보정 리스너 설치
-  - 이벤트 바인딩 후 `refreshReactRuntime(false)` 최초 실행
+  - 이벤트 바인딩 후 runtime scheduler로 최초 React 런타임 조회 실행
 
 ## 5. 메시지/브리지 흐름
 
@@ -93,8 +94,8 @@
 
 1. main world `reactRuntimeHook.ts`가 `onCommitFiberRoot` 감지
 2. content가 `pageRuntimeChanged` 메시지 송신(디바운스/스로틀 적용)
-3. panel이 `scheduleRuntimeRefresh(true)` 호출
-4. `refreshReactRuntime(true)`가 최소 간격 보장 후 경량 재조회
+3. panel이 `runtimeRefresh/scheduler.ts`의 `schedule(true)` 호출
+4. scheduler가 최소 간격을 보장해 경량 React 재조회를 실행
 
 ## 6. pageAgent 공개 메서드 계약
 
@@ -218,6 +219,11 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `bridge/pageAgentClient.ts`: panel -> background 메시지 전송, 공통 에러 처리, 응답 표준화 전담
 - `controller.ts`: 비즈니스 흐름에 맞는 method/args 구성과 후속 UI 상태 업데이트 전담
 
+## 7.5 Runtime Refresh 모듈 분리 규칙
+
+- `runtimeRefresh/scheduler.ts`: runtime 변경 이벤트 debounce, 최소 간격 보장, in-flight 중복 호출 큐 병합 전담
+- `controller.ts`: lookup 계산/조회 함수(`fetchReactInfo`)를 scheduler에 주입하고 네비게이션/언로드 시 reset·dispose만 수행
+
 ## 8. 주요 UI 구성 파일 역할
 
 - `src/ui/sections/PanelViewSection.tsx`
@@ -261,7 +267,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `reactInspect` 응답 구조를 `isReactInspectResult`로 통과하는지 확인
 
 4. 자동 갱신이 과도하거나 느린 경우
-- `RUNTIME_REFRESH_MIN_INTERVAL_MS`, `RUNTIME_REFRESH_DEBOUNCE_MS` 값 점검
+- `runtimeRefresh/scheduler.ts` 생성 옵션(`minIntervalMs`, `debounceMs`) 값 점검
 - `elementPicker.ts`의 notify throttle 값과 함께 조정
 
 5. DOM 트리 렌더가 무거운 경우
@@ -329,6 +335,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/search.ts`
 - `src/features/panel/reactInspector/jsonSection.ts`
+- `src/features/panel/runtimeRefresh/scheduler.ts`
 - `src/features/panel/workspace/layoutModel.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/storage.ts`

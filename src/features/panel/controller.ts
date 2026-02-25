@@ -55,6 +55,7 @@ import {
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { renderDomTreeNode } from './domTree/renderer';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
+import { createRuntimeRefreshScheduler } from './runtimeRefresh/scheduler';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -115,10 +116,6 @@ let pickerModeActive = false;
 let componentSearchTexts: string[] = [];
 let componentSearchIncludeDataTokens = true;
 let collapsedComponentIds = new Set<string>();
-let runtimeRefreshInFlight = false;
-let runtimeRefreshQueued = false;
-let runtimeRefreshTimer: number | null = null;
-let runtimeLastRefreshAt = 0;
 let lastReactListRenderSignature = '';
 let lastReactDetailRenderSignature = '';
 let lastReactDetailComponentId: string | null = null;
@@ -127,8 +124,6 @@ let detailFetchInFlight = false;
 let detailFetchQueuedComponentId: string | null = null;
 let detailFetchLastFailedAtById = new Map<string, number>();
 
-const RUNTIME_REFRESH_MIN_INTERVAL_MS = 1200;
-const RUNTIME_REFRESH_DEBOUNCE_MS = 250;
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 const PAGE_FUNCTION_INSPECT_REGISTRY_KEY = '__EC_DEV_TOOL_FUNCTION_INSPECT_REGISTRY__';
 
@@ -1297,76 +1292,37 @@ function getLookupForRuntimeRefresh(): { selector: string; pickPoint?: PickPoint
   return { selector: '' };
 }
 
-/** 지연 실행을 예약 */
-function scheduleRuntimeRefresh(background = true, minDelayMs = 0) {
-  if (runtimeRefreshTimer !== null) return;
-  const delay = Math.max(RUNTIME_REFRESH_DEBOUNCE_MS, minDelayMs);
-  runtimeRefreshTimer = window.setTimeout(() => {
-    runtimeRefreshTimer = null;
-    refreshReactRuntime(background);
-  }, delay);
-}
-
-/**
- * 런타임 변경 이벤트에 반응하는 자동 갱신 루프.
- * - in-flight 중복 호출은 queue 플래그로 합친다.
- * - background 모드에서는 최소 간격을 강제해 과도한 재조회 폭주를 막는다.
- */
-function refreshReactRuntime(background = true) {
-  if (pickerModeActive) return;
-  if (runtimeRefreshInFlight) {
-    runtimeRefreshQueued = true;
-    return;
-  }
-
-  if (background) {
-    const elapsed = Date.now() - runtimeLastRefreshAt;
-    const remaining = RUNTIME_REFRESH_MIN_INTERVAL_MS - elapsed;
-    if (remaining > 0) {
-      scheduleRuntimeRefresh(true, remaining);
-      return;
-    }
-  }
-
-  runtimeRefreshInFlight = true;
-  runtimeLastRefreshAt = Date.now();
-  const lookup = getLookupForRuntimeRefresh();
-  fetchReactInfo(lookup.selector, lookup.pickPoint, {
-    keepLookup: true,
-    background,
-    preserveSelection: true,
-    preserveCollapsed: true,
-    highlightSelection: false,
-    scrollSelectionIntoView: false,
-    expandSelectionAncestors: false,
-    lightweight: true,
-    serializeSelectedComponent: false,
-    trackUpdates: true,
-    refreshDetail: !background,
-    onDone: () => {
-      runtimeRefreshInFlight = false;
-      if (runtimeRefreshQueued) {
-        runtimeRefreshQueued = false;
-        scheduleRuntimeRefresh(true);
-      }
-    },
-  });
-}
+const runtimeRefreshScheduler = createRuntimeRefreshScheduler({
+  minIntervalMs: 1200,
+  debounceMs: 250,
+  isPickerModeActive: () => pickerModeActive,
+  getLookup: () => getLookupForRuntimeRefresh(),
+  runRefresh: (lookup, background, onDone) => {
+    fetchReactInfo(lookup.selector, lookup.pickPoint, {
+      keepLookup: true,
+      background,
+      preserveSelection: true,
+      preserveCollapsed: true,
+      highlightSelection: false,
+      scrollSelectionIntoView: false,
+      expandSelectionAncestors: false,
+      lightweight: true,
+      serializeSelectedComponent: false,
+      trackUpdates: true,
+      refreshDetail: !background,
+      onDone,
+    });
+  },
+});
 
 /** 이벤트를 처리 */
 function onInspectedPageNavigated(url: string) {
   lastReactLookup = null;
-  runtimeRefreshInFlight = false;
-  runtimeRefreshQueued = false;
-  if (runtimeRefreshTimer !== null) {
-    window.clearTimeout(runtimeRefreshTimer);
-    runtimeRefreshTimer = null;
-  }
-  runtimeLastRefreshAt = 0;
+  runtimeRefreshScheduler.reset();
   setElementOutput(`페이지 이동 감지: ${url}`);
   setDomTreeStatus('페이지 변경 감지됨. 요소를 선택하면 DOM 트리를 표시합니다.');
   setDomTreeEmpty('요소를 선택하면 DOM 트리를 표시합니다.');
-  refreshReactRuntime(false);
+  runtimeRefreshScheduler.refresh(false);
 }
 
 /**
@@ -1424,7 +1380,7 @@ chrome.runtime.onMessage.addListener((message: ElementSelectedMessage) => {
   }
 
   if (message.action === 'pageRuntimeChanged' && message.tabId === inspectedTabId) {
-    scheduleRuntimeRefresh(true);
+    runtimeRefreshScheduler.schedule(true);
     return;
   }
 
@@ -1503,13 +1459,10 @@ function bootstrapPanel() {
       destroyWheelScrollFallback();
       destroyWheelScrollFallback = null;
     }
-    if (runtimeRefreshTimer !== null) {
-      window.clearTimeout(runtimeRefreshTimer);
-      runtimeRefreshTimer = null;
-    }
+    runtimeRefreshScheduler.dispose();
     chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
   });
-  refreshReactRuntime(false);
+  runtimeRefreshScheduler.refresh(false);
 }
 
 /** 화면 요소를 렌더링 */
