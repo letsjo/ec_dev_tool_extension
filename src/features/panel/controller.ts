@@ -53,6 +53,10 @@ import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
 import {
+  resolveNextSelection as resolveNextSelectionValue,
+  resolvePreviousSelectedId as resolvePreviousSelectedIdValue,
+} from './reactInspector/selectionModel';
+import {
   buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
   type SearchNoResultContext,
@@ -937,12 +941,11 @@ function applyReactInspectResult(
   const refreshDetail = options.refreshDetail !== false;
 
   // preserve 옵션이 켜져 있으면 이전 선택 대상 id를 기준점으로 저장한다.
-  const previousSelectedId =
-    preserveSelection &&
-    selectedReactComponentIndex >= 0 &&
-    selectedReactComponentIndex < reactComponents.length
-      ? reactComponents[selectedReactComponentIndex].id
-      : null;
+  const previousSelectedId = resolvePreviousSelectedIdValue(
+    preserveSelection,
+    reactComponents,
+    selectedReactComponentIndex,
+  );
   const previousCollapsedIds = preserveCollapsed ? snapshotCollapsedIds() : new Set<string>();
   const previousComponentById = new Map<string, ReactComponentInfo>(
     reactComponents.map((component) => [component.id, component]),
@@ -1007,37 +1010,27 @@ function applyReactInspectResult(
     return;
   }
 
-  let preferredIndex = typeof result.selectedIndex === 'number' ? result.selectedIndex : 0;
-  if (previousSelectedId) {
-    const preservedIndex = reactComponents.findIndex(
-      (component) => component.id === previousSelectedId,
-    );
-    if (preservedIndex >= 0) {
-      preferredIndex = preservedIndex;
-    }
-  }
-  // 필터 결과에 맞춰 선택 인덱스를 다시 계산한다.
-  const baseIndex =
-    preferredIndex >= 0 && preferredIndex < reactComponents.length ? preferredIndex : 0;
   const filterResult = getComponentFilterResult();
-  if (filterResult.visibleIndices.length === 0) {
+  const nextSelection = resolveNextSelectionValue({
+    reactComponents,
+    filterResult,
+    previousSelectedId,
+    requestedSelectedIndex:
+      typeof result.selectedIndex === 'number' ? result.selectedIndex : undefined,
+  });
+  if (!nextSelection) {
     selectedReactComponentIndex = -1;
     applySearchNoResultState('inspectResult');
     return;
   }
-  selectedReactComponentIndex = filterResult.visibleIndices.includes(baseIndex)
-    ? baseIndex
-    : (filterResult.matchedIndices[0] ?? filterResult.visibleIndices[0]);
+  selectedReactComponentIndex = nextSelection.selectedIndex;
 
   setReactStatus(
     options.statusText ??
       `컴포넌트 ${reactComponents.length}개를 찾았습니다. 항목을 클릭하면 페이지 DOM과 함께 확인됩니다.`,
   );
 
-  const selectedComponent = reactComponents[selectedReactComponentIndex];
-  const selectedId = selectedComponent?.id ?? null;
-  const selectedChanged = previousSelectedId !== selectedId;
-  if (!refreshDetail && !selectedChanged) {
+  if (!refreshDetail && !nextSelection.selectedChanged) {
     renderReactComponentList();
     return;
   }
