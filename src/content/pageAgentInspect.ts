@@ -2,6 +2,7 @@
 import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
 import { resolveInspectPathValue } from "./pageAgentInspectPathValue";
+import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
 
 type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
@@ -86,55 +87,6 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
     findRootFiber,
   });
 
-  /** 필요한 값/상태를 계산해 반환 */
-  function getHostElementFromFiber(fiber: FiberLike | null | undefined, cache: Map<object, Element | null>, visiting: Set<object>) {
-    if (!fiber) return null;
-    if (cache.has(fiber)) return cache.get(fiber);
-    if (visiting.has(fiber)) return null;
-    visiting.add(fiber);
-
-    let result = null;
-    if (fiber.tag === 5 && fiber.stateNode && fiber.stateNode.nodeType === 1) {
-      result = fiber.stateNode;
-    } else {
-      let child = fiber.child;
-      let guard = 0;
-      while (child && guard < 900) {
-        result = getHostElementFromFiber(child, cache, visiting);
-        if (result) break;
-        child = child.sibling;
-        guard += 1;
-      }
-    }
-
-    visiting.delete(fiber);
-    cache.set(fiber, result);
-    return result;
-  }
-
-  /** 필요한 값/상태를 계산해 반환 */
-  function getDomInfoForFiber(fiber: FiberLike | null | undefined, hostCache: Map<object, Element | null>, visiting: Set<object>, selectedEl: Element | null) {
-    const element = getHostElementFromFiber(fiber, hostCache, visiting);
-    if (!element) {
-      return { domSelector: null, domPath: null, domTagName: null, containsTarget: false };
-    }
-    const selectorText = buildCssSelector(element);
-    let containsTarget = false;
-    if (selectedEl && selectedEl.nodeType === 1) {
-      try {
-        containsTarget = element === selectedEl || element.contains(selectedEl);
-      } catch (_) {
-        containsTarget = false;
-      }
-    }
-    return {
-      domSelector: selectorText || null,
-      domPath: getElementPath(element),
-      domTagName: String(element.tagName || "").toLowerCase(),
-      containsTarget,
-    };
-  }
-
   /** 경로 기준 inspect 동작을 수행 */
   function inspectReactComponents(args: AnyRecord | null | undefined) {
     const selector = typeof args?.selector === "string" ? args.selector : "";
@@ -190,7 +142,14 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         let childParentId = item.parentId;
 
         if (isInspectableTag(node.tag)) {
-          const domInfo = getDomInfoForFiber(node, hostCache, visiting, targetEl);
+          const domInfo = getDomInfoForFiber({
+            fiber: node,
+            hostCache,
+            visiting,
+            selectedEl: targetEl,
+            buildCssSelector,
+            getElementPath,
+          });
           const id = getStableFiberId(node, fiberIdMap) || String(components.length);
           const componentDepth = item.depth + 1;
           const shouldSerializeData = includeSerializedData || Boolean(selectedComponentId && id === selectedComponentId);
@@ -265,13 +224,20 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         components,
         idByFiber,
         preferredFiber,
-        targetMatchedIndex,
-        resolvePreferredFiberDomInfo() {
-          return preferredFiber
-            ? getDomInfoForFiber(preferredFiber, hostCache, visiting, targetEl)
-            : null;
-        },
-      });
+          targetMatchedIndex,
+          resolvePreferredFiberDomInfo() {
+            return preferredFiber
+              ? getDomInfoForFiber({
+                fiber: preferredFiber,
+                hostCache,
+                visiting,
+                selectedEl: targetEl,
+                buildCssSelector,
+                getElementPath,
+              })
+              : null;
+          },
+        });
 
       return {
         selector,
