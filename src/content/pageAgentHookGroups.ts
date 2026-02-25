@@ -15,6 +15,7 @@ import {
   resolveDefaultPropsForHookInspect,
   resolveRenderFunctionForHookInspect,
 } from "./pageAgentHookRuntime";
+import { alignHookInspectMetadataResultLength } from "./pageAgentHookResult";
 
 type AnyRecord = Record<string, any>;
 type FiberLike = AnyRecord & {
@@ -396,50 +397,13 @@ function inspectCustomHookGroupNames(
     primitiveHasValue.push(true);
   }
 
-  if (typeof expectedCount === "number" && expectedCount >= 0) {
-    while (groupNames.length < expectedCount) {
-      groupNames.push(null);
-    }
-    if (groupNames.length > expectedCount) {
-      groupNames.length = expectedCount;
-    }
-
-    while (groupPaths.length < expectedCount) {
-      groupPaths.push(null);
-    }
-    if (groupPaths.length > expectedCount) {
-      groupPaths.length = expectedCount;
-    }
-
-    while (primitiveNames.length < expectedCount) {
-      primitiveNames.push(null);
-    }
-    if (primitiveNames.length > expectedCount) {
-      primitiveNames.length = expectedCount;
-    }
-
-    while (primitiveValues.length < expectedCount) {
-      primitiveValues.push(undefined);
-    }
-    if (primitiveValues.length > expectedCount) {
-      primitiveValues.length = expectedCount;
-    }
-
-    while (primitiveHasValue.length < expectedCount) {
-      primitiveHasValue.push(false);
-    }
-    if (primitiveHasValue.length > expectedCount) {
-      primitiveHasValue.length = expectedCount;
-    }
-  }
-
-  return {
+  return alignHookInspectMetadataResultLength({
     groupNames,
     groupPaths,
     primitiveNames,
     primitiveValues,
     primitiveHasValue,
-  };
+  }, expectedCount);
 }
 
 export { parseHookDisplayName, inspectCustomHookGroupNames };
