@@ -43,6 +43,7 @@ import {
   unbindWorkspaceContainerInteractions as unbindWorkspaceContainerInteractionsValue,
 } from './containerBindings';
 import { resolveWorkspaceDragOverTarget as resolveWorkspaceDragOverTargetValue } from './dragOverTarget';
+import { createWorkspaceDragDropFlow as createWorkspaceDragDropFlowValue } from './dragDropFlow';
 import {
   renderWorkspacePanelToggleBar as renderWorkspacePanelToggleBarValue,
   updateWorkspacePanelControlState as updateWorkspacePanelControlStateValue,
@@ -89,8 +90,6 @@ export function createWorkspaceLayoutManager({
   workspacePanelElements,
 }: WorkspaceLayoutManagerElements): WorkspaceLayoutManager {
   let workspaceLayoutRoot: WorkspaceLayoutNode | null = null;
-  let workspaceDragPanelId: WorkspacePanelId | null = null;
-  let workspaceDropTarget: WorkspaceDropTarget | null = null;
   let workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
   let workspaceResizeDragState: WorkspaceResizeDragState | null = null;
   let workspacePanelBodySizeObserver: ResizeObserver | null = null;
@@ -317,61 +316,17 @@ export function createWorkspaceLayoutManager({
     persistWorkspaceState();
     renderWorkspaceLayout();
   }
-
-  /** 이벤트를 처리 */
-  function onWorkspacePanelDragStart(event: DragEvent) {
-    const summaryEl = event.currentTarget as HTMLElement | null;
-    const panelEl = summaryEl?.closest('details.workspace-panel');
-    if (!(panelEl instanceof HTMLDetailsElement)) return;
-    if (!isWorkspacePanelId(panelEl.id)) return;
-    workspaceDragPanelId = panelEl.id;
-    workspaceDropTarget = null;
-    panelEl.classList.add('workspace-dragging');
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', panelEl.id);
-    }
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspacePanelDragEnd() {
-    workspaceDragPanelId = null;
-    workspaceDropTarget = null;
-    workspacePanelElements.forEach((panelEl) => panelEl.classList.remove('workspace-dragging'));
-    hideWorkspaceDockPreview();
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceDragOver(event: DragEvent) {
-    if (!workspaceDragPanelId) return;
-    event.preventDefault();
-    const resolution = resolveWorkspaceDragOverTargetValue({
-      panelContentEl,
-      clientX: event.clientX,
-      clientY: event.clientY,
-      findWorkspacePanelByPoint,
-      computeWorkspaceDockDirection,
-    });
-    workspaceDropTarget = resolution.dropTarget;
-    showWorkspaceDockPreview(resolution.previewRect, resolution.dropTarget.direction);
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceDrop(event: DragEvent) {
-    if (!workspaceDragPanelId) return;
-    event.preventDefault();
-    if (workspaceDropTarget) {
-      applyWorkspaceDockDrop(workspaceDragPanelId, workspaceDropTarget);
-    }
-    onWorkspacePanelDragEnd();
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceDragLeave(event: DragEvent) {
-    const nextTarget = event.relatedTarget;
-    if (nextTarget instanceof Node && panelContentEl.contains(nextTarget)) return;
-    hideWorkspaceDockPreview();
-  }
+  const workspaceDragDropFlow = createWorkspaceDragDropFlowValue({
+    panelContentEl,
+    workspacePanelElements,
+    isWorkspacePanelId,
+    findWorkspacePanelByPoint,
+    computeWorkspaceDockDirection,
+    resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTargetValue,
+    hideWorkspaceDockPreview,
+    showWorkspaceDockPreview,
+    applyWorkspaceDockDrop,
+  });
 
   /** 이벤트를 처리 */
   function onWorkspaceSplitResizePointerMove(event: PointerEvent) {
@@ -511,8 +466,8 @@ export function createWorkspaceLayoutManager({
     restoreWorkspaceState();
 
     bindWorkspacePanelInteractionsValue(workspacePanelElements, {
-      onPanelDragStart: onWorkspacePanelDragStart,
-      onPanelDragEnd: onWorkspacePanelDragEnd,
+      onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
+      onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
       onSummaryAction: onWorkspaceSummaryAction,
       onSummaryClick: onWorkspaceSummaryClick,
       onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
@@ -520,9 +475,9 @@ export function createWorkspaceLayoutManager({
     });
 
     bindWorkspaceContainerInteractionsValue(panelContentEl, workspacePanelToggleBarEl, {
-      onWorkspaceDragOver,
-      onWorkspaceDrop,
-      onWorkspaceDragLeave,
+      onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
+      onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
+      onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
       onWorkspaceSplitResizePointerDown,
       onWorkspaceSplitDividerDoubleClick,
       onWorkspacePanelToggleButtonClick,
@@ -534,17 +489,17 @@ export function createWorkspaceLayoutManager({
   /** 워크스페이스 관련 이벤트/옵저버를 해제한다. */
   function destroy() {
     unbindWorkspaceContainerInteractionsValue(panelContentEl, workspacePanelToggleBarEl, {
-      onWorkspaceDragOver,
-      onWorkspaceDrop,
-      onWorkspaceDragLeave,
+      onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
+      onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
+      onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
       onWorkspaceSplitResizePointerDown,
       onWorkspaceSplitDividerDoubleClick,
       onWorkspacePanelToggleButtonClick,
     });
 
     unbindWorkspacePanelInteractionsValue(workspacePanelElements, {
-      onPanelDragStart: onWorkspacePanelDragStart,
-      onPanelDragEnd: onWorkspacePanelDragEnd,
+      onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
+      onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
       onSummaryAction: onWorkspaceSummaryAction,
       onSummaryClick: onWorkspaceSummaryClick,
       onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
@@ -558,7 +513,7 @@ export function createWorkspaceLayoutManager({
 
     stopWorkspaceSplitResize(false);
     hideWorkspaceDockPreview();
-    onWorkspacePanelDragEnd();
+    workspaceDragDropFlow.onWorkspacePanelDragEnd();
   }
 
   initWorkspaceLayoutManager();

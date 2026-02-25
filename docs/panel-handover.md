@@ -225,6 +225,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/dragOverTarget.ts`
+- `src/features/panel/workspace/dragDropFlow.ts`
 - `src/features/panel/workspace/domReuse.ts`
 - `src/features/panel/workspace/domPatcher.ts`
 - `src/features/panel/workspace/layoutDom.ts`
@@ -267,6 +268,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `dockDropApply.ts`: dock drop target(`center|left|right|top|bottom`)에 따른 layout tree 변경(교체/삽입/append) 순수 계산 전담
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
 - `dragOverTarget.ts`: dragover pointer 좌표 기준 drop target/preview rect 계산 전담
+- `dragDropFlow.ts`: 드래그 시작/종료 상태, dragover/drop/leave 이벤트 전이와 drop 적용 호출 전담
 - `domReuse.ts`: panel id 집합 비교와 재사용 가능한 workspace root 노드 탐색 규칙 전담
 - `domPatcher.ts`: layout tree 재귀 patch, split node 재사용/대체 판단, first/second slot subtree 매핑 전담
 - `layoutDom.ts`: split DOM 골격 생성과 panel split class reset 정리 전담
@@ -524,6 +526,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
 - `src/features/panel/workspace/dragOverTarget.ts`
+- `src/features/panel/workspace/dragDropFlow.ts`
 - `src/features/panel/workspace/domReuse.ts`
 - `src/features/panel/workspace/domPatcher.ts`
 - `src/features/panel/workspace/layoutDom.ts`
