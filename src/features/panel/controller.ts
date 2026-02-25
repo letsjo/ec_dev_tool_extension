@@ -83,6 +83,8 @@ import {
   type ReactInspectPathMode,
 } from './reactInspector/pathRequest';
 import {
+  isReactInspectPathRequestFailureCompletion as isReactInspectPathRequestFailureCompletionValue,
+  isReactInspectPathRequestSuccessCompletion as isReactInspectPathRequestSuccessCompletionValue,
   resolveReactInspectPathRequestCompletion as resolveReactInspectPathRequestCompletionValue,
   type ReactInspectPathRequestCompletion,
 } from './reactInspector/pathRequestCompletion';
@@ -466,7 +468,7 @@ function inspectFunctionAtPath(
     path,
     mode: 'inspectFunction',
     onDone: (completion) => {
-      if (completion.kind === 'failure') {
+      if (isReactInspectPathRequestFailureCompletionValue(completion)) {
         setReactStatus(buildInspectFunctionPathFailureStatusTextValue(completion.failure), true);
         return;
       }
@@ -517,7 +519,7 @@ function fetchSerializedValueAtPath(
     mode: 'serializeValue',
     serializeLimit: 45000,
     onDone: (completion) => {
-      if (completion.kind === 'failure') {
+      if (!isReactInspectPathRequestSuccessCompletionValue(completion)) {
         onDone(null);
         return;
       }

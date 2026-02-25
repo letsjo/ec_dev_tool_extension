@@ -3,15 +3,33 @@ import {
   type ReactInspectPathRequestFailure,
 } from './pathFailure';
 
+export interface ReactInspectPathRequestSuccessCompletion {
+  kind: 'success';
+  response: Record<string, unknown>;
+}
+
+export interface ReactInspectPathRequestFailureCompletion {
+  kind: 'failure';
+  failure: ReactInspectPathRequestFailure;
+}
+
 export type ReactInspectPathRequestCompletion =
-  | {
-      kind: 'success';
-      response: Record<string, unknown>;
-    }
-  | {
-      kind: 'failure';
-      failure: ReactInspectPathRequestFailure;
-    };
+  | ReactInspectPathRequestSuccessCompletion
+  | ReactInspectPathRequestFailureCompletion;
+
+/** completion이 failure 케이스인지 판별한다. */
+export function isReactInspectPathRequestFailureCompletion(
+  completion: ReactInspectPathRequestCompletion,
+): completion is ReactInspectPathRequestFailureCompletion {
+  return completion.kind === 'failure';
+}
+
+/** completion이 success 케이스인지 판별한다. */
+export function isReactInspectPathRequestSuccessCompletion(
+  completion: ReactInspectPathRequestCompletion,
+): completion is ReactInspectPathRequestSuccessCompletion {
+  return completion.kind === 'success';
+}
 
 /**
  * reactInspectPath 브리지 콜백 결과를 completion 형태로 정규화한다.
