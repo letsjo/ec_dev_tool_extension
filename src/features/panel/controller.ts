@@ -28,7 +28,6 @@ import { readString } from '../../shared/readers/string';
 import type {
   ComponentFilterResult,
   DomTreeEvalResult,
-  DomTreeNode,
   ElementSelectedMessage,
   JsonPathSegment,
   JsonSectionKind,
@@ -59,6 +58,7 @@ import {
   restoreCollapsedById as restoreCollapsedByIdValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
+import { renderDomTreeNode } from './domTree/renderer';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -455,122 +455,6 @@ function setDomTreeEmpty(text: string) {
 function clearDomTreeOutput() {
   domTreeOutputEl.innerHTML = '';
   domTreeOutputEl.classList.remove('empty');
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createDomTagLabel(node: DomTreeNode): HTMLElement {
-  const line = document.createElement('span');
-  line.className = 'dom-tag';
-
-  const lt = document.createElement('span');
-  lt.className = 'dom-bracket';
-  lt.textContent = '<';
-  line.appendChild(lt);
-
-  const tag = document.createElement('span');
-  tag.className = 'dom-tag-name';
-  tag.textContent = node.tagName || 'unknown';
-  line.appendChild(tag);
-
-  node.attributes.forEach((attr) => {
-    line.appendChild(document.createTextNode(' '));
-
-    const name = document.createElement('span');
-    name.className = 'dom-attr-name';
-    name.textContent = attr.name;
-    line.appendChild(name);
-
-    const eqAndQuote = document.createElement('span');
-    eqAndQuote.className = 'dom-bracket';
-    eqAndQuote.textContent = '="';
-    line.appendChild(eqAndQuote);
-
-    const value = document.createElement('span');
-    value.className = 'dom-attr-value';
-    value.textContent = attr.value;
-    line.appendChild(value);
-
-    const closingQuote = document.createElement('span');
-    closingQuote.className = 'dom-bracket';
-    closingQuote.textContent = '"';
-    line.appendChild(closingQuote);
-  });
-
-  const gt = document.createElement('span');
-  gt.className = 'dom-bracket';
-  gt.textContent = '>';
-  line.appendChild(gt);
-
-  if (node.textPreview) {
-    const textPreview = document.createElement('span');
-    textPreview.className = 'dom-text-preview';
-    textPreview.textContent = `"${node.textPreview}"`;
-    line.appendChild(textPreview);
-  }
-
-  return line;
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createDomClosingTagLabel(tagName: string): HTMLElement {
-  const line = document.createElement('span');
-  line.className = 'dom-tag';
-
-  const lt = document.createElement('span');
-  lt.className = 'dom-bracket';
-  lt.textContent = '</';
-  line.appendChild(lt);
-
-  const tag = document.createElement('span');
-  tag.className = 'dom-tag-name';
-  tag.textContent = tagName || 'unknown';
-  line.appendChild(tag);
-
-  const gt = document.createElement('span');
-  gt.className = 'dom-bracket';
-  gt.textContent = '>';
-  line.appendChild(gt);
-
-  return line;
-}
-
-/** 화면 요소를 렌더링 */
-function renderDomTreeNode(node: DomTreeNode, depth = 0): HTMLElement {
-  const hasChildren = node.children.length > 0 || node.truncatedChildren > 0;
-  if (!hasChildren) {
-    const leaf = document.createElement('div');
-    leaf.className = 'dom-leaf';
-    leaf.appendChild(createDomTagLabel(node));
-    return leaf;
-  }
-
-  const details = document.createElement('details');
-  details.className = 'dom-node';
-  if (depth < 1) details.open = true;
-
-  const summary = document.createElement('summary');
-  summary.appendChild(createDomTagLabel(node));
-  details.appendChild(summary);
-
-  const children = document.createElement('div');
-  children.className = 'dom-children';
-  node.children.forEach((child) => {
-    children.appendChild(renderDomTreeNode(child, depth + 1));
-  });
-
-  if (node.truncatedChildren > 0) {
-    const note = document.createElement('div');
-    note.className = 'dom-note';
-    note.textContent = `... ${node.truncatedChildren}개 자식 노드 생략됨`;
-    children.appendChild(note);
-  }
-
-  const closing = document.createElement('div');
-  closing.className = 'dom-closing-tag';
-  closing.appendChild(createDomClosingTagLabel(node.tagName));
-  details.appendChild(children);
-  details.appendChild(closing);
-  return details;
 }
 
 /**
