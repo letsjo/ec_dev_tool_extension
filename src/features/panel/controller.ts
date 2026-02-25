@@ -14,12 +14,10 @@ import { TARGETS } from '../../config';
 import {
   isPickPoint,
   isReactInspectResult,
-  isRecord,
 } from '../../shared/inspector/guards';
 import { readString } from '../../shared/readers/string';
 import type {
   ComponentFilterResult,
-  DomTreeEvalResult,
   ElementSelectedMessage,
   JsonSectionKind,
   PickPoint,
@@ -89,10 +87,9 @@ import {
 } from './reactInspector/viewState';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
-import { renderDomTreeNode } from './domTree/renderer';
+import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import {
-  handleDomTreeAgentResponse,
   handleReactInspectAgentResponse,
 } from './pageAgent/responsePipeline';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
@@ -330,58 +327,12 @@ function setDomTreeEmpty(text: string) {
   setPaneTextValue(domTreeOutputEl, text);
 }
 
-/** 기존 상태를 정리 */
-function clearDomTreeOutput() {
-  clearPaneContentValue(domTreeOutputEl);
-  domTreeOutputEl.classList.remove('empty');
-}
-
-/**
- * page-agent에서 반환한 DOM 트리 결과를 UI에 반영한다.
- * - root가 없으면 상태/본문 모두 에러/empty로 정리
- * - root가 있으면 기존 DOM 트리 내용을 비우고 새 노드만 렌더
- * - 메타의 truncation 여부를 status suffix로 함께 노출
- */
-function applyDomTreeResult(result: DomTreeEvalResult) {
-  if (!result.root) {
-    setDomTreeStatus('DOM 트리를 생성하지 못했습니다.', true);
-    setDomTreeEmpty('표시할 DOM이 없습니다.');
-    return;
-  }
-
-  clearDomTreeOutput();
-  domTreeOutputEl.appendChild(renderDomTreeNode(result.root));
-
-  const rawMeta = (result as unknown as Record<string, unknown>).meta;
-  const meta = isRecord(rawMeta) ? rawMeta : null;
-  const truncatedByBudget = Boolean(meta && meta.truncatedByBudget === true);
-  const pathText = typeof result.domPath === 'string' ? result.domPath : '';
-  const suffix = truncatedByBudget ? ' (노드가 많아 일부 생략됨)' : '';
-  setDomTreeStatus(pathText ? `DOM path: ${pathText}${suffix}` : `선택 요소 DOM${suffix}`);
-}
-
-/**
- * 선택된 selector(또는 clickPoint)를 기준으로 DOM 트리를 조회한다.
- * 조회 시작/성공/실패 상태를 항상 이 함수에서 통일해 UI 일관성을 유지한다.
- */
-function fetchDomTree(selector: string, pickPoint?: PickPoint) {
-  setDomTreeStatus('DOM 트리 조회 중…');
-  setDomTreeEmpty('DOM 트리를 불러오는 중…');
-
-  callInspectedPageAgent(
-    'getDomTree',
-    { selector, pickPoint: pickPoint ?? null },
-    (res, errorText) => {
-      handleDomTreeAgentResponse({
-        response: res,
-        errorText: errorText ?? undefined,
-        setDomTreeStatus,
-        setDomTreeEmpty,
-        applyDomTreeResult,
-      });
-    },
-  );
-}
+const { fetchDomTree } = createDomTreeFetchFlowValue({
+  callInspectedPageAgent,
+  domTreeOutputEl,
+  setDomTreeStatus,
+  setDomTreeEmpty,
+});
 
 const {
   clearPageComponentHighlight,
