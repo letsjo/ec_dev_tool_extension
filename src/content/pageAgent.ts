@@ -27,6 +27,11 @@ import {
   resolveSpecialCollectionPathSegment,
   serializePropsForFiber,
 } from "./pageAgentSerialization";
+import {
+  getFiberIdMap as getFiberIdMapValue,
+  getStableFiberId as getStableFiberIdValue,
+  registerFunctionForInspect as registerFunctionForInspectValue,
+} from "./pageAgentFiberRegistry";
 
 const BRIDGE_SOURCE = "EC_DEV_TOOL_PAGE_AGENT_BRIDGE";
 const BRIDGE_ACTION_REQUEST = "request";
@@ -71,94 +76,21 @@ type FiberLike = AnyRecord & {
   _debugHookTypes?: unknown[];
 };
 
-/** 값이 null이 아니고 object/function 타입인지 판별 */
-function isObjectLike(value: unknown) {
-  const t = typeof value;
-  return (t === "object" || t === "function") && value !== null;
-}
+/** 필요한 값/상태를 계산해 반환 */
+const getFiberIdMap = () => getFiberIdMapValue(window, FIBER_ID_MAP_KEY);
 
 /** 필요한 값/상태를 계산해 반환 */
-function getFiberIdMap() {
-  let map = window[FIBER_ID_MAP_KEY];
-  if (!map || typeof map.get !== "function" || typeof map.set !== "function") {
-    map = new WeakMap();
-    window[FIBER_ID_MAP_KEY] = map;
-  }
-  return map;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getFunctionInspectRegistry() {
-  let registry = window[FUNCTION_INSPECT_REGISTRY_KEY];
-  if (!registry || typeof registry !== "object") {
-    registry = {};
-    window[FUNCTION_INSPECT_REGISTRY_KEY] = registry;
-  }
-  return registry;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getFunctionInspectOrder() {
-  let order = window[FUNCTION_INSPECT_REGISTRY_ORDER_KEY];
-  if (!Array.isArray(order)) {
-    order = [];
-    window[FUNCTION_INSPECT_REGISTRY_ORDER_KEY] = order;
-  }
-  return order;
-}
+const getStableFiberId = (fiber: FiberLike | null | undefined, map: WeakMap<object, string>) =>
+  getStableFiberIdValue(window, FIBER_ID_SEQ_KEY, fiber, map);
 
 /** 해당 기능 흐름을 처리 */
-function registerFunctionForInspect(value: Function) {
-  const registry = getFunctionInspectRegistry();
-  const order = getFunctionInspectOrder();
-  const nextSeqRaw = Number(window[FUNCTION_INSPECT_SEQ_KEY]);
-  const nextSeq = Number.isFinite(nextSeqRaw) && nextSeqRaw > 0 ? Math.floor(nextSeqRaw) : 1;
-  const key = "fn" + String(nextSeq);
-  window[FUNCTION_INSPECT_SEQ_KEY] = nextSeq + 1;
-
-  registry[key] = value;
-  order.push(key);
-
-  while (order.length > MAX_FUNCTION_INSPECT_REFS) {
-    const staleKey = order.shift();
-    if (!staleKey) continue;
-    if (staleKey === key) continue;
-    delete registry[staleKey];
-  }
-  return key;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getNextFiberId() {
-  const next = Number(window[FIBER_ID_SEQ_KEY]);
-  if (!isFinite(next) || next < 1) return 1;
-  return Math.floor(next);
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getStableFiberId(fiber: FiberLike | null | undefined, map: WeakMap<object, string>) {
-  if (!isObjectLike(fiber)) return null;
-
-  const existingId = map.get(fiber);
-  if (typeof existingId === "string" && existingId) return existingId;
-
-  if (isObjectLike(fiber.alternate)) {
-    const alternateId = map.get(fiber.alternate);
-    if (typeof alternateId === "string" && alternateId) {
-      map.set(fiber, alternateId);
-      return alternateId;
-    }
-  }
-
-  const nextId = getNextFiberId();
-  const stableId = "f" + String(nextId);
-  window[FIBER_ID_SEQ_KEY] = nextId + 1;
-  map.set(fiber, stableId);
-  if (isObjectLike(fiber.alternate)) {
-    map.set(fiber.alternate, stableId);
-  }
-  return stableId;
-}
+const registerFunctionForInspect = (value: Function) =>
+  registerFunctionForInspectValue(window, value, {
+    registryKey: FUNCTION_INSPECT_REGISTRY_KEY,
+    orderKey: FUNCTION_INSPECT_REGISTRY_ORDER_KEY,
+    seqKey: FUNCTION_INSPECT_SEQ_KEY,
+    maxFunctionInspectRefs: MAX_FUNCTION_INSPECT_REFS,
+  });
 
 /** 필요한 값/상태를 계산해 반환 */
 function getReactFiberFromElement(el: Element | null) {
