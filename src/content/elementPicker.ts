@@ -1,12 +1,12 @@
 /**
  * 페이지에 오버레이를 띄우고, 마우스 위치의 DOM 요소를 하이라이트 후 클릭 시 선택 정보를 전달.
  */
-import type { ElementInfo } from "../shared/inspector/types";
 import {
   notifyPickerStopped,
   notifyRuntimeChanged,
   sendRuntimeMessageSafe,
 } from "./runtimeMessaging";
+import { getElementInfo } from "./elementSelectorInfo";
 
 const OVERLAY_ID = "ec-dev-tool-element-picker-overlay";
 const HIGHLIGHT_CLASS = "ec-dev-tool-picker-highlight";
@@ -228,95 +228,6 @@ function stopRuntimeHookBridge() {
     runtimeChangeTimer = null;
   }
   stopPageAgentBridgeListener();
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getElementPath(el: Element): string {
-  const segments: string[] = [];
-  let current: Element | null = el;
-  while (current && current.nodeType === Node.ELEMENT_NODE) {
-    let seg = (current as Element).tagName.toLowerCase();
-    if (current.id) seg += `#${current.id}`;
-    else if (current.className && typeof current.className === "string") {
-      const classes = current.className.trim().split(/\s+/).filter(Boolean).slice(0, 2);
-      if (classes.length) seg += "." + classes.join(".");
-    }
-    segments.unshift(seg);
-    current = current.parentElement;
-  }
-  return segments.join(" > ");
-}
-
-/** 해당 기능 흐름을 처리 */
-function escapeCssIdent(value: string): string {
-  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") return CSS.escape(value);
-  return value.replace(/[^a-zA-Z0-9_-]/g, "\\$&");
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function buildCssSelector(el: Element): string {
-  if ((el as HTMLElement).id) {
-    return `#${escapeCssIdent((el as HTMLElement).id)}`;
-  }
-
-  const segments: string[] = [];
-  let current: Element | null = el;
-  let guard = 0;
-  while (current && current.nodeType === Node.ELEMENT_NODE && guard < 16) {
-    const tag = current.tagName.toLowerCase();
-    let segment = tag;
-
-    const id = (current as HTMLElement).id;
-    if (id) {
-      segment += `#${escapeCssIdent(id)}`;
-      segments.unshift(segment);
-      break;
-    }
-
-    const parentEl: Element | null = current.parentElement;
-    if (parentEl) {
-      let sameTagCount = 0;
-      let nth = 0;
-      for (let i = 0; i < parentEl.children.length; i += 1) {
-        const child = parentEl.children.item(i);
-        if (!child) continue;
-        if (child.tagName === current.tagName) {
-          sameTagCount += 1;
-          if (child === current) nth = sameTagCount;
-        }
-      }
-      if (sameTagCount > 1 && nth > 0) {
-        segment += `:nth-of-type(${nth})`;
-      }
-    }
-
-    segments.unshift(segment);
-    current = parentEl;
-    guard += 1;
-  }
-
-  return segments.join(" > ");
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getSimpleSelector(el: Element): string {
-  const selector = buildCssSelector(el);
-  return selector || el.tagName.toLowerCase();
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getElementInfo(el: Element, clickX: number, clickY: number): ElementInfo {
-  const rect = el.getBoundingClientRect();
-  return {
-    tagName: el.tagName.toLowerCase(),
-    id: (el as HTMLElement).id || null,
-    className: (el as HTMLElement).className || null,
-    domPath: getElementPath(el),
-    selector: getSimpleSelector(el),
-    rect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
-    innerText: (el as HTMLElement).innerText?.slice(0, 200) ?? null,
-    clickPoint: { x: clickX, y: clickY },
-  };
 }
 
 /** 해당 기능 흐름을 처리 */
