@@ -81,6 +81,7 @@ import {
 } from './reactInspector/viewState';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
+import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './reactInspector/detailRenderer';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
@@ -362,35 +363,19 @@ function snapshotCollapsedIds(): Set<string> {
 
 /** 화면 요소를 렌더링 */
 function renderReactComponentDetail(component: ReactComponentInfo) {
-  const nextSignature = buildReactComponentDetailRenderSignature(component);
-  if (
-    component.id === lastReactDetailComponentId &&
-    nextSignature === lastReactDetailRenderSignature
-  ) {
-    return;
-  }
-
-  clearPaneContentValue(reactComponentDetailEl);
-  reactComponentDetailEl.classList.remove('empty');
-
-  const content = document.createElement('div');
-  content.className = 'react-component-detail-content';
-
-  const title = document.createElement('div');
-  title.className = 'react-detail-title';
-  title.textContent = component.name;
-  content.appendChild(title);
-
-  const meta = document.createElement('div');
-  meta.className = 'react-detail-meta';
-  meta.textContent = `kind: ${component.kind} | hook count: ${component.hookCount}`;
-  content.appendChild(meta);
-
-  content.appendChild(createJsonSection('props', component.props, component, 'props'));
-  content.appendChild(createJsonSection('hooks', component.hooks, component, 'hooks'));
-  reactComponentDetailEl.appendChild(content);
-  lastReactDetailComponentId = component.id;
-  lastReactDetailRenderSignature = nextSignature;
+  const nextCache = renderReactComponentDetailPanelValue({
+    component,
+    cache: {
+      componentId: lastReactDetailComponentId,
+      renderSignature: lastReactDetailRenderSignature,
+    },
+    reactComponentDetailEl,
+    buildRenderSignature: buildReactComponentDetailRenderSignature,
+    clearPaneContent: clearPaneContentValue,
+    createJsonSection,
+  });
+  lastReactDetailComponentId = nextCache.componentId;
+  lastReactDetailRenderSignature = nextCache.renderSignature;
 }
 
 /** 화면 요소를 렌더링 */
