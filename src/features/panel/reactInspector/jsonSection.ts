@@ -5,9 +5,6 @@ import type {
   ReactComponentInfo,
 } from '../../../shared/inspector/types';
 import {
-  normalizeCollectionTokenForDisplay as normalizeCollectionTokenForDisplayValue,
-} from './collectionDisplay';
-import {
   buildHookTree as buildHookTreeValue,
   type HookRowItem,
   type HookTreeNode,
@@ -18,20 +15,12 @@ import type {
   JsonRenderContext,
 } from './jsonRenderTypes';
 import {
-  createCircularRefNode as createCircularRefNodeValue,
-  createFunctionTokenNode as createFunctionTokenNodeValue,
-} from './jsonTokenNodes';
-import { createDehydratedTokenNode as createDehydratedTokenNodeValue } from './jsonDehydratedNode';
-import {
   createDetailsToggleButton,
   createExpandableValueRow,
   createRowToggleSpacer,
 } from './jsonRowUi';
-import {
-  formatPrimitive,
-  isJsonInternalMetaKey,
-} from './jsonPreview';
-import { createObjectArrayJsonValueNode } from './jsonObjectArrayNode';
+import { isJsonInternalMetaKey } from './jsonPreview';
+import { createJsonValueNodeRenderer } from './jsonValueNode';
 
 /**
  * controller의 pageAgent 브리지를 모듈 외부에 두고,
@@ -65,6 +54,11 @@ function fetchSerializedValueAtPath(
 ) {
   currentFetchSerializedValueAtPathHandler(component, section, path, onDone);
 }
+
+const createJsonValueNode = createJsonValueNodeRenderer({
+  onInspectFunctionAtPath: inspectFunctionAtPath,
+  fetchSerializedValueAtPath,
+});
 
 function collectRefMap(root: unknown): Map<number, unknown> {
   const map = new Map<number, unknown>();
@@ -190,64 +184,6 @@ function appendHookTree(container: HTMLElement, nodes: HookTreeNode[], context: 
     appendHookTree(groupChildren, node.children, context);
     groupDetails.appendChild(groupChildren);
     container.appendChild(groupDetails);
-  });
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createJsonValueNode(
-  value: unknown,
-  depth: number,
-  context: JsonRenderContext,
-): HTMLElement {
-  const functionTokenNode = createFunctionTokenNodeValue({
-    value,
-    context,
-    onInspectFunctionAtPath: inspectFunctionAtPath,
-  });
-  if (functionTokenNode) {
-    return functionTokenNode;
-  }
-
-  const circularRefNode = createCircularRefNodeValue({
-    value,
-    depth,
-    context,
-    createJsonValueNode,
-  });
-  if (circularRefNode) {
-    return circularRefNode;
-  }
-
-  const dehydratedTokenNode = createDehydratedTokenNodeValue({
-    value,
-    depth,
-    context,
-    fetchSerializedValueAtPath,
-    createReplacementJsonValueNode: (nextValue, nextDepth) =>
-      createJsonValueNode(nextValue, nextDepth, context),
-  });
-  if (dehydratedTokenNode) {
-    return dehydratedTokenNode;
-  }
-
-  const normalizedCollectionValue = normalizeCollectionTokenForDisplayValue(value);
-  if (normalizedCollectionValue !== value) {
-    return createJsonValueNode(normalizedCollectionValue, depth, context);
-  }
-
-  if (normalizedCollectionValue === null || typeof normalizedCollectionValue !== 'object') {
-    const primitive = document.createElement('span');
-    primitive.className = 'json-primitive';
-    primitive.textContent = formatPrimitive(normalizedCollectionValue);
-    return primitive;
-  }
-
-  return createObjectArrayJsonValueNode({
-    value: normalizedCollectionValue as Record<string, unknown> | unknown[],
-    depth,
-    context,
-    createJsonValueNode,
-    fetchSerializedValueAtPath,
   });
 }
 
