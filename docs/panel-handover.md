@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentInspect.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -110,7 +110,8 @@
 - `reactInspect`
 - `reactInspectPath`
 
-`src/content/pageAgent.ts`는 브리지 라우팅/React inspect 중심 오케스트레이션을 담당하고,
+`src/content/pageAgent.ts`는 브리지 설치/메서드 라우터/도메인 핸들러 조립을 담당하고,
+React inspect/inspectPath 오케스트레이션은 `src/content/pageAgentInspect.ts`로 위임합니다.
 DOM selector/path/트리/highlight/preview 구현은 `src/content/pageAgentDom.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
@@ -118,7 +119,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 
 새 메서드 추가 시:
 
-1. `pageAgent.ts`에 구현 함수 추가
+1. 도메인에 맞는 모듈(`pageAgent.ts`, `pageAgentDom.ts`, `pageAgentInspect.ts`)에 구현 함수 추가
 2. `pageAgentMethods.ts`의 method 라우터에 handler 연결
 3. `controller.ts`에서 호출 및 타입 가드 연결
 4. 필요하면 `src/shared/inspector/types.ts` 타입 확장
@@ -126,7 +127,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 ## 6.1 pageAgent DOM 모듈 분리 규칙
 
 - `pageAgentDom.ts`: DOM selector/path 계산, DOM 트리 직렬화, component highlight/hover preview 상태 복원 전담
-- `pageAgent.ts`: 요청 method 라우팅, React fiber 기반 inspect/path 처리 전담
+- `pageAgent.ts`: 요청 method 라우팅/핸들러 조립 전담
 
 ## 6.2 pageAgent Bridge 모듈 분리 규칙
 
@@ -141,7 +142,12 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 ## 6.4 pageAgent Hook Group 모듈 분리 규칙
 
 - `pageAgentHookGroups.ts`: hook stack frame 파싱, primitive hook 이름 정규화, custom hook group/path 추론 전담
-- `pageAgent.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
+- `pageAgentInspect.ts`: fiber 순회/serializer/inspect 오케스트레이션에서 group metadata 적용 전담
+
+## 6.5 pageAgent Inspect 모듈 분리 규칙
+
+- `pageAgentInspect.ts`: `reactInspect`/`reactInspectPath` 오케스트레이션, 컴포넌트 트리 순회/선택 계산, componentId 기반 fiber 탐색 전담
+- `pageAgent.ts`: inspect 핸들러 팩토리 의존성 주입과 method executor 연결 전담
 
 ## 7. 워크스페이스(패널 스플릿) 모델
 
@@ -247,7 +253,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `elementPicker.ts`의 notify throttle 값과 함께 조정
 
 5. DOM 트리 렌더가 무거운 경우
-- `pageAgent.ts`의 직렬화 제한(`MAX_DEPTH`, `MAX_CHILDREN_PER_NODE`) 점검
+- `pageAgentDom.ts`의 직렬화 제한(`MAX_DEPTH`, `MAX_CHILDREN_PER_NODE`) 점검
 
 ## 10. 변경 시 권장 절차
 
@@ -295,7 +301,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 
 ### 새 pageAgent 메서드 추가
 
-1. `pageAgent.ts`에 함수 작성
+1. 도메인 성격에 맞는 모듈(`pageAgent.ts`, `pageAgentDom.ts`, `pageAgentInspect.ts`)에 함수 작성
 2. `pageAgentMethods.ts` 라우터 case에 메서드/핸들러 연결
 3. `controller.ts`에서 `callInspectedPageAgent` 호출 경로 추가
 4. `types.ts`/`guards.ts`에 응답 타입과 검증기 추가
@@ -326,6 +332,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/content/pageAgentBridge.ts`
 - `src/content/pageAgentMethods.ts`
 - `src/content/pageAgentHookGroups.ts`
+- `src/content/pageAgentInspect.ts`
 - `src/content/reactRuntimeHook.ts`
 - `src/background.ts`
 - `panel.html`
