@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createGetDomTreeHandler as createGetDomTreeHandlerValue } from "./pageAgentDomTree";
+import { createDomHighlightHandlers as createDomHighlightHandlersValue } from "./pageAgentDomHighlight";
 
-type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
 
 interface CreatePageDomHandlersOptions {
@@ -95,132 +95,23 @@ export function resolveTargetElement(selector: string, pickPoint: PickPoint | nu
 
 /** pageAgent의 DOM 관련 메서드 핸들러를 구성한다. */
 export function createPageDomHandlers(options: CreatePageDomHandlersOptions) {
-  const componentHighlightStorageKey = options.componentHighlightStorageKey;
-  const hoverPreviewStorageKey = options.hoverPreviewStorageKey;
-
-  /** 이전 상태를 복원 */
-  function restoreStyledElement(storageKey: string) {
-    const previous = window[storageKey];
-    if (!previous || !previous.el) return;
-    try {
-      previous.el.style.outline = previous.prevOutline || "";
-      previous.el.style.boxShadow = previous.prevBoxShadow || "";
-      previous.el.style.transition = previous.prevTransition || "";
-    } catch (_) {
-      /** 복원 실패는 무시한다. */
-    }
-  }
-
   const getDomTree = createGetDomTreeHandlerValue({
     buildCssSelector,
     getElementPath,
     resolveTargetElement,
   });
 
-  /** 기존 상태를 정리 */
-  function clearComponentHighlight() {
-    try {
-      restoreStyledElement(componentHighlightStorageKey);
-      window[componentHighlightStorageKey] = null;
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, error: String(e && e.message) };
-    }
-  }
-
-  /** 기존 상태를 정리 */
-  function clearHoverPreview() {
-    try {
-      restoreStyledElement(hoverPreviewStorageKey);
-      window[hoverPreviewStorageKey] = null;
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, error: String(e && e.message) };
-    }
-  }
-
-  /** 해당 기능 흐름을 처리 */
-  function highlightComponent(args: AnyRecord | null | undefined) {
-    const selector = typeof args?.selector === "string" ? args.selector : "";
-
-    try {
-      restoreStyledElement(componentHighlightStorageKey);
-
-      const el = selector ? document.querySelector(selector) : null;
-      if (!el) {
-        window[componentHighlightStorageKey] = null;
-        return { ok: false, error: "요소를 찾을 수 없습니다.", selector };
-      }
-
-      const prevOutline = el.style.outline;
-      const prevBoxShadow = el.style.boxShadow;
-      const prevTransition = el.style.transition;
-
-      el.style.transition = prevTransition ? prevTransition + ", outline-color 120ms ease" : "outline-color 120ms ease";
-      el.style.outline = "2px solid #ff6d00";
-      el.style.boxShadow = "0 0 0 2px rgba(255,109,0,0.25)";
-
-      if (typeof el.scrollIntoView === "function") {
-        el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-      }
-
-      window[componentHighlightStorageKey] = {
-        el,
-        prevOutline,
-        prevBoxShadow,
-        prevTransition,
-      };
-
-      const rect = el.getBoundingClientRect();
-      return {
-        ok: true,
-        tagName: String(el.tagName || "").toLowerCase(),
-        selector: buildCssSelector(el),
-        domPath: getElementPath(el),
-        rect: {
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        },
-      };
-    } catch (e) {
-      return { ok: false, error: String(e && e.message), selector };
-    }
-  }
-
-  /** 해당 기능 흐름을 처리 */
-  function previewComponent(args: AnyRecord | null | undefined) {
-    const selector = typeof args?.selector === "string" ? args.selector : "";
-    try {
-      restoreStyledElement(hoverPreviewStorageKey);
-
-      const el = selector ? document.querySelector(selector) : null;
-      if (!el) {
-        window[hoverPreviewStorageKey] = null;
-        return { ok: false, error: "요소를 찾을 수 없습니다.", selector };
-      }
-
-      const prevOutline = el.style.outline;
-      const prevBoxShadow = el.style.boxShadow;
-      const prevTransition = el.style.transition;
-
-      el.style.transition = prevTransition ? prevTransition + ", outline-color 120ms ease" : "outline-color 120ms ease";
-      el.style.outline = "2px solid #49a5ff";
-      el.style.boxShadow = "0 0 0 2px rgba(73,165,255,0.3)";
-
-      window[hoverPreviewStorageKey] = {
-        el,
-        prevOutline,
-        prevBoxShadow,
-        prevTransition,
-      };
-
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, error: String(e && e.message), selector };
-    }
-  }
+  const {
+    clearComponentHighlight,
+    clearHoverPreview,
+    highlightComponent,
+    previewComponent,
+  } = createDomHighlightHandlersValue({
+    componentHighlightStorageKey: options.componentHighlightStorageKey,
+    hoverPreviewStorageKey: options.hoverPreviewStorageKey,
+    buildCssSelector,
+    getElementPath,
+  });
 
   return {
     getDomTree,
