@@ -21,18 +21,15 @@ import { createReactInspectPathBindings as createReactInspectPathBindingsValue }
 import { createReactInspectorControllerState } from './reactInspector/controllerState';
 import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from './reactInspector/controllerFlows';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
-import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
 import { renderPanelFatalErrorView as renderPanelFatalErrorViewValue } from './lifecycle/fatalErrorView';
-import { createPanelTeardownFlow as createPanelTeardownFlowValue } from './lifecycle/panelTeardownFlow';
 import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializationValue } from './lifecycle/panelWorkspaceInitialization';
-import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from './lifecycle/runtimeMessageBinding';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelPaneSetters as createPanelPaneSettersValue } from './paneSetters';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
-import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from './runtimeRefresh/panelRuntimeRefreshFlow';
 import { createPanelControllerContext } from './controllerContext';
+import { createPanelControllerRuntime as createPanelControllerRuntimeValue } from './controllerRuntime';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 const reactInspectorState = createReactInspectorControllerState();
@@ -120,65 +117,34 @@ const { onComponentSearchInput, fetchReactInfo } = createReactInspectorControlle
   detailFetchRetryCooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
 });
 
-const { runtimeRefreshScheduler, onInspectedPageNavigated } =
-  createPanelRuntimeRefreshFlowValue({
-    isPickerModeActive: panelControllerContext.isPickerModeActive,
-    getStoredLookup: reactInspectorState.getStoredLookup,
-    setStoredLookup: reactInspectorState.setStoredLookup,
-    runRefresh: (lookup, background, onDone) => {
-      fetchReactInfo(
-        lookup.selector,
-        lookup.pickPoint,
-        createRuntimeRefreshFetchOptionsValue(background, onDone),
-      );
-    },
-    setElementOutput,
-    setDomTreeStatus,
-    setDomTreeEmpty,
-  });
-
-/**
- * 요소 선택 모드를 시작한다.
- * 실제 선택 완료/취소/런타임 갱신 이벤트는 runtime 메시지 핸들러에서 이어서 처리된다.
- */
-const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue({
-  getInspectedTabId: () => chrome.devtools.inspectedWindow.tabId,
+const {
+  runtimeRefreshScheduler,
+  onInspectedPageNavigated,
+  onSelectElement,
+  onPanelBeforeUnload,
+} = createPanelControllerRuntimeValue({
+  panelControllerContext,
+  getStoredLookup: reactInspectorState.getStoredLookup,
+  setStoredLookup: reactInspectorState.setStoredLookup,
+  fetchReactInfoForRuntimeRefresh: (lookup, background, onDone) => {
+    fetchReactInfo(
+      lookup.selector,
+      lookup.pickPoint,
+      createRuntimeRefreshFetchOptionsValue(background, onDone),
+    );
+  },
+  fetchReactInfoForElementSelection: (selector, pickPoint) => {
+    fetchReactInfo(selector, pickPoint, createElementSelectionFetchOptionsValue());
+  },
   clearPageHoverPreview,
-  setPickerModeActive: panelControllerContext.setPickerModeActive,
+  fetchDomTree,
   setElementOutput,
   setReactStatus,
   setDomTreeStatus,
   setDomTreeEmpty,
-  fetchDomTree,
-  fetchReactInfoForElementSelection: (selector, pickPoint) => {
-    fetchReactInfo(selector, pickPoint, createElementSelectionFetchOptionsValue());
-  },
-  scheduleRuntimeRefresh: () => {
-    runtimeRefreshScheduler.schedule(true);
-  },
-});
-
-panelControllerContext.setRemoveRuntimeMessageListener(
-  bindRuntimeMessageListenerValue(onRuntimeMessage, {
-    addListener(listener) {
-      chrome.runtime.onMessage.addListener(listener);
-    },
-    removeListener(listener) {
-      chrome.runtime.onMessage.removeListener(listener);
-    },
-  }),
-);
-
-const onPanelBeforeUnload = createPanelTeardownFlowValue({
-  getWorkspaceLayoutManager: panelControllerContext.getWorkspaceLayoutManager,
-  setWorkspaceLayoutManager: panelControllerContext.setWorkspaceLayoutManager,
-  getDestroyWheelScrollFallback: panelControllerContext.getDestroyWheelScrollFallback,
-  setDestroyWheelScrollFallback: panelControllerContext.setDestroyWheelScrollFallback,
-  getRemoveRuntimeMessageListener: panelControllerContext.getRemoveRuntimeMessageListener,
-  setRemoveRuntimeMessageListener: panelControllerContext.setRemoveRuntimeMessageListener,
-  runtimeRefreshScheduler,
-  removeNavigatedListener: () => {
-    chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
+  getInspectedTabId: () => chrome.devtools.inspectedWindow.tabId,
+  removeNavigatedListener(listener) {
+    chrome.devtools.network.onNavigated.removeListener(listener);
   },
 });
 
