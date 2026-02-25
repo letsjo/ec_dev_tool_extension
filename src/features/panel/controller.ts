@@ -13,6 +13,7 @@ import {
   initPanelDomRefs as initPanelDomRefsValue,
   mountPanelView as mountPanelViewValue,
 } from './domRefs';
+import { createPanelControllerBootstrap as createPanelControllerBootstrapValue } from './controllerBootstrap';
 import {
   createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
@@ -21,9 +22,7 @@ import { createReactInspectPathBindings as createReactInspectPathBindingsValue }
 import { createReactInspectorControllerState } from './reactInspector/controllerState';
 import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from './reactInspector/controllerFlows';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
-import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
 import { renderPanelFatalErrorView as renderPanelFatalErrorViewValue } from './lifecycle/fatalErrorView';
-import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializationValue } from './lifecycle/panelWorkspaceInitialization';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelPaneSetters as createPanelPaneSettersValue } from './paneSetters';
@@ -148,33 +147,15 @@ const {
   },
 });
 
-const { initializeWorkspaceLayout, initializeWheelFallback } =
-  createPanelWorkspaceInitializationValue({
-    getPanelWorkspaceEl: panelControllerContext.getPanelWorkspaceEl,
-    getPanelContentEl: panelControllerContext.getPanelContentEl,
-    getWorkspacePanelToggleBarEl: panelControllerContext.getWorkspacePanelToggleBarEl,
-    getWorkspaceDockPreviewEl: panelControllerContext.getWorkspaceDockPreviewEl,
-    getWorkspacePanelElements: panelControllerContext.getWorkspacePanelElements,
-    createWorkspaceLayoutManager,
-    initWheelScrollFallback,
-    setWorkspaceLayoutManager: panelControllerContext.setWorkspaceLayoutManager,
-    setDestroyWheelScrollFallback: panelControllerContext.setDestroyWheelScrollFallback,
-  });
-
-const { bootstrapPanel } = createPanelBootstrapFlowValue({
+const { bootstrapPanel } = createPanelControllerBootstrapValue({
+  panelControllerContext,
   mountPanelView,
-  initDomRefs: panelControllerContext.initDomRefs,
-  initializeWorkspaceLayout,
-  initializeWheelFallback,
-  setPickerModeActive: panelControllerContext.setPickerModeActive,
+  createWorkspaceLayoutManager,
+  initWheelScrollFallback,
   populateTargetSelect,
   setElementOutput,
   setDomTreeStatus,
   setDomTreeEmpty,
-  getFetchBtnEl: panelControllerContext.getFetchBtnEl,
-  getSelectElementBtnEl: panelControllerContext.getSelectElementBtnEl,
-  getComponentSearchInputEl: panelControllerContext.getComponentSearchInputEl,
-  getReactComponentListEl: panelControllerContext.getReactComponentListEl,
   onFetch,
   onSelectElement,
   onComponentSearchInput,
@@ -182,7 +163,7 @@ const { bootstrapPanel } = createPanelBootstrapFlowValue({
   addNavigatedListener: () => {
     chrome.devtools.network.onNavigated.addListener(onInspectedPageNavigated);
   },
-  onBeforeUnload: onPanelBeforeUnload,
+  onPanelBeforeUnload,
   runInitialRefresh: () => {
     runtimeRefreshScheduler.refresh(false);
   },
