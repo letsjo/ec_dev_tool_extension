@@ -47,6 +47,7 @@ import {
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
+import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './reactInspector/listRenderFlow';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
@@ -318,54 +319,40 @@ function renderReactComponentDetail(component: ReactComponentInfo) {
   lastReactDetailRenderSignature = nextCache.renderSignature;
 }
 
-/** 화면 요소를 렌더링 */
-function renderReactComponentList() {
-  if (reactComponents.length === 0) {
-    setReactListEmpty(
-      buildReactComponentListEmptyTextValue(reactComponents.length, componentSearchQuery),
-    );
-    return;
-  }
-
-  const filterResult = getComponentFilterResult();
-  const visibleIndices = filterResult.visibleIndices;
-  const matchedIndexSet = new Set<number>(filterResult.matchedIndices);
-
-  if (visibleIndices.length === 0) {
-    setReactListEmpty(
-      buildReactComponentListEmptyTextValue(reactComponents.length, componentSearchQuery),
-    );
-    return;
-  }
-
-  const nextSignature = buildReactListRenderSignature(filterResult, matchedIndexSet);
-  const forceRenderForUpdates = updatedComponentIds.size > 0;
-  if (nextSignature === lastReactListRenderSignature && !forceRenderForUpdates) {
-    return;
-  }
-
-  renderReactComponentListTreeValue({
+const renderReactComponentListFlow = createReactComponentListRenderFlowValue({
+  readState: () => ({
     reactComponents,
-    visibleIndices,
-    matchedIndexSet,
-    selectedReactComponentIndex,
     componentSearchQuery,
+    selectedReactComponentIndex,
     collapsedComponentIds,
     updatedComponentIds,
-    treePaneEl,
-    reactComponentListEl,
-    idToIndex: buildComponentIndexById(),
-    clearPaneContent: clearPaneContentValue,
-    previewPageDomForComponent,
-    clearPageHoverPreview,
-    onSelectComponent: selectReactComponent,
-    onRequestRender: () => {
-      renderReactComponentList();
-    },
-  });
+    lastReactListRenderSignature,
+  }),
+  writeState: (update) => {
+    if (typeof update.lastReactListRenderSignature === 'string') {
+      lastReactListRenderSignature = update.lastReactListRenderSignature;
+    }
+    if (update.updatedComponentIds) {
+      updatedComponentIds = update.updatedComponentIds;
+    }
+  },
+  setReactListEmpty,
+  buildReactComponentListEmptyText: buildReactComponentListEmptyTextValue,
+  getComponentFilterResult,
+  buildReactListRenderSignature,
+  buildComponentIndexById,
+  renderReactComponentListTree: renderReactComponentListTreeValue,
+  treePaneEl,
+  reactComponentListEl,
+  clearPaneContent: clearPaneContentValue,
+  previewPageDomForComponent,
+  clearPageHoverPreview,
+  getOnSelectComponent: () => selectReactComponent,
+});
 
-  lastReactListRenderSignature = nextSignature;
-  updatedComponentIds = new Set<string>();
+/** 화면 요소를 렌더링 */
+function renderReactComponentList() {
+  renderReactComponentListFlow();
 }
 
 /** 해당 기능 흐름을 처리 */
