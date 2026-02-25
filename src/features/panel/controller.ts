@@ -76,6 +76,7 @@ import {
   type ReactInspectPathRequestFailure,
 } from './reactInspector/pathFailure';
 import {
+  buildOpenFunctionInSourcesExpression as buildOpenFunctionInSourcesExpressionValue,
   buildOpenFunctionInSourcesFailureStatusText as buildOpenFunctionInSourcesFailureStatusTextValue,
   buildOpenFunctionInSourcesSuccessStatusText as buildOpenFunctionInSourcesSuccessStatusTextValue,
   resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
@@ -489,9 +490,10 @@ function inspectFunctionAtPath(
 
 /** DevTools 기능을 호출해 이동/열기를 수행 */
 function openFunctionInSources(inspectRefKey: string, functionName: string) {
-  const storeKeyLiteral = JSON.stringify(PAGE_FUNCTION_INSPECT_REGISTRY_KEY);
-  const refKeyLiteral = JSON.stringify(inspectRefKey);
-  const expression = `(function(){try{const store=window[${storeKeyLiteral}];const fn=store&&store[${refKeyLiteral}];if(typeof fn!=="function"){return {ok:false,error:"inspect 대상 함수를 찾지 못했습니다."};}if(typeof inspect!=="function"){return {ok:false,error:"DevTools inspect 함수를 사용할 수 없습니다."};}inspect(fn);return {ok:true};}catch(error){return {ok:false,error:String(error&&error.message?error.message:error)};}})();`;
+  const expression = buildOpenFunctionInSourcesExpressionValue({
+    inspectRefKey,
+    storeKey: PAGE_FUNCTION_INSPECT_REGISTRY_KEY,
+  });
 
   chrome.devtools.inspectedWindow.eval(expression, (result, exceptionInfo) => {
     const failureReason = resolveOpenFunctionInSourcesFailureReasonValue({

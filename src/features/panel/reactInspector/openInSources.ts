@@ -1,9 +1,26 @@
 import { isRecord } from '../../../shared/inspector/guards';
 
+interface BuildOpenFunctionInSourcesExpressionParams {
+  inspectRefKey: string;
+  storeKey: string;
+}
+
 interface ResolveOpenFunctionInSourcesFailureParams {
   result: unknown;
   exceptionInfo: unknown;
   runtimeErrorMessage?: string | null;
+}
+
+/**
+ * inspectedWindow.eval로 실행할 inspect 래퍼 스크립트를 생성한다.
+ * store key/ref key는 JSON literal로 주입해 quoting 이슈를 방지한다.
+ */
+export function buildOpenFunctionInSourcesExpression(
+  params: BuildOpenFunctionInSourcesExpressionParams,
+): string {
+  const storeKeyLiteral = JSON.stringify(params.storeKey);
+  const refKeyLiteral = JSON.stringify(params.inspectRefKey);
+  return `(function(){try{const store=window[${storeKeyLiteral}];const fn=store&&store[${refKeyLiteral}];if(typeof fn!=="function"){return {ok:false,error:"inspect 대상 함수를 찾지 못했습니다."};}if(typeof inspect!=="function"){return {ok:false,error:"DevTools inspect 함수를 사용할 수 없습니다."};}inspect(fn);return {ok:true};}catch(error){return {ok:false,error:String(error&&error.message?error.message:error)};}})();`;
 }
 
 /**
