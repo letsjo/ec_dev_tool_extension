@@ -41,6 +41,32 @@ import type {
 } from '../../shared/inspector/types';
 import { PanelViewSection } from '../../ui/sections';
 import { isWorkspacePanelId, WORKSPACE_PANEL_IDS, type WorkspacePanelId } from './workspacePanels';
+import {
+  appendPanelToWorkspaceLayout,
+  clampWorkspaceSplitRatio,
+  collectPanelIdsFromLayout,
+  createDefaultWorkspaceLayout,
+  createWorkspacePanelNode,
+  createWorkspaceSplitNode,
+  dedupeWorkspaceLayoutPanels,
+  getWorkspaceVisiblePanelIds,
+  insertPanelByDockTarget,
+  parseWorkspaceLayoutNode,
+  parseWorkspaceNodePath,
+  pruneWorkspaceLayoutByVisiblePanels,
+  removePanelFromWorkspaceLayout,
+  stringifyWorkspaceNodePath,
+  swapWorkspaceLayoutPanels,
+  updateWorkspaceSplitRatioByPath,
+  WORKSPACE_DOCK_SPLIT_RATIO,
+  type WorkspaceDockDirection,
+  type WorkspaceDropTarget,
+  type WorkspaceLayoutNode,
+  type WorkspaceNodePath,
+  type WorkspacePanelState,
+} from './workspace/layoutModel';
+import { readStoredJson, writeStoredJson } from './workspace/storage';
+import { initWheelScrollFallback } from './workspace/wheelScrollFallback';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -135,32 +161,6 @@ interface CallPageAgentResponse {
   error?: string;
 }
 
-type WorkspaceDockDirection = 'left' | 'right' | 'top' | 'bottom' | 'center';
-type WorkspaceNodePathSegment = 'first' | 'second';
-type WorkspaceNodePath = WorkspaceNodePathSegment[];
-
-interface WorkspacePanelLayoutNode {
-  type: 'panel';
-  panelId: WorkspacePanelId;
-}
-
-interface WorkspaceSplitLayoutNode {
-  type: 'split';
-  axis: 'row' | 'column';
-  ratio: number;
-  first: WorkspaceLayoutNode;
-  second: WorkspaceLayoutNode;
-}
-
-type WorkspaceLayoutNode = WorkspacePanelLayoutNode | WorkspaceSplitLayoutNode;
-
-interface WorkspaceDropTarget {
-  targetPanelId: WorkspacePanelId | null;
-  direction: WorkspaceDockDirection;
-}
-
-type WorkspacePanelState = 'visible' | 'closed';
-
 interface WorkspaceResizeDragState {
   splitPath: WorkspaceNodePath;
   axis: 'row' | 'column';
@@ -202,8 +202,6 @@ const DISPLAY_COLLECTION_SIZE_KEY = '__ecDisplayCollectionSize';
 const OBJECT_CLASS_NAME_META_KEY = '__ecObjectClassName';
 const WORKSPACE_LAYOUT_STORAGE_KEY = 'ecDevTool.workspaceLayout.v1';
 const WORKSPACE_PANEL_STATE_STORAGE_KEY = 'ecDevTool.workspacePanelState.v1';
-const WORKSPACE_DOCK_SPLIT_RATIO = 0.5;
-const WORKSPACE_SPLIT_MIN_RATIO = 0.12;
 
 let destroyWheelScrollFallback: (() => void) | null = null;
 let workspacePanelElements = new Map<WorkspacePanelId, HTMLDetailsElement>();
@@ -333,286 +331,6 @@ function callInspectedPageAgent(
   );
 }
 
-/** 값을 읽어 검증/변환 */
-function readStoredJson<T>(key: string): T | null {
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
-/** 값을 저장 */
-function writeStoredJson<T>(key: string, value: T) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /** localStorage 저장 실패는 무시한다. */
-  }
-}
-
-/** 값을 읽어 검증/변환 */
-function parseWorkspaceNodePath(pathText: string): WorkspaceNodePath {
-  if (!pathText.trim()) return [];
-  return pathText
-    .split('.')
-    .filter((segment): segment is WorkspaceNodePathSegment => segment === 'first' || segment === 'second');
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function stringifyWorkspaceNodePath(path: WorkspaceNodePath): string {
-  return path.join('.');
-}
-
-/** 입력 데이터를 표시/비교용으로 정규화 */
-function clampWorkspaceSplitRatio(ratio: number): number {
-  return Math.max(WORKSPACE_SPLIT_MIN_RATIO, Math.min(1 - WORKSPACE_SPLIT_MIN_RATIO, ratio));
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function createWorkspacePanelNode(panelId: WorkspacePanelId): WorkspacePanelLayoutNode {
-  return { type: 'panel', panelId };
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function createWorkspaceSplitNode(
-  axis: 'row' | 'column',
-  first: WorkspaceLayoutNode,
-  second: WorkspaceLayoutNode,
-  ratio = WORKSPACE_DOCK_SPLIT_RATIO,
-): WorkspaceSplitLayoutNode {
-  return {
-    type: 'split',
-    axis,
-    first,
-    second,
-    ratio: clampWorkspaceSplitRatio(ratio),
-  };
-}
-
-/** 현재 상태 스냅샷을 만든 */
-function createDefaultWorkspaceLayout(): WorkspaceLayoutNode {
-  return createWorkspaceSplitNode(
-    'row',
-    createWorkspacePanelNode('componentsTreeSection'),
-    createWorkspaceSplitNode(
-      'column',
-      createWorkspacePanelNode('componentsInspectorPanel'),
-      createWorkspaceSplitNode(
-        'column',
-        createWorkspacePanelNode('selectedElementPanel'),
-        createWorkspaceSplitNode(
-          'column',
-          createWorkspacePanelNode('selectedElementPathPanel'),
-          createWorkspaceSplitNode(
-            'column',
-            createWorkspacePanelNode('selectedElementDomPanel'),
-            createWorkspacePanelNode('rawResultPanel'),
-            0.62,
-          ),
-          0.24,
-        ),
-        0.32,
-      ),
-      0.45,
-    ),
-    0.48,
-  );
-}
-
-/** 값을 읽어 검증/변환 */
-function parseWorkspaceLayoutNode(value: unknown, depth = 0): WorkspaceLayoutNode | null {
-  if (!value || typeof value !== 'object' || depth > 12) return null;
-  const candidate = value as Record<string, unknown>;
-  if (candidate.type === 'panel' && isWorkspacePanelId(candidate.panelId)) {
-    return createWorkspacePanelNode(candidate.panelId);
-  }
-  if (candidate.type !== 'split') return null;
-  const axis = candidate.axis === 'row' || candidate.axis === 'column' ? candidate.axis : null;
-  if (!axis) return null;
-  const first = parseWorkspaceLayoutNode(candidate.first, depth + 1);
-  const second = parseWorkspaceLayoutNode(candidate.second, depth + 1);
-  if (!first || !second) return null;
-  const ratioRaw = typeof candidate.ratio === 'number' ? candidate.ratio : WORKSPACE_DOCK_SPLIT_RATIO;
-  return createWorkspaceSplitNode(axis, first, second, ratioRaw);
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function collectPanelIdsFromLayout(node: WorkspaceLayoutNode | null, output = new Set<WorkspacePanelId>()) {
-  if (!node) return output;
-  if (node.type === 'panel') {
-    output.add(node.panelId);
-    return output;
-  }
-  collectPanelIdsFromLayout(node.first, output);
-  collectPanelIdsFromLayout(node.second, output);
-  return output;
-}
-
-/** 현재 상태 스냅샷을 만든 */
-function removePanelFromWorkspaceLayout(
-  node: WorkspaceLayoutNode | null,
-  panelId: WorkspacePanelId,
-): { node: WorkspaceLayoutNode | null; removed: boolean } {
-  if (!node) return { node: null, removed: false };
-  if (node.type === 'panel') {
-    if (node.panelId === panelId) {
-      return { node: null, removed: true };
-    }
-    return { node, removed: false };
-  }
-
-  const firstResult = removePanelFromWorkspaceLayout(node.first, panelId);
-  if (firstResult.removed) {
-    if (!firstResult.node) return { node: node.second, removed: true };
-    return {
-      node: createWorkspaceSplitNode(node.axis, firstResult.node, node.second, node.ratio),
-      removed: true,
-    };
-  }
-
-  const secondResult = removePanelFromWorkspaceLayout(node.second, panelId);
-  if (secondResult.removed) {
-    if (!secondResult.node) return { node: node.first, removed: true };
-    return {
-      node: createWorkspaceSplitNode(node.axis, node.first, secondResult.node, node.ratio),
-      removed: true,
-    };
-  }
-  return { node, removed: false };
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function appendPanelToWorkspaceLayout(
-  node: WorkspaceLayoutNode | null,
-  panelId: WorkspacePanelId,
-): WorkspaceLayoutNode {
-  const panelNode = createWorkspacePanelNode(panelId);
-  if (!node) return panelNode;
-  return createWorkspaceSplitNode('column', node, panelNode, 0.72);
-}
-
-/** 조건에 맞는 대상을 탐색 */
-function insertPanelByDockTarget(
-  node: WorkspaceLayoutNode,
-  targetPanelId: WorkspacePanelId,
-  panelNode: WorkspacePanelLayoutNode,
-  direction: Exclude<WorkspaceDockDirection, 'center'>,
-): { node: WorkspaceLayoutNode; inserted: boolean } {
-  if (node.type === 'panel') {
-    if (node.panelId !== targetPanelId) return { node, inserted: false };
-    const axis = direction === 'left' || direction === 'right' ? 'row' : 'column';
-    const inserted =
-      direction === 'left' || direction === 'top'
-        ? createWorkspaceSplitNode(axis, panelNode, node)
-        : createWorkspaceSplitNode(axis, node, panelNode);
-    return { node: inserted, inserted: true };
-  }
-
-  const firstResult = insertPanelByDockTarget(node.first, targetPanelId, panelNode, direction);
-  if (firstResult.inserted) {
-    return {
-      node: createWorkspaceSplitNode(node.axis, firstResult.node, node.second, node.ratio),
-      inserted: true,
-    };
-  }
-
-  const secondResult = insertPanelByDockTarget(node.second, targetPanelId, panelNode, direction);
-  if (secondResult.inserted) {
-    return {
-      node: createWorkspaceSplitNode(node.axis, node.first, secondResult.node, node.ratio),
-      inserted: true,
-    };
-  }
-
-  return { node, inserted: false };
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function swapWorkspaceLayoutPanels(
-  node: WorkspaceLayoutNode | null,
-  panelIdA: WorkspacePanelId,
-  panelIdB: WorkspacePanelId,
-): WorkspaceLayoutNode | null {
-  if (!node) return null;
-  if (node.type === 'panel') {
-    if (node.panelId === panelIdA) return createWorkspacePanelNode(panelIdB);
-    if (node.panelId === panelIdB) return createWorkspacePanelNode(panelIdA);
-    return node;
-  }
-  return createWorkspaceSplitNode(
-    node.axis,
-    swapWorkspaceLayoutPanels(node.first, panelIdA, panelIdB) ?? node.first,
-    swapWorkspaceLayoutPanels(node.second, panelIdA, panelIdB) ?? node.second,
-    node.ratio,
-  );
-}
-
-/** 계산/조회 결과를 UI 상태에 반영 */
-function updateWorkspaceSplitRatioByPath(
-  node: WorkspaceLayoutNode | null,
-  path: WorkspaceNodePath,
-  ratio: number,
-): WorkspaceLayoutNode | null {
-  if (!node) return null;
-  if (path.length === 0) {
-    if (node.type !== 'split') return node;
-    return createWorkspaceSplitNode(node.axis, node.first, node.second, ratio);
-  }
-  if (node.type !== 'split') return node;
-
-  const [head, ...rest] = path;
-  if (head === 'first') {
-    const nextFirst = updateWorkspaceSplitRatioByPath(node.first, rest, ratio) ?? node.first;
-    return createWorkspaceSplitNode(node.axis, nextFirst, node.second, node.ratio);
-  }
-  const nextSecond = updateWorkspaceSplitRatioByPath(node.second, rest, ratio) ?? node.second;
-  return createWorkspaceSplitNode(node.axis, node.first, nextSecond, node.ratio);
-}
-
-/** 이전 상태를 복원 */
-function pruneWorkspaceLayoutByVisiblePanels(
-  node: WorkspaceLayoutNode | null,
-  visiblePanelIds: Set<WorkspacePanelId>,
-): WorkspaceLayoutNode | null {
-  if (!node) return null;
-  if (node.type === 'panel') {
-    return visiblePanelIds.has(node.panelId) ? node : null;
-  }
-  const first = pruneWorkspaceLayoutByVisiblePanels(node.first, visiblePanelIds);
-  const second = pruneWorkspaceLayoutByVisiblePanels(node.second, visiblePanelIds);
-  if (!first && !second) return null;
-  if (!first) return second;
-  if (!second) return first;
-  return createWorkspaceSplitNode(node.axis, first, second, node.ratio);
-}
-
-/** 이전 상태를 복원 */
-function dedupeWorkspaceLayoutPanels(
-  node: WorkspaceLayoutNode | null,
-  seen = new Set<WorkspacePanelId>(),
-): WorkspaceLayoutNode | null {
-  if (!node) return null;
-  if (node.type === 'panel') {
-    if (seen.has(node.panelId)) return null;
-    seen.add(node.panelId);
-    return node;
-  }
-  const first = dedupeWorkspaceLayoutPanels(node.first, seen);
-  const second = dedupeWorkspaceLayoutPanels(node.second, seen);
-  if (!first && !second) return null;
-  if (!first) return second;
-  if (!second) return first;
-  return createWorkspaceSplitNode(node.axis, first, second, node.ratio);
-}
-
-/** 파생 데이터나 요약 값을 구성 */
-function getWorkspaceVisiblePanelIds(): WorkspacePanelId[] {
-  return WORKSPACE_PANEL_IDS.filter((panelId) => workspacePanelStateById.get(panelId) === 'visible');
-}
-
 /**
  * 현재 "보여야 하는 패널 집합"과 "레이아웃 트리"를 정합성 있게 맞춘다.
  * 1) 숨김 패널을 레이아웃에서 제거한다.
@@ -620,7 +338,7 @@ function getWorkspaceVisiblePanelIds(): WorkspacePanelId[] {
  * 3) visible인데 레이아웃에 없는 패널을 다시 append한다.
  */
 function reconcileWorkspaceLayout() {
-  const visiblePanelIds = getWorkspaceVisiblePanelIds();
+  const visiblePanelIds = getWorkspaceVisiblePanelIds(workspacePanelStateById);
   const visiblePanelSet = new Set<WorkspacePanelId>(visiblePanelIds);
   workspaceLayoutRoot = dedupeWorkspaceLayoutPanels(
     pruneWorkspaceLayoutByVisiblePanels(workspaceLayoutRoot, visiblePanelSet),
@@ -1499,101 +1217,6 @@ function initWorkspaceLayoutManager() {
   workspacePanelToggleBarEl.addEventListener('click', onWorkspacePanelToggleButtonClick);
   initWorkspacePanelBodySizeObserver();
   renderWorkspaceLayout();
-}
-
-/** 해당 기능 흐름을 처리 */
-function isScrollableAxisOverflow(value: string): boolean {
-  return value === 'auto' || value === 'scroll' || value === 'overlay';
-}
-
-/** 조건 여부를 판별 */
-function isKnownWheelScrollableContainer(el: HTMLElement): boolean {
-  return (
-    el.id === 'treePane' ||
-    el.id === 'detailPane' ||
-    el.id === 'selectedElementPane' ||
-    el.id === 'selectedElementPathPane' ||
-    el.id === 'selectedElementDomPane' ||
-    el.id === 'output'
-  );
-}
-
-/** 주어진 델타 방향으로 엘리먼트를 실제 스크롤할 수 있는지 판별 */
-function canScrollElement(el: HTMLElement, deltaX: number, deltaY: number): boolean {
-  const style = getComputedStyle(el);
-  const allowY = isScrollableAxisOverflow(style.overflowY) || isKnownWheelScrollableContainer(el);
-  const allowX = isScrollableAxisOverflow(style.overflowX) || isKnownWheelScrollableContainer(el);
-
-  if (deltaY !== 0) {
-    if (el.scrollHeight > el.clientHeight + 1 && allowY) {
-      if (deltaY < 0 && el.scrollTop > 0) return true;
-      if (deltaY > 0 && el.scrollTop + el.clientHeight < el.scrollHeight - 1) return true;
-    }
-  }
-  if (deltaX !== 0) {
-    if (el.scrollWidth > el.clientWidth + 1 && allowX) {
-      if (deltaX < 0 && el.scrollLeft > 0) return true;
-      if (deltaX > 0 && el.scrollLeft + el.clientWidth < el.scrollWidth - 1) return true;
-    }
-  }
-  return false;
-}
-
-/** 조건에 맞는 대상을 탐색 */
-function findScrollableElement(
-  start: EventTarget | null,
-  scope: HTMLElement,
-  deltaX: number,
-  deltaY: number,
-): HTMLElement | null {
-  let current = start instanceof HTMLElement ? start : null;
-  while (current && current !== scope.parentElement) {
-    if (canScrollElement(current, deltaX, deltaY)) {
-      return current;
-    }
-    if (current === scope) break;
-    current = current.parentElement;
-  }
-  return null;
-}
-
-/**
- * 패널 내부 스크롤이 브라우저/DevTools 기본 버블링 때문에 끊기는 케이스를 보완한다.
- * capture 단계에서 "실제로 스크롤 가능한 가장 가까운 컨테이너"를 찾아
- * 수동 스크롤 후 이벤트를 consume한다.
- */
-function initWheelScrollFallback() {
-  const onWheel = (event: WheelEvent) => {
-    if (event.defaultPrevented || event.ctrlKey || event.metaKey) return;
-    const eventTarget = event.target instanceof HTMLElement ? event.target : null;
-    if (eventTarget && eventTarget.closest('input, textarea, select')) return;
-    const deltaX = event.deltaX;
-    const deltaY = event.deltaY;
-    if (deltaX === 0 && deltaY === 0) return;
-
-    const scrollable = findScrollableElement(event.target, panelWorkspaceEl, deltaX, deltaY);
-    if (!scrollable) return;
-
-    const prevTop = scrollable.scrollTop;
-    const prevLeft = scrollable.scrollLeft;
-    if (deltaY !== 0) {
-      scrollable.scrollTop += deltaY;
-    }
-    if (deltaX !== 0) {
-      scrollable.scrollLeft += deltaX;
-    }
-
-    if (scrollable.scrollTop !== prevTop || scrollable.scrollLeft !== prevLeft) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
-
-  panelWorkspaceEl.addEventListener('wheel', onWheel, { capture: true, passive: false });
-  destroyWheelScrollFallback = () => {
-    panelWorkspaceEl.removeEventListener('wheel', onWheel, { capture: true });
-    destroyWheelScrollFallback = null;
-  };
 }
 
 /** UI 상태 또는 문구를 설정 */
@@ -4488,7 +4111,7 @@ function bootstrapPanel() {
   mountPanelView();
   initDomRefs();
   initWorkspaceLayoutManager();
-  initWheelScrollFallback();
+  destroyWheelScrollFallback = initWheelScrollFallback(panelWorkspaceEl);
   setPickerModeActive(false);
   populateTargetSelect();
   setElementOutput('런타임 트리를 자동으로 불러오는 중입니다.');
@@ -4510,6 +4133,7 @@ function bootstrapPanel() {
     }
     if (destroyWheelScrollFallback) {
       destroyWheelScrollFallback();
+      destroyWheelScrollFallback = null;
     }
     stopWorkspaceSplitResize(false);
     if (runtimeRefreshTimer !== null) {

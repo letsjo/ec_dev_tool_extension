@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -60,7 +60,7 @@
   - `mountPanelView()`로 React UI 마운트
   - `initDomRefs()`로 필수 DOM 참조 수집
   - `initWorkspaceLayoutManager()`로 스플릿/드래그/토글 초기화
-  - `initWheelScrollFallback()`로 스크롤 보정 리스너 설치
+  - `workspace/wheelScrollFallback.ts`의 `initWheelScrollFallback(...)`로 스크롤 보정 리스너 설치
   - 이벤트 바인딩 후 `refreshReactRuntime(false)` 최초 실행
 
 ## 5. 메시지/브리지 흐름
@@ -120,6 +120,9 @@
 
 - `src/features/panel/workspacePanels.ts`
 - `src/features/panel/controller.ts`
+- `src/features/panel/workspace/layoutModel.ts`
+- `src/features/panel/workspace/storage.ts`
+- `src/features/panel/workspace/wheelScrollFallback.ts`
 - `panel.html` (레이아웃 CSS)
 
 핵심 개념:
@@ -141,6 +144,13 @@
 5. 렌더 전략
 - `renderWorkspaceLayout()`가 패널 상태 반영 → DOM patch → 접힘 높이/스크롤 복원
 - 접힌 패널 높이는 `--workspace-panel-summary-height` 기반 계산
+
+## 7.1 워크스페이스 모듈 분리 규칙
+
+- `layoutModel.ts`: 레이아웃 트리 모델/정규화/삽입/교체/비율 계산 같은 순수 로직
+- `storage.ts`: 워크스페이스 localStorage read/write 유틸
+- `wheelScrollFallback.ts`: 패널 wheel capture 보정 리스너 설치/해제
+- `controller.ts`: DOM ref/렌더 파이프라인/이벤트 오케스트레이션만 담당
 
 ## 8. 주요 UI 구성 파일 역할
 
@@ -167,7 +177,8 @@
   - Selected Element / DOM Path / Selected DOM Tree / Raw Result의 스크롤/배경/최소높이 제어
 
 - `src/features/panel/controller.ts`
-  - 상태머신 + 이벤트 + 브리지 + 렌더링 파이프라인의 핵심
+  - 상태머신 + 이벤트 + 브리지 + 렌더링 오케스트레이션의 핵심
+  - workspace 모델 계산은 `workspace/layoutModel.ts`, 스토리지 I/O는 `workspace/storage.ts`, wheel 보정은 `workspace/wheelScrollFallback.ts`를 사용
 
 ## 9. 디버깅 체크리스트
 
@@ -226,11 +237,12 @@
 ### 새 워크스페이스 패널 추가
 
 1. `src/features/panel/workspacePanels.ts`에 panel id/config 추가
-2. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
-3. `src/ui/panels/index.ts` export 등록
-4. `src/ui/sections/WorkspacePanelsSection.tsx` 조립 목록에 추가
-5. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
-6. `panel.html`에서 필요 스타일 추가
+2. 필요 시 `src/features/panel/workspace/layoutModel.ts`의 `createDefaultWorkspaceLayout()` 기본 트리 반영
+3. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
+4. `src/ui/panels/index.ts` export 등록
+5. `src/ui/sections/WorkspacePanelsSection.tsx` 조립 목록에 추가
+6. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
+7. `panel.html`에서 필요 스타일 추가
 
 ### 새 pageAgent 메서드 추가
 
@@ -244,6 +256,9 @@
 관련 파일 바로가기:
 
 - `src/features/panel/controller.ts`
+- `src/features/panel/workspace/layoutModel.ts`
+- `src/features/panel/workspace/storage.ts`
+- `src/features/panel/workspace/wheelScrollFallback.ts`
 - `src/ui/sections/PanelViewSection.tsx`
 - `src/ui/sections/WorkspacePanelsSection.tsx`
 - `src/ui/components/WorkspacePanel.tsx`
