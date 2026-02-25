@@ -23,6 +23,7 @@ import {
 import {
   bindWorkspaceInteractionBindings,
 } from './interactionBindings';
+import { createWorkspaceActionHandlers } from './actionHandlers';
 import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
 import { createWorkspaceDragDropFlow } from './dragDropFlow';
 import { syncWorkspacePanelBodySizes } from './panelSizing';
@@ -177,63 +178,20 @@ export function createWorkspaceLayoutManager({
     },
   });
 
-  /** 이벤트를 처리 */
-  function onWorkspaceSummaryAction(event: MouseEvent) {
-    const target = event.target as HTMLElement | null;
-    const actionButton = target?.closest<HTMLButtonElement>('.workspace-panel-action[data-panel-action]');
-    if (!actionButton) return;
-
-    const panelIdRaw = actionButton.dataset.panelTarget;
-    if (!isWorkspacePanelId(panelIdRaw)) return;
-    const action = actionButton.dataset.panelAction;
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (action === 'toggle') {
-      toggleWorkspacePanelOpenState(panelIdRaw);
-      return;
-    }
-    if (action === 'close') {
-      setWorkspacePanelState(panelIdRaw, 'closed');
-    }
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceSummaryClick(event: MouseEvent) {
-    const target = event.target as HTMLElement | null;
-    const actionButton = target?.closest<HTMLButtonElement>('.workspace-panel-action[data-panel-action]');
-    if (actionButton) return;
-    event.preventDefault();
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspacePanelToggleButtonClick(event: MouseEvent) {
-    const target = event.target as HTMLElement | null;
-    const button = target?.closest<HTMLButtonElement>('.workspace-toggle-btn[data-panel-toggle]');
-    if (!button) return;
-    const panelIdRaw = button.dataset.panelToggle;
-    if (!isWorkspacePanelId(panelIdRaw)) return;
-    const state = workspacePanelStateById.get(panelIdRaw) ?? 'visible';
-    setWorkspacePanelState(panelIdRaw, state === 'visible' ? 'closed' : 'visible');
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceActionButtonMouseDown(event: MouseEvent) {
-    event.stopPropagation();
-  }
-
-  /** 이벤트를 처리 */
-  function onWorkspaceActionButtonDragStart(event: DragEvent) {
-    event.preventDefault();
-  }
+  const workspaceActionHandlers = createWorkspaceActionHandlers({
+    isWorkspacePanelId,
+    getWorkspacePanelStateById: () => workspacePanelStateById,
+    toggleWorkspacePanelOpenState,
+    setWorkspacePanelState,
+  });
 
   const panelInteractionHandlers = {
     onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
     onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
-    onSummaryAction: onWorkspaceSummaryAction,
-    onSummaryClick: onWorkspaceSummaryClick,
-    onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
-    onActionButtonDragStart: onWorkspaceActionButtonDragStart,
+    onSummaryAction: workspaceActionHandlers.onWorkspaceSummaryAction,
+    onSummaryClick: workspaceActionHandlers.onWorkspaceSummaryClick,
+    onActionButtonMouseDown: workspaceActionHandlers.onWorkspaceActionButtonMouseDown,
+    onActionButtonDragStart: workspaceActionHandlers.onWorkspaceActionButtonDragStart,
   };
 
   const containerInteractionHandlers = {
@@ -242,7 +200,7 @@ export function createWorkspaceLayoutManager({
     onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
     onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
     onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
-    onWorkspacePanelToggleButtonClick,
+    onWorkspacePanelToggleButtonClick: workspaceActionHandlers.onWorkspacePanelToggleButtonClick,
   };
 
   /**
