@@ -60,7 +60,7 @@
   - `mountPanelView()`로 React UI 마운트
   - `initDomRefs()`로 필수 DOM 참조 수집
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
-  - `reactInspector/signatures.ts`, `reactInspector/search.ts` 유틸로 React 트리 시그니처/검색/접힘 복원 로직 위임
+  - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/상세(JSON/hook) 렌더 로직 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
   - `workspace/wheelScrollFallback.ts`의 `initWheelScrollFallback(...)`로 스크롤 보정 리스너 설치
   - 이벤트 바인딩 후 `refreshReactRuntime(false)` 최초 실행
@@ -160,6 +160,7 @@
 
 - `reactInspector/signatures.ts`: 컴포넌트 상세/목록 렌더 시그니처, 런타임 변경 감지 fingerprint 계산 전담
 - `reactInspector/search.ts`: 검색 텍스트 생성, 필터링, 조상 경로 확장, 접힘 상태 스냅샷/복원 유틸 전담
+- `reactInspector/jsonSection.ts`: props/hooks JSON 트리 렌더, 함수 inspect 링크, dehydrated 값 지연 조회/확장 렌더 전담
 - `controller.ts`: panel 상태(`reactComponents`, `collapsedComponentIds`, `componentSearchTexts`)를 보유하고 위 유틸을 호출해 UI 오케스트레이션만 수행
 
 ## 7.3 DOM Tree 모듈 분리 규칙
@@ -275,6 +276,7 @@
 - `src/features/panel/domTree/renderer.ts`
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/search.ts`
+- `src/features/panel/reactInspector/jsonSection.ts`
 - `src/features/panel/workspace/layoutModel.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/storage.ts`
