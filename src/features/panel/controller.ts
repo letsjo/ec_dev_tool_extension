@@ -54,6 +54,12 @@ import {
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
   type SearchNoResultContext,
 } from './reactInspector/searchStatus';
+import {
+  applyReactInspectorPaneState as applyReactInspectorPaneStateValue,
+  buildReactComponentListEmptyText as buildReactComponentListEmptyTextValue,
+  buildReactInspectorLoadingPaneState as buildReactInspectorLoadingPaneStateValue,
+  buildReactInspectorResetPaneState as buildReactInspectorResetPaneStateValue,
+} from './reactInspector/viewState';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { renderDomTreeNode } from './domTree/renderer';
@@ -313,6 +319,12 @@ function setReactDetailEmpty(text: string) {
   lastReactDetailRenderSignature = setPaneEmptyStateValue(reactComponentDetailEl, text);
   lastReactDetailComponentId = null;
 }
+
+const reactInspectorPaneSetters = {
+  setReactStatus,
+  setReactListEmpty,
+  setReactDetailEmpty,
+};
 
 /** UI 상태 또는 문구를 설정 */
 function setDomTreeStatus(text: string, isError = false) {
@@ -624,7 +636,9 @@ function renderReactComponentDetail(component: ReactComponentInfo) {
 /** 화면 요소를 렌더링 */
 function renderReactComponentList() {
   if (reactComponents.length === 0) {
-    setReactListEmpty('컴포넌트 목록이 없습니다.');
+    setReactListEmpty(
+      buildReactComponentListEmptyTextValue(reactComponents.length, componentSearchQuery),
+    );
     return;
   }
 
@@ -633,8 +647,9 @@ function renderReactComponentList() {
   const matchedIndexSet = new Set<number>(filterResult.matchedIndices);
 
   if (visibleIndices.length === 0) {
-    const suffix = componentSearchQuery.trim() ? `: "${componentSearchQuery.trim()}"` : '';
-    setReactListEmpty(`검색 결과가 없습니다${suffix}`);
+    setReactListEmpty(
+      buildReactComponentListEmptyTextValue(reactComponents.length, componentSearchQuery),
+    );
     return;
   }
 
@@ -908,9 +923,10 @@ function resetReactInspector(statusText: string, isError = false) {
   lastReactDetailComponentId = null;
   clearPageHoverPreview();
   clearPageComponentHighlight();
-  setReactStatus(statusText, isError);
-  setReactListEmpty('컴포넌트 목록이 여기에 표시됩니다.');
-  setReactDetailEmpty('컴포넌트를 선택하면 props/hooks를 표시합니다.');
+  applyReactInspectorPaneStateValue(
+    reactInspectorPaneSetters,
+    buildReactInspectorResetPaneStateValue(statusText, isError),
+  );
 }
 
 /**
@@ -1073,9 +1089,10 @@ function fetchReactInfo(
   }
   // background 새로고침이 아니거나 초기 상태일 때만 로딩 문구를 적극적으로 표시한다.
   if (!background || reactComponents.length === 0) {
-    setReactStatus('React 정보 조회 중…');
-    setReactListEmpty('컴포넌트 트리 조회 중…');
-    setReactDetailEmpty('조회 중…');
+    applyReactInspectorPaneStateValue(
+      reactInspectorPaneSetters,
+      buildReactInspectorLoadingPaneStateValue(),
+    );
   }
 
   // 경량 모드에서 선택 컴포넌트만 직렬화하도록 id를 전달해 payload를 줄인다.
