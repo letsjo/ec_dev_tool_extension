@@ -37,7 +37,7 @@ describe('createReactComponentDetailRenderFlow', () => {
         lastReactDetailComponentId = update.lastReactDetailComponentId;
         lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
       },
-      reactComponentDetailEl: detailEl,
+      getReactComponentDetailEl: () => detailEl,
       buildRenderSignature: vi.fn(() => 'computed'),
       clearPaneContent: vi.fn(),
       createJsonSection: vi.fn(() => document.createElement('div')),
@@ -75,7 +75,7 @@ describe('createReactComponentDetailRenderFlow', () => {
         lastReactDetailComponentId = update.lastReactDetailComponentId;
         lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
       },
-      reactComponentDetailEl: document.createElement('div'),
+      getReactComponentDetailEl: () => document.createElement('div'),
       buildRenderSignature: vi.fn(() => 'computed'),
       clearPaneContent: vi.fn(),
       createJsonSection: vi.fn(() => document.createElement('div')),

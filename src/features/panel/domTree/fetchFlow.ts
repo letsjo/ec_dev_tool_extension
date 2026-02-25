@@ -6,7 +6,7 @@ import { renderDomTreeNode } from './renderer';
 
 interface CreateDomTreeFetchFlowOptions {
   callInspectedPageAgent: CallInspectedPageAgent;
-  domTreeOutputEl: HTMLDivElement;
+  getDomTreeOutputEl: () => HTMLDivElement;
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
 }
@@ -52,8 +52,9 @@ function applyDomTreeResult(result: DomTreeEvalResult, options: ApplyDomTreeResu
  */
 export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
   function applyDomTreeResultWithUi(result: DomTreeEvalResult) {
+    const domTreeOutputEl = options.getDomTreeOutputEl();
     applyDomTreeResult(result, {
-      domTreeOutputEl: options.domTreeOutputEl,
+      domTreeOutputEl,
       setDomTreeStatus: options.setDomTreeStatus,
       setDomTreeEmpty: options.setDomTreeEmpty,
     });

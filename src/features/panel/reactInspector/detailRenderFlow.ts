@@ -19,7 +19,7 @@ interface ReactComponentDetailRenderStateUpdate {
 interface CreateReactComponentDetailRenderFlowOptions {
   readState: () => ReactComponentDetailRenderStateSnapshot;
   writeState: (update: ReactComponentDetailRenderStateUpdate) => void;
-  reactComponentDetailEl: HTMLDivElement;
+  getReactComponentDetailEl: () => HTMLDivElement;
   buildRenderSignature: (component: ReactComponentInfo) => string;
   clearPaneContent: (element: HTMLElement) => void;
   createJsonSection: (
@@ -46,7 +46,7 @@ export function createReactComponentDetailRenderFlow(
         componentId: state.lastReactDetailComponentId,
         renderSignature: state.lastReactDetailRenderSignature,
       },
-      reactComponentDetailEl: options.reactComponentDetailEl,
+      reactComponentDetailEl: options.getReactComponentDetailEl(),
       buildRenderSignature: options.buildRenderSignature,
       clearPaneContent: options.clearPaneContent,
       createJsonSection: options.createJsonSection,

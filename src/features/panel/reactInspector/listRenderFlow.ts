@@ -27,8 +27,8 @@ interface CreateReactComponentListRenderFlowOptions {
   ) => string;
   buildComponentIndexById: () => Map<string, number>;
   renderReactComponentListTree?: typeof renderReactComponentListTreeValue;
-  treePaneEl: HTMLDivElement;
-  reactComponentListEl: HTMLDivElement;
+  getTreePaneEl: () => HTMLDivElement;
+  getReactComponentListEl: () => HTMLDivElement;
   clearPaneContent: (element: HTMLElement) => void;
   previewPageDomForComponent: (component: ReactComponentInfo) => void;
   clearPageHoverPreview: () => void;
@@ -93,8 +93,8 @@ export function createReactComponentListRenderFlow(
       componentSearchQuery: state.componentSearchQuery,
       collapsedComponentIds: state.collapsedComponentIds,
       updatedComponentIds: state.updatedComponentIds,
-      treePaneEl: options.treePaneEl,
-      reactComponentListEl: options.reactComponentListEl,
+      treePaneEl: options.getTreePaneEl(),
+      reactComponentListEl: options.getReactComponentListEl(),
       idToIndex: options.buildComponentIndexById(),
       clearPaneContent: options.clearPaneContent,
       previewPageDomForComponent: options.previewPageDomForComponent,

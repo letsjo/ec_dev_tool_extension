@@ -7,11 +7,7 @@
  * 3. Components Tree, Inspector, Selected Element/DOM Path/DOM Tree, Raw Result를 렌더링한다.
  * 4. 스플릿/검색/선택/하이라이트/런타임 갱신 상태를 동기화한다.
  */
-import type { WorkspacePanelId } from './workspacePanels';
-import {
-  createWorkspaceLayoutManager,
-  type WorkspaceLayoutManager,
-} from './workspace/manager';
+import { createWorkspaceLayoutManager } from './workspace/manager';
 import { initWheelScrollFallback } from './workspace/wheelScrollFallback';
 import {
   initPanelDomRefs as initPanelDomRefsValue,
@@ -36,69 +32,14 @@ import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelPaneSetters as createPanelPaneSettersValue } from './paneSetters';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from './runtimeRefresh/panelRuntimeRefreshFlow';
-
-let outputEl!: HTMLDivElement;
-let targetSelectEl: HTMLSelectElement | null = null;
-let fetchBtnEl: HTMLButtonElement | null = null;
-let selectElementBtnEl!: HTMLButtonElement;
-let componentSearchInputEl!: HTMLInputElement;
-let elementOutputEl!: HTMLDivElement;
-let domTreeStatusEl!: HTMLDivElement;
-let domTreeOutputEl!: HTMLDivElement;
-let reactStatusEl!: HTMLDivElement;
-let reactComponentListEl!: HTMLDivElement;
-let treePaneEl!: HTMLDivElement;
-let reactComponentDetailEl!: HTMLDivElement;
-let panelWorkspaceEl!: HTMLElement;
-let panelContentEl!: HTMLElement;
-let workspacePanelToggleBarEl!: HTMLDivElement;
-let workspaceDockPreviewEl!: HTMLDivElement;
-
-let pickerModeActive = false;
-const reactInspectorState = createReactInspectorControllerState();
+import { createPanelControllerContext } from './controllerContext';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
-
-let destroyWheelScrollFallback: (() => void) | null = null;
-let removeRuntimeMessageListener: (() => void) | null = null;
-let workspacePanelElements = new Map<WorkspacePanelId, HTMLDetailsElement>();
-let workspaceLayoutManager: WorkspaceLayoutManager | null = null;
-
+const reactInspectorState = createReactInspectorControllerState();
+const panelControllerContext = createPanelControllerContext({
+  initPanelDomRefs: initPanelDomRefsValue,
+});
 const mountPanelView = mountPanelViewValue;
-
-/**
- * 패널 동작에 필요한 주요 DOM 참조를 한 곳에서 초기화한다.
- * 이 함수 이후에는 하위 로직이 전역 ref를 신뢰하고 동작하므로,
- * 필수 노드는 `getRequiredElement`로 즉시 실패하게 한다.
- */
-function initDomRefs() {
-  const refs = initPanelDomRefsValue();
-  outputEl = refs.outputEl;
-  targetSelectEl = refs.targetSelectEl;
-  fetchBtnEl = refs.fetchBtnEl;
-  panelWorkspaceEl = refs.panelWorkspaceEl;
-  panelContentEl = refs.panelContentEl;
-  workspacePanelToggleBarEl = refs.workspacePanelToggleBarEl;
-  workspaceDockPreviewEl = refs.workspaceDockPreviewEl;
-  selectElementBtnEl = refs.selectElementBtnEl;
-  componentSearchInputEl = refs.componentSearchInputEl;
-  elementOutputEl = refs.elementOutputEl;
-  domTreeStatusEl = refs.domTreeStatusEl;
-  domTreeOutputEl = refs.domTreeOutputEl;
-  reactStatusEl = refs.reactStatusEl;
-  reactComponentListEl = refs.reactComponentListEl;
-  treePaneEl = refs.treePaneEl;
-  reactComponentDetailEl = refs.reactComponentDetailEl;
-  workspacePanelElements = refs.workspacePanelElements;
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setPickerModeActive(active: boolean) {
-  pickerModeActive = active;
-  selectElementBtnEl.classList.toggle('active', active);
-  selectElementBtnEl.setAttribute('aria-pressed', active ? 'true' : 'false');
-  selectElementBtnEl.title = active ? '요소 선택 중 (Esc로 취소)' : '요소 선택 모드 시작';
-}
 
 const {
   setOutput,
@@ -109,28 +50,28 @@ const {
   setDomTreeStatus,
   setDomTreeEmpty,
 } = createPanelPaneSettersValue({
-  getOutputEl: () => outputEl,
-  getElementOutputEl: () => elementOutputEl,
-  getReactStatusEl: () => reactStatusEl,
-  getReactComponentListEl: () => reactComponentListEl,
-  getReactComponentDetailEl: () => reactComponentDetailEl,
-  getDomTreeStatusEl: () => domTreeStatusEl,
-  getDomTreeOutputEl: () => domTreeOutputEl,
+  getOutputEl: panelControllerContext.getOutputEl,
+  getElementOutputEl: panelControllerContext.getElementOutputEl,
+  getReactStatusEl: panelControllerContext.getReactStatusEl,
+  getReactComponentListEl: panelControllerContext.getReactComponentListEl,
+  getReactComponentDetailEl: panelControllerContext.getReactComponentDetailEl,
+  getDomTreeStatusEl: panelControllerContext.getDomTreeStatusEl,
+  getDomTreeOutputEl: panelControllerContext.getDomTreeOutputEl,
   setLastReactListRenderSignature: reactInspectorState.setLastReactListRenderSignature,
   setLastReactDetailRenderSignature: reactInspectorState.setLastReactDetailRenderSignature,
   setLastReactDetailComponentId: reactInspectorState.setLastReactDetailComponentId,
 });
 
 const { populateTargetSelect, onFetch } = createTargetFetchFlowValue({
-  getTargetSelectEl: () => targetSelectEl,
-  getFetchBtnEl: () => fetchBtnEl,
+  getTargetSelectEl: panelControllerContext.getTargetSelectEl,
+  getFetchBtnEl: panelControllerContext.getFetchBtnEl,
   setOutput,
   callInspectedPageAgent,
 });
 
 const { fetchDomTree } = createDomTreeFetchFlowValue({
   callInspectedPageAgent,
-  domTreeOutputEl,
+  getDomTreeOutputEl: panelControllerContext.getDomTreeOutputEl,
   setDomTreeStatus,
   setDomTreeEmpty,
 });
@@ -161,10 +102,10 @@ const { inspectFunctionAtPath, fetchSerializedValueAtPath } =
 const { onComponentSearchInput, fetchReactInfo } = createReactInspectorControllerFlowsValue({
   state: reactInspectorState,
   callInspectedPageAgent,
-  reactComponentListEl,
-  treePaneEl,
-  reactComponentDetailEl,
-  componentSearchInputEl,
+  getReactComponentListEl: panelControllerContext.getReactComponentListEl,
+  getTreePaneEl: panelControllerContext.getTreePaneEl,
+  getReactComponentDetailEl: panelControllerContext.getReactComponentDetailEl,
+  getComponentSearchInputEl: panelControllerContext.getComponentSearchInputEl,
   setReactStatus,
   setReactListEmpty,
   setReactDetailEmpty,
@@ -181,7 +122,7 @@ const { onComponentSearchInput, fetchReactInfo } = createReactInspectorControlle
 
 const { runtimeRefreshScheduler, onInspectedPageNavigated } =
   createPanelRuntimeRefreshFlowValue({
-    isPickerModeActive: () => pickerModeActive,
+    isPickerModeActive: panelControllerContext.isPickerModeActive,
     getStoredLookup: reactInspectorState.getStoredLookup,
     setStoredLookup: reactInspectorState.setStoredLookup,
     runRefresh: (lookup, background, onDone) => {
@@ -203,7 +144,7 @@ const { runtimeRefreshScheduler, onInspectedPageNavigated } =
 const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue({
   getInspectedTabId: () => chrome.devtools.inspectedWindow.tabId,
   clearPageHoverPreview,
-  setPickerModeActive,
+  setPickerModeActive: panelControllerContext.setPickerModeActive,
   setElementOutput,
   setReactStatus,
   setDomTreeStatus,
@@ -217,28 +158,24 @@ const { onSelectElement, onRuntimeMessage } = createElementPickerBridgeFlowValue
   },
 });
 
-removeRuntimeMessageListener = bindRuntimeMessageListenerValue(onRuntimeMessage, {
-  addListener(listener) {
-    chrome.runtime.onMessage.addListener(listener);
-  },
-  removeListener(listener) {
-    chrome.runtime.onMessage.removeListener(listener);
-  },
-});
+panelControllerContext.setRemoveRuntimeMessageListener(
+  bindRuntimeMessageListenerValue(onRuntimeMessage, {
+    addListener(listener) {
+      chrome.runtime.onMessage.addListener(listener);
+    },
+    removeListener(listener) {
+      chrome.runtime.onMessage.removeListener(listener);
+    },
+  }),
+);
 
 const onPanelBeforeUnload = createPanelTeardownFlowValue({
-  getWorkspaceLayoutManager: () => workspaceLayoutManager,
-  setWorkspaceLayoutManager: (manager) => {
-    workspaceLayoutManager = manager;
-  },
-  getDestroyWheelScrollFallback: () => destroyWheelScrollFallback,
-  setDestroyWheelScrollFallback: (destroyer) => {
-    destroyWheelScrollFallback = destroyer;
-  },
-  getRemoveRuntimeMessageListener: () => removeRuntimeMessageListener,
-  setRemoveRuntimeMessageListener: (removeListener) => {
-    removeRuntimeMessageListener = removeListener;
-  },
+  getWorkspaceLayoutManager: panelControllerContext.getWorkspaceLayoutManager,
+  setWorkspaceLayoutManager: panelControllerContext.setWorkspaceLayoutManager,
+  getDestroyWheelScrollFallback: panelControllerContext.getDestroyWheelScrollFallback,
+  setDestroyWheelScrollFallback: panelControllerContext.setDestroyWheelScrollFallback,
+  getRemoveRuntimeMessageListener: panelControllerContext.getRemoveRuntimeMessageListener,
+  setRemoveRuntimeMessageListener: panelControllerContext.setRemoveRuntimeMessageListener,
   runtimeRefreshScheduler,
   removeNavigatedListener: () => {
     chrome.devtools.network.onNavigated.removeListener(onInspectedPageNavigated);
@@ -247,35 +184,31 @@ const onPanelBeforeUnload = createPanelTeardownFlowValue({
 
 const { initializeWorkspaceLayout, initializeWheelFallback } =
   createPanelWorkspaceInitializationValue({
-    getPanelWorkspaceEl: () => panelWorkspaceEl,
-    getPanelContentEl: () => panelContentEl,
-    getWorkspacePanelToggleBarEl: () => workspacePanelToggleBarEl,
-    getWorkspaceDockPreviewEl: () => workspaceDockPreviewEl,
-    getWorkspacePanelElements: () => workspacePanelElements,
+    getPanelWorkspaceEl: panelControllerContext.getPanelWorkspaceEl,
+    getPanelContentEl: panelControllerContext.getPanelContentEl,
+    getWorkspacePanelToggleBarEl: panelControllerContext.getWorkspacePanelToggleBarEl,
+    getWorkspaceDockPreviewEl: panelControllerContext.getWorkspaceDockPreviewEl,
+    getWorkspacePanelElements: panelControllerContext.getWorkspacePanelElements,
     createWorkspaceLayoutManager,
     initWheelScrollFallback,
-    setWorkspaceLayoutManager: (manager) => {
-      workspaceLayoutManager = manager;
-    },
-    setDestroyWheelScrollFallback: (destroyer) => {
-      destroyWheelScrollFallback = destroyer;
-    },
+    setWorkspaceLayoutManager: panelControllerContext.setWorkspaceLayoutManager,
+    setDestroyWheelScrollFallback: panelControllerContext.setDestroyWheelScrollFallback,
   });
 
 const { bootstrapPanel } = createPanelBootstrapFlowValue({
   mountPanelView,
-  initDomRefs,
+  initDomRefs: panelControllerContext.initDomRefs,
   initializeWorkspaceLayout,
   initializeWheelFallback,
-  setPickerModeActive,
+  setPickerModeActive: panelControllerContext.setPickerModeActive,
   populateTargetSelect,
   setElementOutput,
   setDomTreeStatus,
   setDomTreeEmpty,
-  getFetchBtnEl: () => fetchBtnEl,
-  getSelectElementBtnEl: () => selectElementBtnEl,
-  getComponentSearchInputEl: () => componentSearchInputEl,
-  getReactComponentListEl: () => reactComponentListEl,
+  getFetchBtnEl: panelControllerContext.getFetchBtnEl,
+  getSelectElementBtnEl: panelControllerContext.getSelectElementBtnEl,
+  getComponentSearchInputEl: panelControllerContext.getComponentSearchInputEl,
+  getReactComponentListEl: panelControllerContext.getReactComponentListEl,
   onFetch,
   onSelectElement,
   onComponentSearchInput,

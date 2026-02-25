@@ -51,10 +51,10 @@ import {
 interface CreateReactInspectorControllerFlowsOptions {
   state: ReactInspectorControllerState;
   callInspectedPageAgent: CallInspectedPageAgent;
-  reactComponentListEl: HTMLDivElement;
-  treePaneEl: HTMLDivElement;
-  reactComponentDetailEl: HTMLDivElement;
-  componentSearchInputEl: HTMLInputElement;
+  getReactComponentListEl: () => HTMLDivElement;
+  getTreePaneEl: () => HTMLDivElement;
+  getReactComponentDetailEl: () => HTMLDivElement;
+  getComponentSearchInputEl: () => HTMLInputElement;
   setReactStatus: (text: string, isError?: boolean) => void;
   setReactListEmpty: (text: string) => void;
   setReactDetailEmpty: (text: string) => void;
@@ -161,7 +161,7 @@ export function createReactInspectorControllerFlows(
   const renderReactComponentDetailFlow = createReactComponentDetailRenderFlowValue({
     readState: options.state.readDetailRenderState,
     writeState: options.state.writeDetailRenderState,
-    reactComponentDetailEl: options.reactComponentDetailEl,
+    getReactComponentDetailEl: options.getReactComponentDetailEl,
     buildRenderSignature: buildReactComponentDetailRenderSignature,
     clearPaneContent: clearPaneContentValue,
     createJsonSection,
@@ -182,8 +182,8 @@ export function createReactInspectorControllerFlows(
     buildReactListRenderSignature,
     buildComponentIndexById,
     renderReactComponentListTree: renderReactComponentListTreeValue,
-    treePaneEl: options.treePaneEl,
-    reactComponentListEl: options.reactComponentListEl,
+    getTreePaneEl: options.getTreePaneEl,
+    getReactComponentListEl: options.getReactComponentListEl,
     clearPaneContent: clearPaneContentValue,
     previewPageDomForComponent: options.previewPageDomForComponent,
     clearPageHoverPreview: options.clearPageHoverPreview,
@@ -215,7 +215,7 @@ export function createReactInspectorControllerFlows(
     clearPageHoverPreview: options.clearPageHoverPreview,
     expandAncestorPaths,
     renderReactComponentList,
-    getReactComponentListEl: () => options.reactComponentListEl,
+    getReactComponentListEl: options.getReactComponentListEl,
     getSelectedReactComponentIndex: options.state.getSelectedReactComponentIndex,
     renderReactComponentDetail,
     setReactDetailEmpty: options.setReactDetailEmpty,
@@ -225,7 +225,7 @@ export function createReactInspectorControllerFlows(
   });
 
   const onComponentSearchInput = createReactComponentSearchInputFlowValue({
-    getSearchInputValue: () => options.componentSearchInputEl.value,
+    getSearchInputValue: () => options.getComponentSearchInputEl().value,
     setComponentSearchQuery: options.state.setComponentSearchQuery,
     getComponentSearchQuery: options.state.getComponentSearchQuery,
     getReactComponents: options.state.getReactComponents,

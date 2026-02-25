@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -64,6 +64,7 @@
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
   - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected) 위임
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
+  - `controllerContext.ts` 유틸로 panel DOM ref/picker 상태/workspace lifecycle 핸들 저장·조회 책임 위임
   - `lifecycle/bootstrapFlow.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts`, `paneSetters.ts` 유틸로 패널 텍스트/empty/error 클래스 토글 규칙과 pane setter 결선 위임
@@ -370,7 +371,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
 - `reactInspector/controllerState.ts`: React Inspector mutable 상태(`reactComponents`, `collapsedComponentIds`, `componentSearchTexts`, render signature cache, lookup`)의 read/write snapshot과 apply/reset update 반영 규칙 전담
 - `reactInspector/controllerStateModel.ts`: React Inspector mutable 모델 초기화와 list/detail/reset/apply writer를 순수 helper로 분리해 상태 전이 규칙 전담
-- `reactInspector/controllerFlows.ts`: controller의 React Inspector 결선(검색/선택/상세/fetch/apply/reset 파이프라인 조립) 전담
+- `reactInspector/controllerFlows.ts`: controller의 React Inspector 결선(검색/선택/상세/fetch/apply/reset 파이프라인 조립) 전담(DOM ref getter 기반 지연 접근)
+- `controllerContext.ts`: panel DOM ref, picker mode 상태, workspace/runtime listener 해제 핸들을 컨텍스트 객체로 수집해 controller 오케스트레이션과 상태 저장 책임 분리
 - `reactInspector/searchInputFlow.ts`: 검색 입력 이벤트 시 no-result 처리, 조상 확장, 선택 보정, 상태 문구 갱신 오케스트레이션 전담
 - `reactInspector/searchInputBindingFlow.ts`: 검색 input DOM 값 읽기, query 상태 갱신, searchInputFlow 결선 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
@@ -384,13 +386,13 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/detailQueueFlow.ts`: 상세 응답 병합(detailApply)과 detailFetchQueue 의존성 결선(lookup/selected/find/apply) 조립 전담
 - `reactInspector/jsonSection.ts`: props/hooks JSON 트리 오케스트레이션과 refMap/hook tree renderer 결선 전담
 - `reactInspector/detailFetchQueue.ts`: 선택 컴포넌트 상세 데이터 지연 조회 큐, 실패 cooldown, 요청 병합(in-flight queue) 전담
-- `controller.ts`: panel DOM ref/이벤트 오케스트레이션을 유지하고, React Inspector 상태는 `reactInspector/controllerState.ts`/`reactInspector/controllerStateModel.ts`, 결선 파이프라인은 `reactInspector/controllerFlows.ts`로 위임
+- `controller.ts`: panel 이벤트 오케스트레이션을 유지하고, DOM/lifecycle mutable 상태는 `controllerContext.ts`, React Inspector 상태는 `reactInspector/controllerState.ts`/`reactInspector/controllerStateModel.ts`, 결선 파이프라인은 `reactInspector/controllerFlows.ts`로 위임
 - `domRefs.ts`: PanelView 마운트와 필수 DOM ref 수집/검증 전담
 
 ## 7.3 DOM Tree 모듈 분리 규칙
 
 - `domTree/renderer.ts`: DOM 노드 라벨 생성(`<tag>`, `</tag>`)과 트리 `<details>` 렌더링 전담
-- `domTree/fetchFlow.ts`: getDomTree 조회 시작 상태, pageAgent 응답 파이프라인 연결, 결과 렌더/실패 문구 반영 규칙 전담
+- `domTree/fetchFlow.ts`: getDomTree 조회 시작 상태, pageAgent 응답 파이프라인 연결, 결과 렌더/실패 문구 반영 규칙 전담(`getDomTreeOutputEl` getter 기반 지연 DOM 접근)
 - `controller.ts`: DOM Tree UI setter와 fetch flow 결선, 상위 이벤트(요소 선택/런타임 갱신) 오케스트레이션 전담
 
 ## 7.4 Panel Bridge 모듈 분리 규칙
@@ -545,6 +547,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 관련 파일 바로가기:
 
 - `src/features/panel/controller.ts`
+- `src/features/panel/controllerContext.ts`
 - `src/features/panel/domRefs.ts`
 - `src/features/panel/bridge/pageAgentClient.ts`
 - `src/features/panel/domTree/fetchFlow.ts`
@@ -700,6 +703,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/searchInputBindingFlow.test.ts`: `searchInputBindingFlow.ts`의 query 갱신과 no-result/searchInputFlow 결선 분기
   - `tests/reactInspector/controllerState.test.ts`: `controllerState.ts`의 list/detail state writer와 reset/apply update 반영 분기
   - `tests/reactInspector/controllerStateModel.test.ts`: `controllerStateModel.ts`의 mutable 기본값, list/detail/reset/apply writer의 상태 전이/optional patch 보존 분기
+  - `tests/panel/controllerContext.test.ts`: `controllerContext.ts`의 DOM ref 초기화 가드, picker 버튼 상태 토글, lifecycle handle setter/getter 분기
   - `tests/reactInspector/searchTextCache.test.ts`: `searchTextCache.ts`의 토큰 생성, 캐시 재사용/재빌드, 단일 인덱스 patch 분기
   - `tests/reactInspector/searchFilter.test.ts`: `searchFilter.ts`의 terms 매칭 + 조상 가시성 포함, 조상 펼침, 접힘 id 복원 분기
   - `tests/reactInspector/resetStateFlow.test.ts`: `resetStateFlow.ts`의 상태/캐시 초기화와 reset pane 상태 반영 분기
