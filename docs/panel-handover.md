@@ -21,8 +21,8 @@
 - 역할: panel ↔ content 메시지 중계, content script 미주입 탭 복구
 
 3. Content script (isolated world)
-- 파일: `src/content/elementPicker.ts`
-- 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지
+- 파일: `src/content/elementPicker.ts`, `src/content/runtimeMessaging.ts`
+- 역할: 요소 선택 오버레이, main world 스크립트 주입, pageAgent 브리지, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
 - 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/reactRuntimeHook.ts`
@@ -502,6 +502,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/ui/panels/index.ts`
 - `src/features/panel/workspacePanels.ts`
 - `src/content/elementPicker.ts`
+- `src/content/runtimeMessaging.ts`
 - `src/content/pageAgent.ts`
 - `src/content/pageAgentDom.ts`
 - `src/content/pageAgentBridge.ts`

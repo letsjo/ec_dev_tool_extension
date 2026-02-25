@@ -2,6 +2,11 @@
  * 페이지에 오버레이를 띄우고, 마우스 위치의 DOM 요소를 하이라이트 후 클릭 시 선택 정보를 전달.
  */
 import type { ElementInfo } from "../shared/inspector/types";
+import {
+  notifyPickerStopped,
+  notifyRuntimeChanged,
+  sendRuntimeMessageSafe,
+} from "./runtimeMessaging";
 
 const OVERLAY_ID = "ec-dev-tool-element-picker-overlay";
 const HIGHLIGHT_CLASS = "ec-dev-tool-picker-highlight";
@@ -38,36 +43,6 @@ interface PendingPageAgentRequest {
 }
 
 const pendingPageAgentRequests = new Map<string, PendingPageAgentRequest>();
-
-/** 메시지를 전달 */
-function sendRuntimeMessageSafe(message: Record<string, unknown>) {
-  try {
-    const maybePromise: unknown = chrome.runtime.sendMessage(message);
-    if (typeof maybePromise === "object" && maybePromise !== null && "catch" in maybePromise) {
-      const maybeCatch = (maybePromise as { catch?: unknown }).catch;
-      if (typeof maybeCatch === "function") {
-        (maybePromise as Promise<unknown>).catch(() => {});
-      }
-    }
-  } catch {
-    // extension context unavailable or tab teardown race
-  }
-}
-
-/** 상태 변화를 알림 */
-function notifyPickerStopped(reason: "selected" | "cancelled") {
-  sendRuntimeMessageSafe({
-    action: "elementPickerStopped",
-    reason,
-  });
-}
-
-/** 상태 변화를 알림 */
-function notifyRuntimeChanged() {
-  sendRuntimeMessageSafe({
-    action: "pageRuntimeChanged",
-  });
-}
 
 /** 지연 실행을 예약 */
 function scheduleRuntimeChanged() {
