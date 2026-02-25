@@ -239,6 +239,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutTypes.ts`
 - `src/features/panel/workspace/layoutTreeOps.ts`
 - `src/features/panel/workspace/layoutVisibility.ts`
+- `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
@@ -291,6 +292,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `layoutTypes.ts`: layout 타입(`panel/split/path/drop/state`)과 node path/ratio 정규화, node 생성, 기본 레이아웃, persisted layout parse 전담
 - `layoutTreeOps.ts`: panel id 수집, remove/append/insert/swap, split ratio path 업데이트, visible prune, duplicate panel dedupe 같은 트리 변환 순수 로직 전담
 - `layoutVisibility.ts`: panel state map에서 visible panel id 목록 산출 전담
+- `layoutReconcile.ts`: visible panel id/현재 layout을 기준으로 prune+dedupe+missing panel append 정합화 전담
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
   - 2026-02 리팩터링: `manager.ts` 내부 thin wrapper를 제거하고 `dockPreview/panelSizing/scrollSnapshot/...` helper를 직접 결선해 호출 경로를 단순화
   - 상태 복원은 `initWorkspaceLayoutManager()`에서 `restoreWorkspaceStateSnapshot()`을 직접 적용하고, persist는 `setWorkspacePanelState`/dock drop/resize callback에서 `persistWorkspaceStateSnapshot(...)`을 직접 호출
@@ -601,6 +603,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutTypes.ts`
 - `src/features/panel/workspace/layoutTreeOps.ts`
 - `src/features/panel/workspace/layoutVisibility.ts`
+- `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
 - `src/features/panel/workspace/dockPreview.ts`
@@ -706,6 +709,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceRenderFlow.test.ts`: `renderFlow.ts`의 panel state 반영, toggle bar 동기화, panel open toggle 분기
   - `tests/workspace/workspacePanelBodySizeObserver.test.ts`: `panelBodySizeObserver.ts`의 observe 대상 등록과 start/stop disconnect 생명주기 분기
   - `tests/workspace/workspaceInteractionBindings.test.ts`: `interactionBindings.ts`의 panel/container 이벤트 바인딩과 cleanup unbind 분기
+  - `tests/workspace/workspaceLayoutReconcile.test.ts`: `layoutReconcile.ts`의 prune/dedupe/visible panel append 정합화 분기
   - `tests/pane/paneSetters.test.ts`: `paneSetters.ts`의 output/react/dom pane setter와 list/detail empty signature 결선 분기
   - `tests/reactInspector/jsonObjectPreview.test.ts`: `jsonObjectPreview.ts`의 배열 depth collapse, entry cap, object meta key 필터 preview 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링

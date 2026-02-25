@@ -1,11 +1,6 @@
 import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
 import {
-  appendPanelToWorkspaceLayout,
-  collectPanelIdsFromLayout,
-  dedupeWorkspaceLayoutPanels,
-  getWorkspaceVisiblePanelIds,
   parseWorkspaceNodePath,
-  pruneWorkspaceLayoutByVisiblePanels,
   removePanelFromWorkspaceLayout,
   updateWorkspaceSplitRatioByPath,
   WORKSPACE_DOCK_SPLIT_RATIO,
@@ -14,6 +9,7 @@ import {
   type WorkspacePanelState,
 } from './layoutModel';
 import { applyWorkspaceDockDropToLayout } from './dockDropApply';
+import { reconcileWorkspaceLayoutState } from './layoutReconcile';
 import {
   computeWorkspaceDockDirection,
   findWorkspacePanelByPoint,
@@ -70,24 +66,11 @@ export function createWorkspaceLayoutManager({
   let workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
   let unbindWorkspaceInteractions: (() => void) | null = null;
 
-  /**
-   * 현재 "보여야 하는 패널 집합"과 "레이아웃 트리"를 정합성 있게 맞춘다.
-   * 1) 숨김 패널을 레이아웃에서 제거한다.
-   * 2) 중복 패널 노드를 제거한다.
-   * 3) visible인데 레이아웃에 없는 패널을 다시 append한다.
-   */
   function reconcileWorkspaceLayout() {
-    const visiblePanelIds = getWorkspaceVisiblePanelIds(workspacePanelStateById);
-    const visiblePanelSet = new Set<WorkspacePanelId>(visiblePanelIds);
-    workspaceLayoutRoot = dedupeWorkspaceLayoutPanels(
-      pruneWorkspaceLayoutByVisiblePanels(workspaceLayoutRoot, visiblePanelSet),
+    workspaceLayoutRoot = reconcileWorkspaceLayoutState(
+      workspaceLayoutRoot,
+      workspacePanelStateById,
     );
-    visiblePanelIds.forEach((panelId) => {
-      const idsInLayout = collectPanelIdsFromLayout(workspaceLayoutRoot);
-      if (!idsInLayout.has(panelId)) {
-        workspaceLayoutRoot = appendPanelToWorkspaceLayout(workspaceLayoutRoot, panelId);
-      }
-    });
   }
 
   const { renderWorkspaceLayout, toggleWorkspacePanelOpenState } = createWorkspaceRenderFlow({
