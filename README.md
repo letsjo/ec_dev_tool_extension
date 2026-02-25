@@ -11,7 +11,10 @@
 ```bash
 npm install
 npm run build
+npm test
 ```
+
+- `npm test`: Vitest 단위 테스트 실행
 
 1. Chrome에서 `chrome://extensions` 열기
 2. "개발자 모드" 켜기
@@ -57,7 +60,13 @@ npm run build
 │   │   ├── devtools.ts                   # DevTools 패널 생성
 │   │   ├── panel.ts                      # 패널 entry
 │   │   └── panel/
-│   │       └── controller.ts             # 패널 기능 로직
+│   │       ├── controller.ts             # 패널 기능 오케스트레이션 로직
+│   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
+│   │       └── workspace/
+│   │           ├── layoutModel.ts        # 워크스페이스 레이아웃 트리 모델/연산
+│   │           ├── manager.ts            # 워크스페이스 레이아웃/드래그/리사이즈 상태머신
+│   │           ├── storage.ts            # 워크스페이스 localStorage 유틸
+│   │           └── wheelScrollFallback.ts # 패널 wheel 스크롤 보정
 │   ├── content/
 │   │   ├── elementPicker.ts              # 요소 선택 + content/main world 브릿지
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
