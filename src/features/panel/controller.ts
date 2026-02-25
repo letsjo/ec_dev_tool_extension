@@ -49,6 +49,11 @@ import {
   restoreCollapsedById as restoreCollapsedByIdValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
+import {
+  buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
+  buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
+  type SearchNoResultContext,
+} from './reactInspector/searchStatus';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { renderDomTreeNode } from './domTree/renderer';
@@ -556,6 +561,23 @@ function expandAncestorPaths(indices: number[]) {
   expandAncestorPathsValue(reactComponents, indices, collapsedComponentIds);
 }
 
+/** 검색 결과가 비어있을 때 공통 UI 상태를 적용한다. */
+function applySearchNoResultState(
+  context: SearchNoResultContext,
+  options: { clearHoverPreview?: boolean } = {},
+) {
+  const uiText = buildSearchNoResultUiTextValue(reactComponents.length, context);
+  renderReactComponentList();
+  setReactDetailEmpty(uiText.detailText);
+  setReactStatus(uiText.reactStatusText, true);
+  if (options.clearHoverPreview === true) {
+    clearPageHoverPreview();
+  }
+  clearPageComponentHighlight();
+  setDomTreeStatus(uiText.domStatusText, true);
+  setDomTreeEmpty(uiText.domEmptyText);
+}
+
 /** 현재 상태 스냅샷을 만든 */
 function snapshotCollapsedIds(): Set<string> {
   return snapshotCollapsedIdsValue(reactComponents, collapsedComponentIds);
@@ -854,13 +876,7 @@ function onComponentSearchInput() {
 
   const filterResult = getComponentFilterResult();
   if (filterResult.visibleIndices.length === 0) {
-    renderReactComponentList();
-    setReactDetailEmpty('검색 결과가 없습니다.');
-    setReactStatus(`검색 결과가 없습니다. (총 ${reactComponents.length}개)`, true);
-    clearPageHoverPreview();
-    clearPageComponentHighlight();
-    setDomTreeStatus('검색 조건과 일치하는 컴포넌트가 없습니다.', true);
-    setDomTreeEmpty('표시할 DOM이 없습니다.');
+    applySearchNoResultState('searchInput', { clearHoverPreview: true });
     return;
   }
 
@@ -875,9 +891,7 @@ function onComponentSearchInput() {
   }
 
   renderReactComponentList();
-  setReactStatus(
-    `검색 매치 ${filterResult.matchedIndices.length}개 / 표시 ${filterResult.visibleIndices.length}개 / 전체 ${reactComponents.length}개`,
-  );
+  setReactStatus(buildSearchSummaryStatusTextValue(filterResult, reactComponents.length));
 }
 
 /** 해당 기능 흐름을 처리 */
@@ -1008,12 +1022,7 @@ function applyReactInspectResult(
   const filterResult = getComponentFilterResult();
   if (filterResult.visibleIndices.length === 0) {
     selectedReactComponentIndex = -1;
-    renderReactComponentList();
-    setReactDetailEmpty('검색 결과가 없습니다.');
-    setReactStatus(`컴포넌트 ${reactComponents.length}개를 찾았지만 검색 결과가 없습니다.`, true);
-    clearPageComponentHighlight();
-    setDomTreeStatus('검색 조건과 일치하는 컴포넌트가 없습니다.', true);
-    setDomTreeEmpty('표시할 DOM이 없습니다.');
+    applySearchNoResultState('inspectResult');
     return;
   }
   selectedReactComponentIndex = filterResult.visibleIndices.includes(baseIndex)
