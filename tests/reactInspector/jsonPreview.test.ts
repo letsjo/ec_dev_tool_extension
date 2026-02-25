@@ -4,6 +4,7 @@ import {
   buildJsonSummaryPreview,
   readDehydratedPreviewText,
 } from '../../src/features/panel/reactInspector/jsonPreview';
+import { normalizeCollectionTokenForDisplay } from '../../src/features/panel/reactInspector/collectionDisplay';
 
 describe('jsonPreview', () => {
   it('renders dehydrated fallback preview text by value type and size', () => {
@@ -62,5 +63,26 @@ describe('jsonPreview', () => {
     expect(preview).toContain('2');
     expect(preview).toContain('3');
     expect(preview).toContain('…');
+  });
+
+  it('uses collection meta limits for set display previews', () => {
+    const normalizedSet = normalizeCollectionTokenForDisplay({
+      __ecType: 'set',
+      size: 5,
+      entries: [1, 2, 3, 4, 5],
+    });
+
+    const summaryPreview = buildJsonSummaryPreview(normalizedSet);
+    const hookPreview = buildHookInlinePreview(normalizedSet);
+
+    expect(summaryPreview).toContain('Set(5)');
+    expect(summaryPreview).toContain('1');
+    expect(summaryPreview).toContain('2');
+    expect(summaryPreview).toContain('3');
+    expect(summaryPreview).toContain('…');
+    expect(summaryPreview).not.toContain('4');
+
+    expect(hookPreview).toContain('Set(5)');
+    expect(hookPreview).toContain('4');
   });
 });
