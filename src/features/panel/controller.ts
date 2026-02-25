@@ -58,6 +58,14 @@ import {
   type ReactInspectApplyOptions,
 } from './reactInspector/applyFlow';
 import {
+  buildReactInspectApplyOptions as buildReactInspectApplyOptionsValue,
+  createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
+  ELEMENT_SELECTION_FETCH_OPTIONS,
+  resolveSelectedComponentIdForScript as resolveSelectedComponentIdForScriptValue,
+  type FetchReactInfoOptions,
+  type RuntimeRefreshLookup,
+} from './reactInspector/fetchOptions';
+import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
 import {
@@ -110,22 +118,6 @@ let workspacePanelToggleBarEl!: HTMLDivElement;
 let workspaceDockPreviewEl!: HTMLDivElement;
 
 type ApplyReactInspectOptions = ReactInspectApplyOptions;
-
-interface FetchReactInfoOptions {
-  keepLookup?: boolean;
-  background?: boolean;
-  preserveSelection?: boolean;
-  preserveCollapsed?: boolean;
-  highlightSelection?: boolean;
-  scrollSelectionIntoView?: boolean;
-  expandSelectionAncestors?: boolean;
-  lightweight?: boolean;
-  serializeSelectedComponent?: boolean;
-  trackUpdates?: boolean;
-  refreshDetail?: boolean;
-  statusText?: string;
-  onDone?: () => void;
-}
 
 let reactComponents: ReactComponentInfo[] = [];
 let selectedReactComponentIndex = -1;
@@ -1038,13 +1030,11 @@ function fetchReactInfo(
   }
 
   // 경량 모드에서 선택 컴포넌트만 직렬화하도록 id를 전달해 payload를 줄인다.
-  const selectedComponentIdForScript =
-    lightweight &&
-    options.serializeSelectedComponent === true &&
-    selectedReactComponentIndex >= 0 &&
-    selectedReactComponentIndex < reactComponents.length
-      ? reactComponents[selectedReactComponentIndex].id
-      : null;
+  const selectedComponentIdForScript = resolveSelectedComponentIdForScriptValue({
+    options,
+    selectedReactComponentIndex,
+    reactComponents,
+  });
 
   callInspectedPageAgent(
     'reactInspect',
@@ -1058,17 +1048,7 @@ function fetchReactInfo(
       handleReactInspectAgentResponse({
         response: res,
         errorText: errorText ?? undefined,
-        applyOptions: {
-          preserveSelection: options.preserveSelection,
-          preserveCollapsed: options.preserveCollapsed,
-          highlightSelection: options.highlightSelection,
-          scrollSelectionIntoView: options.scrollSelectionIntoView,
-          expandSelectionAncestors: options.expandSelectionAncestors,
-          lightweight: options.lightweight,
-          trackUpdates: options.trackUpdates,
-          refreshDetail: options.refreshDetail,
-          statusText: options.statusText,
-        },
+        applyOptions: buildReactInspectApplyOptionsValue(options),
         resetReactInspector,
         applyReactInspectResult,
       });
@@ -1078,7 +1058,7 @@ function fetchReactInfo(
 }
 
 /** 필요한 값/상태를 계산해 반환 */
-function getLookupForRuntimeRefresh(): { selector: string; pickPoint?: PickPoint } {
+function getLookupForRuntimeRefresh(): RuntimeRefreshLookup {
   if (lastReactLookup && (lastReactLookup.selector || lastReactLookup.pickPoint)) {
     return lastReactLookup;
   }
@@ -1091,20 +1071,11 @@ const runtimeRefreshScheduler = createRuntimeRefreshScheduler({
   isPickerModeActive: () => pickerModeActive,
   getLookup: () => getLookupForRuntimeRefresh(),
   runRefresh: (lookup, background, onDone) => {
-    fetchReactInfo(lookup.selector, lookup.pickPoint, {
-      keepLookup: true,
-      background,
-      preserveSelection: true,
-      preserveCollapsed: true,
-      highlightSelection: false,
-      scrollSelectionIntoView: false,
-      expandSelectionAncestors: false,
-      lightweight: true,
-      serializeSelectedComponent: false,
-      trackUpdates: true,
-      refreshDetail: !background,
-      onDone,
-    });
+    fetchReactInfo(
+      lookup.selector,
+      lookup.pickPoint,
+      createRuntimeRefreshFetchOptionsValue(background, onDone),
+    );
   },
 });
 
@@ -1206,11 +1177,7 @@ chrome.runtime.onMessage.addListener((message: ElementSelectedMessage) => {
     setElementOutput(lines.join('\n'));
 
     fetchDomTree(selectorText || domPathText, clickPoint);
-    fetchReactInfo(selectorText || domPathText, clickPoint, {
-      lightweight: true,
-      serializeSelectedComponent: false,
-      refreshDetail: true,
-    });
+    fetchReactInfo(selectorText || domPathText, clickPoint, ELEMENT_SELECTION_FETCH_OPTIONS);
   }
 });
 
