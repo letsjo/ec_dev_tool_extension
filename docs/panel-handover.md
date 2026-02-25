@@ -59,7 +59,7 @@
 - 내부 순서:
   - `mountPanelView()`로 React UI 마운트
   - `initDomRefs()`로 필수 DOM 참조 수집
-  - `initWorkspaceLayoutManager()`로 스플릿/드래그/토글 초기화
+  - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
   - `workspace/wheelScrollFallback.ts`의 `initWheelScrollFallback(...)`로 스크롤 보정 리스너 설치
   - 이벤트 바인딩 후 `refreshReactRuntime(false)` 최초 실행
 
@@ -121,6 +121,7 @@
 - `src/features/panel/workspacePanels.ts`
 - `src/features/panel/controller.ts`
 - `src/features/panel/workspace/layoutModel.ts`
+- `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `panel.html` (레이아웃 CSS)
@@ -148,6 +149,7 @@
 ## 7.1 워크스페이스 모듈 분리 규칙
 
 - `layoutModel.ts`: 레이아웃 트리 모델/정규화/삽입/교체/비율 계산 같은 순수 로직
+- `manager.ts`: 워크스페이스 DOM patch 렌더, 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션
 - `storage.ts`: 워크스페이스 localStorage read/write 유틸
 - `wheelScrollFallback.ts`: 패널 wheel capture 보정 리스너 설치/해제
 - `controller.ts`: DOM ref/렌더 파이프라인/이벤트 오케스트레이션만 담당
@@ -177,8 +179,8 @@
   - Selected Element / DOM Path / Selected DOM Tree / Raw Result의 스크롤/배경/최소높이 제어
 
 - `src/features/panel/controller.ts`
-  - 상태머신 + 이벤트 + 브리지 + 렌더링 오케스트레이션의 핵심
-  - workspace 모델 계산은 `workspace/layoutModel.ts`, 스토리지 I/O는 `workspace/storage.ts`, wheel 보정은 `workspace/wheelScrollFallback.ts`를 사용
+  - 브리지/조회/선택/렌더 상위 오케스트레이션의 핵심
+  - workspace 렌더/이벤트 상태머신은 `workspace/manager.ts`에 위임하고, wheel 보정은 `workspace/wheelScrollFallback.ts`를 사용
 
 ## 9. 디버깅 체크리스트
 
@@ -238,11 +240,12 @@
 
 1. `src/features/panel/workspacePanels.ts`에 panel id/config 추가
 2. 필요 시 `src/features/panel/workspace/layoutModel.ts`의 `createDefaultWorkspaceLayout()` 기본 트리 반영
-3. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
-4. `src/ui/panels/index.ts` export 등록
-5. `src/ui/sections/WorkspacePanelsSection.tsx` 조립 목록에 추가
-6. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
-7. `panel.html`에서 필요 스타일 추가
+3. `src/features/panel/workspace/manager.ts`의 이벤트/렌더 파이프라인에서 신규 패널 동작 경로 확인
+4. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
+5. `src/ui/panels/index.ts` export 등록
+6. `src/ui/sections/WorkspacePanelsSection.tsx` 조립 목록에 추가
+7. `controller.ts`에서 필요한 DOM ref/getRequiredElement 추가
+8. `panel.html`에서 필요 스타일 추가
 
 ### 새 pageAgent 메서드 추가
 
@@ -257,6 +260,7 @@
 
 - `src/features/panel/controller.ts`
 - `src/features/panel/workspace/layoutModel.ts`
+- `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `src/ui/sections/PanelViewSection.tsx`
