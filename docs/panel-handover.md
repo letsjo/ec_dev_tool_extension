@@ -313,6 +313,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - bridge 호출 타입은 `bridge/pageAgentClient.ts`의 공용 타입(`CallInspectedPageAgent`)을 별칭 없이 그대로 재사용
 - `reactInspector/pathResponse.ts`: `reactInspectPath` 성공 응답(`inspectFunction`, `serializeValue`) payload 파싱과 기본값 규칙 전담
 - `reactInspector/listRenderFlow.ts`: Components Tree empty/filter/signature skip/강제 렌더/updated id 소거 흐름 오케스트레이션 전담
+- `reactInspector/resetStateFlow.ts`: react inspector 상태/캐시/detail fetch queue/pane reset 문구 적용 흐름 전담
 - `reactInspector/collectionDisplay.ts`: map/set serializer token의 display path/meta 부착과 child path 역매핑, collection normalize 규칙 전담
 - `reactInspector/hookTreeModel.ts`: hook row 정규화(index/name/groupPath/badge)와 explicit/fallback hook tree 모델 구성 전담
 - `reactInspector/noResultStateFlow.ts`: 검색 결과 없음 상태(detail/status/dom) 공통 문구/부수효과 적용 흐름 전담
@@ -607,6 +608,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - 현재 커버하는 리팩터링 축
   - `tests/reactInspector/applyResultFlow.test.ts`: `applyResultFlow.ts`의 empty/reset, no-result, list-only refresh, selection 옵션 적용 분기
   - `tests/reactInspector/listRenderFlow.test.ts`: `listRenderFlow.ts`의 empty/filter empty/signature skip/updated 강제 렌더 분기
+  - `tests/reactInspector/resetStateFlow.test.ts`: `resetStateFlow.ts`의 상태/캐시 초기화와 reset pane 상태 반영 분기
   - `tests/reactInspector/noResultStateFlow.test.ts`: `noResultStateFlow.ts`의 searchInput/inspectResult 문구와 hover-preview/하이라이트 처리 분기
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출

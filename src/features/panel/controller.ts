@@ -51,6 +51,7 @@ import { createReactComponentListRenderFlow as createReactComponentListRenderFlo
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
+import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './reactInspector/resetStateFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
@@ -432,25 +433,30 @@ function onComponentSearchInput() {
   });
 }
 
-/** 해당 기능 흐름을 처리 */
-function resetReactInspector(statusText: string, isError = false) {
-  reactComponents = [];
-  componentSearchTexts = [];
-  componentSearchIncludeDataTokens = true;
-  collapsedComponentIds = new Set<string>();
-  updatedComponentIds = new Set<string>();
-  detailFetchQueue.reset();
-  selectedReactComponentIndex = -1;
-  lastReactListRenderSignature = '';
-  lastReactDetailRenderSignature = '';
-  lastReactDetailComponentId = null;
-  clearPageHoverPreview();
-  clearPageComponentHighlight();
-  applyReactInspectorPaneStateValue(
-    reactInspectorPaneSetters,
-    buildReactInspectorResetPaneStateValue(statusText, isError),
-  );
-}
+const resetReactInspector = createReactInspectorResetStateFlowValue({
+  writeState: (update) => {
+    reactComponents = update.reactComponents;
+    componentSearchTexts = update.componentSearchTexts;
+    componentSearchIncludeDataTokens = update.componentSearchIncludeDataTokens;
+    collapsedComponentIds = update.collapsedComponentIds;
+    updatedComponentIds = update.updatedComponentIds;
+    selectedReactComponentIndex = update.selectedReactComponentIndex;
+    lastReactListRenderSignature = update.lastReactListRenderSignature;
+    lastReactDetailRenderSignature = update.lastReactDetailRenderSignature;
+    lastReactDetailComponentId = update.lastReactDetailComponentId;
+  },
+  resetDetailFetchQueue: () => {
+    detailFetchQueue.reset();
+  },
+  clearPageHoverPreview,
+  clearPageComponentHighlight,
+  applyResetPaneState: (statusText, isError) => {
+    applyReactInspectorPaneStateValue(
+      reactInspectorPaneSetters,
+      buildReactInspectorResetPaneStateValue(statusText, isError),
+    );
+  },
+});
 
 const applyReactInspectResult = createReactInspectResultApplyFlowValue({
   readState: () => ({
