@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -60,6 +60,7 @@
   - `mountPanelView()`로 React UI 마운트
   - `initDomRefs()`로 필수 DOM 참조 수집
   - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
+  - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/상세(JSON/hook) 렌더 로직 위임
   - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
@@ -224,6 +225,11 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `runtimeRefresh/scheduler.ts`: runtime 변경 이벤트 debounce, 최소 간격 보장, in-flight 중복 호출 큐 병합 전담
 - `controller.ts`: lookup 계산/조회 함수(`fetchReactInfo`)를 scheduler에 주입하고 네비게이션/언로드 시 reset·dispose만 수행
 
+## 7.6 Panel PageAgent Response 모듈 분리 규칙
+
+- `pageAgent/responsePipeline.ts`: `getDomTree`/`reactInspect` 응답 오류 처리, 타입 가드 검증, 실패 문구 규칙 전담
+- `controller.ts`: 조회 트리거와 선택/경량 옵션 조립, 성공 시 도메인 상태 적용 함수 연결 전담
+
 ## 8. 주요 UI 구성 파일 역할
 
 - `src/ui/sections/PanelViewSection.tsx`
@@ -332,6 +338,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/controller.ts`
 - `src/features/panel/bridge/pageAgentClient.ts`
 - `src/features/panel/domTree/renderer.ts`
+- `src/features/panel/pageAgent/responsePipeline.ts`
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/search.ts`
 - `src/features/panel/reactInspector/jsonSection.ts`

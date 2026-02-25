@@ -12,7 +12,6 @@ import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { TARGETS } from '../../config';
 import {
-  isDomTreeEvalResult,
   isPageHighlightResult,
   isPickPoint,
   isReactInspectResult,
@@ -55,6 +54,10 @@ import {
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
 import { renderDomTreeNode } from './domTree/renderer';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
+import {
+  handleDomTreeAgentResponse,
+  handleReactInspectAgentResponse,
+} from './pageAgent/responsePipeline';
 import { createRuntimeRefreshScheduler } from './runtimeRefresh/scheduler';
 
 let outputEl!: HTMLDivElement;
@@ -380,18 +383,13 @@ function fetchDomTree(selector: string, pickPoint?: PickPoint) {
     'getDomTree',
     { selector, pickPoint: pickPoint ?? null },
     (res, errorText) => {
-      if (errorText) {
-        setDomTreeStatus(`DOM 트리 실행 오류: ${errorText}`, true);
-        setDomTreeEmpty('DOM 트리를 가져오지 못했습니다.');
-        return;
-      }
-      if (!isDomTreeEvalResult(res) || !res.ok) {
-        const reason = isDomTreeEvalResult(res) ? res.error : '응답 형식 오류';
-        setDomTreeStatus(`DOM 트리 조회 실패: ${reason ?? '알 수 없는 오류'}`, true);
-        setDomTreeEmpty('DOM 트리를 가져오지 못했습니다.');
-        return;
-      }
-      applyDomTreeResult(res);
+      handleDomTreeAgentResponse({
+        response: res,
+        errorText: errorText ?? undefined,
+        setDomTreeStatus,
+        setDomTreeEmpty,
+        applyDomTreeResult,
+      });
     },
   );
 }
@@ -1253,31 +1251,22 @@ function fetchReactInfo(
       selectedComponentId: selectedComponentIdForScript,
     },
     (res, errorText) => {
-      if (errorText) {
-        resetReactInspector(`실행 오류: ${errorText}`, true);
-        finish();
-        return;
-      }
-      if (isRecord(res) && 'error' in res) {
-        resetReactInspector(`오류: ${String(res.error ?? '알 수 없는 오류')}`, true);
-        finish();
-        return;
-      }
-      if (!isReactInspectResult(res)) {
-        resetReactInspector('React 분석 결과 형식이 올바르지 않습니다.', true);
-        finish();
-        return;
-      }
-      applyReactInspectResult(res, {
-        preserveSelection: options.preserveSelection,
-        preserveCollapsed: options.preserveCollapsed,
-        highlightSelection: options.highlightSelection,
-        scrollSelectionIntoView: options.scrollSelectionIntoView,
-        expandSelectionAncestors: options.expandSelectionAncestors,
-        lightweight: options.lightweight,
-        trackUpdates: options.trackUpdates,
-        refreshDetail: options.refreshDetail,
-        statusText: options.statusText,
+      handleReactInspectAgentResponse({
+        response: res,
+        errorText: errorText ?? undefined,
+        applyOptions: {
+          preserveSelection: options.preserveSelection,
+          preserveCollapsed: options.preserveCollapsed,
+          highlightSelection: options.highlightSelection,
+          scrollSelectionIntoView: options.scrollSelectionIntoView,
+          expandSelectionAncestors: options.expandSelectionAncestors,
+          lightweight: options.lightweight,
+          trackUpdates: options.trackUpdates,
+          refreshDetail: options.refreshDetail,
+          statusText: options.statusText,
+        },
+        resetReactInspector,
+        applyReactInspectResult,
       });
       finish();
     },
