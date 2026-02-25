@@ -21,9 +21,6 @@ import {
   showWorkspaceDockPreview,
 } from './dockPreview';
 import {
-  getWorkspaceLayoutRootElement,
-} from './domReuse';
-import {
   captureWorkspaceScrollSnapshots,
   restoreWorkspaceScrollSnapshots,
 } from './scrollSnapshot';
@@ -48,7 +45,7 @@ import {
 import {
   resetWorkspacePanelSplitClasses,
 } from './layoutDom';
-import { patchWorkspaceLayoutDomNode } from './domPatcher';
+import { renderWorkspaceLayoutPipeline } from './renderPipeline';
 import {
   applyWorkspaceSplitRatioStyle,
   computeWorkspaceResizeRatioFromPointer,
@@ -155,45 +152,15 @@ export function createWorkspaceLayoutManager({
       updateWorkspacePanelControlState(workspacePanelElements, panelId);
     });
 
-    if (workspaceDockPreviewEl.parentElement !== panelContentEl) {
-      panelContentEl.appendChild(workspaceDockPreviewEl);
-    }
-    if (panelContentEl.firstElementChild !== workspaceDockPreviewEl) {
-      panelContentEl.insertBefore(workspaceDockPreviewEl, panelContentEl.firstChild);
-    }
-    hideWorkspaceDockPreview(workspaceDockPreviewEl);
-
     const scrollSnapshots = captureWorkspaceScrollSnapshots(panelContentEl);
-    const existingRoot = getWorkspaceLayoutRootElement(panelContentEl, workspaceDockPreviewEl);
-    let nextRoot: HTMLElement;
-    if (workspaceLayoutRoot) {
-      nextRoot = patchWorkspaceLayoutDomNode({
-        layoutNode: workspaceLayoutRoot,
-        existingRoot,
-        workspacePanelElements,
-      });
-    } else if (existingRoot && existingRoot.classList.contains('workspace-empty')) {
-      nextRoot = existingRoot;
-    } else {
-      const empty = document.createElement('div');
-      empty.className = 'workspace-empty';
-      empty.textContent = '표시 중인 패널이 없습니다. 하단 footer에서 패널을 다시 켜주세요.';
-      nextRoot = empty;
-    }
-
-    if (nextRoot.parentElement !== panelContentEl) {
-      panelContentEl.insertBefore(nextRoot, workspaceDockPreviewEl.nextSibling);
-    } else if (workspaceDockPreviewEl.nextSibling !== nextRoot) {
-      panelContentEl.insertBefore(nextRoot, workspaceDockPreviewEl.nextSibling);
-    }
-
-    Array.from(panelContentEl.children).forEach((child) => {
-      if (child !== workspaceDockPreviewEl && child !== nextRoot) {
-        panelContentEl.removeChild(child);
-      }
+    const renderResult = renderWorkspaceLayoutPipeline({
+      panelContentEl,
+      workspaceDockPreviewEl,
+      workspaceLayoutRoot,
+      workspacePanelElements,
     });
 
-    if (workspaceLayoutRoot) {
+    if (renderResult.hasLayoutRoot) {
       syncWorkspaceSplitCollapsedRows(panelContentEl);
     }
     renderWorkspacePanelToggleBar(workspacePanelToggleBarEl, workspacePanelStateById);

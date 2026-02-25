@@ -240,6 +240,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dragDropFlow.ts`
 - `src/features/panel/workspace/domReuse.ts`
 - `src/features/panel/workspace/domPatcher.ts`
+- `src/features/panel/workspace/renderPipeline.ts`
 - `src/features/panel/workspace/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
@@ -280,12 +281,14 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
   - 2026-02 리팩터링: `manager.ts` 내부 thin wrapper를 제거하고 `dockPreview/panelSizing/scrollSnapshot/...` helper를 직접 결선해 호출 경로를 단순화
   - 상태 복원은 `initWorkspaceLayoutManager()`에서 `restoreWorkspaceStateSnapshot()`을 직접 적용하고, persist는 `setWorkspacePanelState`/dock drop/resize callback에서 `persistWorkspaceStateSnapshot(...)`을 직접 호출
+  - DOM 렌더 단계의 empty fallback + patch 후처리(삽입/정리)는 `renderPipeline.ts`로 위임
 - `dockDropApply.ts`: dock drop target(`center|left|right|top|bottom`)에 따른 layout tree 변경(교체/삽입/append) 순수 계산 전담
 - `dockPreview.ts`: 도킹 drop 대상 패널 탐색, edge 기반 dock 방향 계산, preview 오버레이 위치/크기 렌더링 전담
 - `dragOverTarget.ts`: dragover pointer 좌표 기준 drop target/preview rect 계산 전담
 - `dragDropFlow.ts`: 드래그 시작/종료 상태, dragover/drop/leave 이벤트 전이와 drop 적용 호출 전담
 - `domReuse.ts`: panel id 집합 비교와 재사용 가능한 workspace root 노드 탐색 규칙 전담
 - `domPatcher.ts`: layout tree 재귀 patch, split node 재사용/대체 판단, first/second slot subtree 매핑 전담
+- `renderPipeline.ts`: dock preview 위치 보정, layout patch/empty fallback 선택, root 삽입/불필요 child 정리 후처리 전담
 - `layoutDom.ts`: split DOM 골격 생성과 panel split class reset 정리 전담
 - `panelBindings.ts`: panel summary/action 버튼 drag/click/mousedown 이벤트 바인딩/해제 전담
 - `containerBindings.ts`: workspace 컨테이너 drag/drop/pointer/dblclick, toggle bar click 이벤트 바인딩/해제 전담
@@ -569,6 +572,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/dragDropFlow.ts`
 - `src/features/panel/workspace/domReuse.ts`
 - `src/features/panel/workspace/domPatcher.ts`
+- `src/features/panel/workspace/renderPipeline.ts`
 - `src/features/panel/workspace/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
@@ -651,6 +655,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
+  - `tests/workspace/workspaceRenderPipeline.test.ts`: `renderPipeline.ts`의 empty fallback 재사용, patch root 삽입, stale child 정리 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링
   - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 대상 미발견 에러 처리와 DOM tree 직렬화 기본 경로
   - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, clear 복원, selector 미발견 에러 처리
