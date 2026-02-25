@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { parseHookDisplayName } from "./pageAgentHookGroups";
+import { parseHookDisplayName } from "./pageAgentHookStack";
 
 type AnyRecord = Record<string, any>;
 

@@ -1,8 +1,5 @@
 // @ts-nocheck
 import {
-  parseHookDisplayName,
-} from "./pageAgentHookStack";
-import {
   getDispatcherRefFromGlobalHook,
   resolveDefaultPropsForHookInspect,
   resolveRenderFunctionForHookInspect,
@@ -11,6 +8,7 @@ import { alignHookInspectMetadataResultLength } from "./pageAgentHookResult";
 import { buildHookInspectMetadataFromLog } from "./pageAgentHookMetadataBuild";
 import { buildPrimitiveStackCacheForHookInspect } from "./pageAgentHookPrimitiveStack";
 import { runHookInspectRender } from "./pageAgentHookRenderExecution";
+import { createHookInspectDispatcher } from "./pageAgentHookDispatcher";
 
 type AnyRecord = Record<string, any>;
 type FiberLike = AnyRecord & {
@@ -43,238 +41,27 @@ function inspectCustomHookGroupNames(
   if (!dispatcherRef || typeof dispatcherRef.H === "undefined") return null;
 
   const previousDispatcher = dispatcherRef.H;
-  let currentHook = fiber.memoizedState;
-  const hookLog = [];
-  let suspendedToken = null;
-
-  function nextHook() {
-    const hook = currentHook;
-    if (hook && typeof hook === "object" && "next" in hook) {
-      currentHook = hook.next;
-    } else {
-      currentHook = null;
-    }
-    return hook;
-  }
-
-  function readHookMemoizedState() {
-    const hook = nextHook();
-    if (hook && typeof hook === "object" && "memoizedState" in hook) {
-      return hook.memoizedState;
-    }
-    return undefined;
-  }
-
-  function pushHookLog(primitive: string, dispatcherHookName: string, value: unknown) {
-    if (hookLog.length >= 220) return;
-    hookLog.push({
-      primitive,
-      dispatcherHookName,
-      value,
-      stackError: new Error(),
-    });
-  }
-
-  function readContextSnapshot(context: AnyRecord | null | undefined) {
-    if (!context || typeof context !== "object") {
-      return { hasValue: false, value: undefined };
-    }
-    if ("_currentValue2" in context) {
-      return { hasValue: true, value: context._currentValue2 };
-    }
-    if ("_currentValue" in context) {
-      return { hasValue: true, value: context._currentValue };
-    }
-    return { hasValue: false, value: undefined };
-  }
-
-  const dispatcher = {
-    readContext(context) {
-      const snapshot = readContextSnapshot(context);
-      pushHookLog("Context", "Context", snapshot.value);
-      return snapshot.value;
-    },
-    useContext(context) {
-      const snapshot = readContextSnapshot(context);
-      pushHookLog("Context", "Context", snapshot.value);
-      return snapshot.value;
-    },
-    useState(initialState) {
-      const hook = nextHook();
-      const state = hook && hook.memoizedState !== undefined
-        ? hook.memoizedState
-        : (typeof initialState === "function" ? initialState() : initialState);
-      pushHookLog("State", "State", state);
-      return [state, function() {}];
-    },
-    useReducer(reducer, initialArg, init) {
-      const hook = nextHook();
-      let state;
-      if (hook && hook.memoizedState !== undefined) {
-        state = hook.memoizedState;
-      } else if (typeof init === "function") {
-        state = init(initialArg);
-      } else {
-        state = initialArg;
-      }
-      pushHookLog("Reducer", "Reducer", state);
-      return [state, function() {}];
-    },
-    useRef(initialValue) {
-      const hook = nextHook();
-      const value = hook && hook.memoizedState !== undefined ? hook.memoizedState : { current: initialValue };
-      pushHookLog("Ref", "Ref", value);
-      return value;
-    },
-    useEffect(create) {
-      readHookMemoizedState();
-      pushHookLog("Effect", "Effect", typeof create === "function" ? create : null);
-    },
-    useLayoutEffect(create) {
-      readHookMemoizedState();
-      pushHookLog("LayoutEffect", "LayoutEffect", typeof create === "function" ? create : null);
-    },
-    useInsertionEffect(create) {
-      readHookMemoizedState();
-      pushHookLog("InsertionEffect", "InsertionEffect", typeof create === "function" ? create : null);
-    },
-    useImperativeHandle(ref, create) {
-      readHookMemoizedState();
-      pushHookLog("ImperativeHandle", "ImperativeHandle", typeof create === "function" ? create : null);
-    },
-    useDebugValue(value) {
-      pushHookLog("DebugValue", "DebugValue", value);
-    },
-    useCallback(callback) {
-      const state = readHookMemoizedState();
-      const value = Array.isArray(state) ? state[0] : callback;
-      pushHookLog("Callback", "Callback", value);
-      return value;
-    },
-    useMemo(create) {
-      const state = readHookMemoizedState();
-      const value = Array.isArray(state) ? state[0] : undefined;
-      pushHookLog("Memo", "Memo", value);
-      return value;
-    },
-    useDeferredValue(value) {
-      const state = readHookMemoizedState();
-      const nextValue = state !== undefined ? state : value;
-      pushHookLog("DeferredValue", "DeferredValue", nextValue);
-      return nextValue;
-    },
-    useTransition() {
-      const stateHook = nextHook();
-      nextHook();
-      const pending = !!(stateHook && stateHook.memoizedState);
-      pushHookLog("Transition", "Transition", pending);
-      return [pending, function() {}];
-    },
-    useSyncExternalStore(subscribe, getSnapshot) {
-      const hook = nextHook();
-      nextHook();
-      nextHook();
-      const value = hook && hook.memoizedState !== undefined
-        ? hook.memoizedState
-        : (typeof getSnapshot === "function" ? getSnapshot() : undefined);
-      pushHookLog("SyncExternalStore", "SyncExternalStore", value);
-      return value;
-    },
-    useId() {
-      const id = readHookMemoizedState();
-      const nextId = typeof id === "string" ? id : "";
-      pushHookLog("Id", "Id", nextId);
-      return nextId;
-    },
-    useOptimistic(passthrough) {
-      const state = readHookMemoizedState();
-      const nextState = state !== undefined ? state : passthrough;
-      pushHookLog("Optimistic", "Optimistic", nextState);
-      return [nextState, function() {}];
-    },
-    useFormState(action, initialState) {
-      const state = readHookMemoizedState();
-      const nextState = state !== undefined ? state : initialState;
-      pushHookLog("FormState", "FormState", nextState);
-      return [nextState, function() {}];
-    },
-    useActionState(action, initialState) {
-      const state = readHookMemoizedState();
-      const nextState = state !== undefined ? state : initialState;
-      pushHookLog("ActionState", "ActionState", nextState);
-      return [nextState, function() {}, false];
-    },
-    useHostTransitionStatus() {
-      const status = readHookMemoizedState();
-      pushHookLog("HostTransitionStatus", "HostTransitionStatus", status);
-      return status;
-    },
-    useEffectEvent(callback) {
-      readHookMemoizedState();
-      pushHookLog("EffectEvent", "EffectEvent", callback);
-      return typeof callback === "function" ? callback : function() {};
-    },
-    useMemoCache(size) {
-      readHookMemoizedState();
-      pushHookLog("MemoCache", "MemoCache", size);
-      const cache = [];
-      for (let i = 0; i < size; i += 1) cache.push(undefined);
-      return cache;
-    },
-    use(usable) {
-      const state = readHookMemoizedState();
-      if (usable && typeof usable === "object" && typeof usable.then === "function") {
-        if (state !== undefined) {
-          pushHookLog("Promise", "Use", state);
-          return state;
-        }
-        pushHookLog("Unresolved", "Use", usable);
-        if (suspendedToken === null) {
-          suspendedToken = {};
-        }
-        throw suspendedToken;
-      }
-      const contextSnapshot = readContextSnapshot(usable);
-      if (contextSnapshot.hasValue) {
-        pushHookLog("Context", "Use", contextSnapshot.value);
-        return contextSnapshot.value;
-      }
-      const fallbackValue = state !== undefined ? state : usable;
-      pushHookLog("Use", "Use", fallbackValue);
-      return fallbackValue;
-    },
+  const inspectState = {
+    currentHook: fiber.memoizedState,
+    suspendedToken: null,
+    hookLog: [],
   };
-
-  const dispatcherProxy = typeof Proxy === "function"
-    ? new Proxy(dispatcher, {
-      get(target, prop) {
-        if (prop in target) return target[prop];
-        if (typeof prop !== "string") return undefined;
-        return function genericHookFallback(arg: unknown) {
-          const state = readHookMemoizedState();
-          const inferred = parseHookDisplayName(prop) || "Hook";
-          const value = state !== undefined ? state : arg;
-          pushHookLog(inferred, inferred, value);
-          return value;
-        };
-      },
-    })
-    : dispatcher;
+  const { dispatcher, dispatcherProxy } = createHookInspectDispatcher(inspectState);
 
   const primitiveStackCache = buildPrimitiveStackCacheForHookInspect({
-    hookLog,
+    hookLog: inspectState.hookLog,
     dispatcher,
     getCurrentHook() {
-      return currentHook;
+      return inspectState.currentHook;
     },
     setCurrentHook(value: unknown) {
-      currentHook = value;
+      inspectState.currentHook = value;
     },
     getSuspendedToken() {
-      return suspendedToken;
+      return inspectState.suspendedToken;
     },
     setSuspendedToken(value: unknown) {
-      suspendedToken = value;
+      inspectState.suspendedToken = value;
     },
   });
 
@@ -285,14 +72,14 @@ function inspectCustomHookGroupNames(
     fiber,
     renderFn,
     getSuspendedToken() {
-      return suspendedToken;
+      return inspectState.suspendedToken;
     },
     resolveDefaultProps: resolveDefaultPropsForHookInspect,
   });
 
-  if (hookLog.length === 0) return null;
+  if (inspectState.hookLog.length === 0) return null;
   const result = buildHookInspectMetadataFromLog(
-    hookLog,
+    inspectState.hookLog,
     rootStackError,
     componentName,
     primitiveStackCache,
@@ -300,4 +87,4 @@ function inspectCustomHookGroupNames(
   return alignHookInspectMetadataResultLength(result, expectedCount);
 }
 
-export { parseHookDisplayName, inspectCustomHookGroupNames };
+export { inspectCustomHookGroupNames };
