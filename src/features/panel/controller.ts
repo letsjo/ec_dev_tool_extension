@@ -72,6 +72,7 @@ import { applySelectedComponentDetailResult as applySelectedComponentDetailResul
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
+import { renderPanelFatalErrorView as renderPanelFatalErrorViewValue } from './lifecycle/fatalErrorView';
 import { createPanelTeardownFlow as createPanelTeardownFlowValue } from './lifecycle/panelTeardownFlow';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
@@ -608,29 +609,12 @@ const { bootstrapPanel } = createPanelBootstrapFlowValue({
   },
 });
 
-/** 화면 요소를 렌더링 */
-function renderPanelFatalError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  document.body.innerHTML = '';
-
-  const container = document.createElement('div');
-  container.style.padding = '12px';
-  container.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
-  container.style.whiteSpace = 'pre-wrap';
-  container.style.color = '#ffd7d7';
-  container.style.background = '#3a1f27';
-  container.style.border = '1px solid #8d3b4a';
-  container.style.borderRadius = '6px';
-  container.textContent = `EC Dev Tool panel 초기화 실패\\n\\n${message}`;
-  document.body.appendChild(container);
-}
-
 /** 엔트리 실행을 시작 */
 export function runPanel() {
   try {
     bootstrapPanel();
   } catch (error) {
     console.error('[EC Dev Tool] panel bootstrap failed', error);
-    renderPanelFatalError(error);
+    renderPanelFatalErrorViewValue(error);
   }
 }

@@ -382,6 +382,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.11 Panel Lifecycle Bootstrap 모듈 분리 규칙
 
 - `lifecycle/bootstrapFlow.ts`: 패널 부트스트랩 순서(React 마운트, DOM ref 초기화, 초기 상태 문구, 이벤트 바인딩)와 unload cleanup 훅 바인딩 전담
+- `lifecycle/fatalErrorView.ts`: 패널 bootstrap 실패 시 body 에러 뷰 렌더(기존 DOM 초기화 + 메시지 표시) 전담
 - `lifecycle/panelTeardownFlow.ts`: unload 시 workspace manager/wheel fallback/runtime scheduler/nav listener teardown 순서 전담
 - `controller.ts`: bootstrap/teardown flow에 런타임 의존성을 주입하고 결선만 수행
 
@@ -611,6 +612,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/listRenderFlow.test.ts`: `listRenderFlow.ts`의 empty/filter empty/signature skip/updated 강제 렌더 분기
   - `tests/reactInspector/resetStateFlow.test.ts`: `resetStateFlow.ts`의 상태/캐시 초기화와 reset pane 상태 반영 분기
   - `tests/reactInspector/noResultStateFlow.test.ts`: `noResultStateFlow.ts`의 searchInput/inspectResult 문구와 hover-preview/하이라이트 처리 분기
+  - `tests/lifecycle/fatalErrorView.test.ts`: `fatalErrorView.ts`의 body 초기화/에러 메시지 렌더 분기
   - `tests/lifecycle/panelTeardownFlow.test.ts`: `panelTeardownFlow.ts`의 unload 자원 해제(workspace/wheel/runtime/listener) 분기
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
