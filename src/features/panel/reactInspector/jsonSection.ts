@@ -20,6 +20,11 @@ import {
 } from './jsonTokenNodes';
 import { createDehydratedTokenNode as createDehydratedTokenNodeValue } from './jsonDehydratedNode';
 import {
+  createDetailsToggleButton,
+  createExpandableValueRow,
+  createRowToggleSpacer,
+} from './jsonRowUi';
+import {
   buildHookInlinePreview,
   buildJsonSummaryPreview,
   formatPrimitive,
@@ -49,8 +54,6 @@ interface JsonRenderContext {
   refStack: number[];
   allowInspect: boolean;
 }
-
-const INLINE_CHILD_INDENT_PX = 16;
 
 /**
  * controller의 pageAgent 브리지를 모듈 외부에 두고,
@@ -141,106 +144,6 @@ function createHookRowValueNode(
   return node;
 }
 
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createExpandableValueRow(
-  keyEl: HTMLElement,
-  valueDetails: HTMLDetailsElement,
-  extraClassName?: string,
-): HTMLDivElement {
-  const row = document.createElement('div');
-  row.className = `json-row json-row-expandable${extraClassName ? ` ${extraClassName}` : ''}`;
-
-  const toggleDetailsOpenState = () => {
-    valueDetails.open = !valueDetails.open;
-  };
-
-  const toggle = createDetailsToggleButton(valueDetails);
-
-  valueDetails.classList.add('json-inline-value');
-  keyEl.classList.add('json-key-toggle');
-  keyEl.setAttribute('role', 'button');
-  keyEl.tabIndex = 0;
-  keyEl.setAttribute('aria-expanded', valueDetails.open ? 'true' : 'false');
-
-  keyEl.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    toggleDetailsOpenState();
-  });
-  keyEl.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    event.stopPropagation();
-    toggleDetailsOpenState();
-  });
-
-  const syncInlineChildrenOffset = () => {
-    if (!valueDetails.open) return;
-    const children = valueDetails.querySelector(':scope > .json-children');
-    if (!(children instanceof HTMLElement)) return;
-    const rowRect = row.getBoundingClientRect();
-    const detailsRect = valueDetails.getBoundingClientRect();
-    const offset = detailsRect.left - rowRect.left;
-    const targetMargin = INLINE_CHILD_INDENT_PX - offset;
-    children.style.marginLeft = `${targetMargin}px`;
-  };
-
-  const scheduleInlineChildrenOffset = () => {
-    requestAnimationFrame(syncInlineChildrenOffset);
-  };
-
-  valueDetails.addEventListener('toggle', () => {
-    keyEl.setAttribute('aria-expanded', valueDetails.open ? 'true' : 'false');
-    scheduleInlineChildrenOffset();
-  });
-  window.addEventListener('resize', scheduleInlineChildrenOffset);
-  if (typeof MutationObserver === 'function') {
-    const childrenObserver = new MutationObserver(() => {
-      if (!row.isConnected || !valueDetails.open) return;
-      scheduleInlineChildrenOffset();
-    });
-    childrenObserver.observe(valueDetails, { childList: true });
-  }
-  if (valueDetails.open) {
-    scheduleInlineChildrenOffset();
-  }
-
-  row.appendChild(toggle);
-  row.appendChild(keyEl);
-  row.appendChild(document.createTextNode(': '));
-  row.appendChild(valueDetails);
-  return row;
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createDetailsToggleButton(detailsEl: HTMLDetailsElement): HTMLButtonElement {
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'json-row-toggle';
-  toggle.setAttribute('aria-label', 'Toggle row details');
-
-  const syncToggle = () => {
-    toggle.textContent = detailsEl.open ? '▾' : '▸';
-  };
-  syncToggle();
-
-  toggle.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    detailsEl.open = !detailsEl.open;
-  });
-  detailsEl.addEventListener('toggle', syncToggle);
-  return toggle;
-}
-
-/** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-function createRowToggleSpacer(): HTMLSpanElement {
-  const spacer = document.createElement('span');
-  spacer.className = 'json-row-toggle-spacer';
-  spacer.setAttribute('aria-hidden', 'true');
-  return spacer;
-}
-
 /** 생성한 노드를 컨테이너에 추가 */
 function appendHookRow(container: HTMLElement, item: HookRowItem, context: JsonRenderContext) {
   const keyEl = document.createElement('span');
@@ -265,7 +168,13 @@ function appendHookRow(container: HTMLElement, item: HookRowItem, context: JsonR
 
   const valueNode = createHookRowValueNode(item.state, context, [item.sourceIndex, 'state']);
   if (valueNode instanceof HTMLDetailsElement) {
-    container.appendChild(createExpandableValueRow(keyEl, valueNode, 'json-hook-row'));
+    container.appendChild(
+      createExpandableValueRow({
+        keyEl,
+        valueDetails: valueNode,
+        extraClassName: 'json-hook-row',
+      }),
+    );
     return;
   }
 
@@ -478,7 +387,12 @@ function createJsonValueNode(
           const keyEl = document.createElement('span');
           keyEl.className = 'json-key';
           keyEl.textContent = String(key);
-          children.appendChild(createExpandableValueRow(keyEl, childNode));
+          children.appendChild(
+            createExpandableValueRow({
+              keyEl,
+              valueDetails: childNode,
+            }),
+          );
           return;
         }
 
