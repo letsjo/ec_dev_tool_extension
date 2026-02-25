@@ -3,16 +3,13 @@ import {
   appendPanelToWorkspaceLayout,
   collectPanelIdsFromLayout,
   createDefaultWorkspaceLayout,
-  createWorkspacePanelNode,
   dedupeWorkspaceLayoutPanels,
   getWorkspaceVisiblePanelIds,
-  insertPanelByDockTarget,
   parseWorkspaceLayoutNode,
   parseWorkspaceNodePath,
   pruneWorkspaceLayoutByVisiblePanels,
   removePanelFromWorkspaceLayout,
   stringifyWorkspaceNodePath,
-  swapWorkspaceLayoutPanels,
   updateWorkspaceSplitRatioByPath,
   WORKSPACE_DOCK_SPLIT_RATIO,
   type WorkspaceDockDirection,
@@ -21,6 +18,7 @@ import {
   type WorkspaceNodePath,
   type WorkspacePanelState,
 } from './layoutModel';
+import { applyWorkspaceDockDropToLayout as applyWorkspaceDockDropToLayoutValue } from './dockDropApply';
 import {
   computeWorkspaceDockDirection as computeWorkspaceDockDirectionValue,
   findWorkspacePanelByPoint as findWorkspacePanelByPointValue,
@@ -443,35 +441,15 @@ export function createWorkspaceLayoutManager({
 
   /** 해당 기능 흐름을 처리 */
   function applyWorkspaceDockDrop(draggedPanelId: WorkspacePanelId, dropTarget: WorkspaceDropTarget) {
-    const targetPanelId = dropTarget.targetPanelId;
-    if (!targetPanelId) return;
-    if (draggedPanelId === targetPanelId) return;
-
-    if (dropTarget.direction === 'center') {
-      workspaceLayoutRoot = swapWorkspaceLayoutPanels(
-        workspaceLayoutRoot,
-        draggedPanelId,
-        targetPanelId,
-      );
-      persistWorkspaceState();
-      renderWorkspaceLayout();
+    const nextLayout = applyWorkspaceDockDropToLayoutValue(
+      workspaceLayoutRoot,
+      draggedPanelId,
+      dropTarget,
+    );
+    if (!nextLayout.changed) {
       return;
     }
-
-    const removed = removePanelFromWorkspaceLayout(workspaceLayoutRoot, draggedPanelId);
-    const baseRoot = removed.node;
-    const draggedNode = createWorkspacePanelNode(draggedPanelId);
-    if (!baseRoot) {
-      workspaceLayoutRoot = draggedNode;
-      persistWorkspaceState();
-      renderWorkspaceLayout();
-      return;
-    }
-
-    const inserted = insertPanelByDockTarget(baseRoot, targetPanelId, draggedNode, dropTarget.direction);
-    workspaceLayoutRoot = inserted.inserted
-      ? inserted.node
-      : appendPanelToWorkspaceLayout(baseRoot, draggedPanelId);
+    workspaceLayoutRoot = nextLayout.layoutRoot;
     persistWorkspaceState();
     renderWorkspaceLayout();
   }
