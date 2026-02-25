@@ -7,9 +7,6 @@
  * 3. Components Tree, Inspector, Selected Element/DOM Path/DOM Tree, Raw Result를 렌더링한다.
  * 4. 스플릿/검색/선택/하이라이트/런타임 갱신 상태를 동기화한다.
  */
-import React from 'react';
-import { flushSync } from 'react-dom';
-import { createRoot } from 'react-dom/client';
 import { isReactInspectResult } from '../../shared/inspector/guards';
 import type {
   ComponentFilterResult,
@@ -19,13 +16,16 @@ import type {
   ReactComponentInfo,
   ReactInspectResult,
 } from '../../shared/inspector/types';
-import { PanelViewSection } from '../../ui/sections';
-import { WORKSPACE_PANEL_IDS, type WorkspacePanelId } from './workspacePanels';
+import type { WorkspacePanelId } from './workspacePanels';
 import {
   createWorkspaceLayoutManager,
   type WorkspaceLayoutManager,
 } from './workspace/manager';
 import { initWheelScrollFallback } from './workspace/wheelScrollFallback';
+import {
+  initPanelDomRefs as initPanelDomRefsValue,
+  mountPanelView as mountPanelViewValue,
+} from './domRefs';
 import {
   buildReactComponentDetailRenderSignature as buildReactComponentDetailRenderSignatureValue,
   buildReactListRenderSignature as buildReactListRenderSignatureValue,
@@ -129,38 +129,7 @@ let destroyWheelScrollFallback: (() => void) | null = null;
 let workspacePanelElements = new Map<WorkspacePanelId, HTMLDetailsElement>();
 let workspaceLayoutManager: WorkspaceLayoutManager | null = null;
 
-function getRequiredElement<T extends HTMLElement>(id: string): T {
-  const element = document.getElementById(id);
-  if (!element) {
-    throw new Error(`필수 엘리먼트를 찾을 수 없습니다: #${id}`);
-  }
-  return element as T;
-}
-
-/**
- * 현재 DOM에 렌더된 패널 `<details>`를 id 기준으로 수집한다.
- * 이후 레이아웃 렌더/상태 전환/크기 동기화는 이 맵을 단일 진입점으로 사용한다.
- */
-function collectWorkspacePanelElements(): Map<WorkspacePanelId, HTMLDetailsElement> {
-  const panelEntries = WORKSPACE_PANEL_IDS.map(
-    (panelId) => [panelId, getRequiredElement<HTMLDetailsElement>(panelId)] as const,
-  );
-  return new Map<WorkspacePanelId, HTMLDetailsElement>(panelEntries);
-}
-
-/**
- * React 패널 뷰를 1회 마운트한다.
- * `flushSync`를 쓰는 이유:
- * - 다음 단계(`initDomRefs`)가 바로 DOM query를 수행하므로,
- * - React commit이 완료된 시점을 강제해서 null 참조를 피하기 위해서다.
- */
-function mountPanelView() {
-  const rootElement = getRequiredElement<HTMLDivElement>('root');
-  const root = createRoot(rootElement);
-  flushSync(() => {
-    root.render(React.createElement(PanelViewSection));
-  });
-}
+const mountPanelView = mountPanelViewValue;
 
 /**
  * 패널 동작에 필요한 주요 DOM 참조를 한 곳에서 초기화한다.
@@ -168,23 +137,24 @@ function mountPanelView() {
  * 필수 노드는 `getRequiredElement`로 즉시 실패하게 한다.
  */
 function initDomRefs() {
-  outputEl = getRequiredElement<HTMLDivElement>('output');
-  targetSelectEl = document.getElementById('targetSelect') as HTMLSelectElement | null;
-  fetchBtnEl = document.getElementById('fetchBtn') as HTMLButtonElement | null;
-  panelWorkspaceEl = getRequiredElement<HTMLElement>('panelWorkspace');
-  panelContentEl = getRequiredElement<HTMLElement>('panelContent');
-  workspacePanelToggleBarEl = getRequiredElement<HTMLDivElement>('workspacePanelToggleBar');
-  workspaceDockPreviewEl = getRequiredElement<HTMLDivElement>('workspaceDockPreview');
-  selectElementBtnEl = getRequiredElement<HTMLButtonElement>('selectElementBtn');
-  componentSearchInputEl = getRequiredElement<HTMLInputElement>('componentSearchInput');
-  elementOutputEl = getRequiredElement<HTMLDivElement>('selectedElementPane');
-  domTreeStatusEl = getRequiredElement<HTMLDivElement>('selectedElementPathPane');
-  domTreeOutputEl = getRequiredElement<HTMLDivElement>('selectedElementDomPane');
-  reactStatusEl = getRequiredElement<HTMLDivElement>('reactStatus');
-  reactComponentListEl = getRequiredElement<HTMLDivElement>('reactComponentList');
-  treePaneEl = getRequiredElement<HTMLDivElement>('treePane');
-  reactComponentDetailEl = getRequiredElement<HTMLDivElement>('reactComponentDetail');
-  workspacePanelElements = collectWorkspacePanelElements();
+  const refs = initPanelDomRefsValue();
+  outputEl = refs.outputEl;
+  targetSelectEl = refs.targetSelectEl;
+  fetchBtnEl = refs.fetchBtnEl;
+  panelWorkspaceEl = refs.panelWorkspaceEl;
+  panelContentEl = refs.panelContentEl;
+  workspacePanelToggleBarEl = refs.workspacePanelToggleBarEl;
+  workspaceDockPreviewEl = refs.workspaceDockPreviewEl;
+  selectElementBtnEl = refs.selectElementBtnEl;
+  componentSearchInputEl = refs.componentSearchInputEl;
+  elementOutputEl = refs.elementOutputEl;
+  domTreeStatusEl = refs.domTreeStatusEl;
+  domTreeOutputEl = refs.domTreeOutputEl;
+  reactStatusEl = refs.reactStatusEl;
+  reactComponentListEl = refs.reactComponentListEl;
+  treePaneEl = refs.treePaneEl;
+  reactComponentDetailEl = refs.reactComponentDetailEl;
+  workspacePanelElements = refs.workspacePanelElements;
 }
 
 /** UI 상태 또는 문구를 설정 */

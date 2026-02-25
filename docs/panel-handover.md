@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -63,6 +63,7 @@
   - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
   - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected) 위임
+  - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `lifecycle/bootstrapFlow.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩)와 beforeunload 정리 결선 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
@@ -281,6 +282,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/jsonSection.ts`: props/hooks JSON 트리 렌더, 함수 inspect 링크, dehydrated 값 지연 조회/확장 렌더 전담
 - `reactInspector/detailFetchQueue.ts`: 선택 컴포넌트 상세 데이터 지연 조회 큐, 실패 cooldown, 요청 병합(in-flight queue) 전담
 - `controller.ts`: panel 상태(`reactComponents`, `collapsedComponentIds`, `componentSearchTexts`)를 보유하고 위 유틸을 호출해 UI 오케스트레이션만 수행
+- `domRefs.ts`: PanelView 마운트와 필수 DOM ref 수집/검증 전담
 
 ## 7.3 DOM Tree 모듈 분리 규칙
 
@@ -434,6 +436,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 관련 파일 바로가기:
 
 - `src/features/panel/controller.ts`
+- `src/features/panel/domRefs.ts`
 - `src/features/panel/bridge/pageAgentClient.ts`
 - `src/features/panel/domTree/fetchFlow.ts`
 - `src/features/panel/domTree/renderer.ts`
