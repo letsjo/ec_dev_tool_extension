@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
+import { resolveInspectPathValue } from "./pageAgentInspectPathValue";
 
 type AnyRecord = Record<string, any>;
-type PathSegment = string | number;
 type PickPoint = { x: number; y: number };
 
 type FiberLike = AnyRecord & {
@@ -329,29 +329,18 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         return { ok: false, error: "대상 컴포넌트를 찾지 못했습니다." };
       }
 
-      let value = section === "props"
+      const rootValue = section === "props"
         ? targetFiber.memoizedProps
         : getHooksRootValue(targetFiber, { includeCustomGroups: true });
-      for (let i = 0; i < path.length; i += 1) {
-        if (value == null) {
-          return { ok: false, error: "함수 경로가 유효하지 않습니다.", failedAt: path[i] };
-        }
-        const segment = path[i] as PathSegment;
-        const specialResolved = resolveSpecialCollectionPathSegment(value, segment);
-        if (specialResolved.handled) {
-          if (!specialResolved.ok) {
-            return {
-              ok: false,
-              error: "함수 경로가 유효하지 않습니다.",
-              reason: specialResolved.error || "collection path resolution failed",
-              failedAt: segment,
-            };
-          }
-          value = specialResolved.value;
-          continue;
-        }
-        value = value[segment];
+      const pathResolved = resolveInspectPathValue({
+        initialValue: rootValue,
+        path,
+        resolveSpecialCollectionPathSegment,
+      });
+      if (!pathResolved.ok) {
+        return pathResolved;
       }
+      const value = pathResolved.value;
 
       if (mode === "serializeValue") {
         const serialize = makeSerializer({
