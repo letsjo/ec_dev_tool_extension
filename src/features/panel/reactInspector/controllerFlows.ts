@@ -1,8 +1,4 @@
-import type {
-  ComponentFilterResult,
-  JsonSectionKind,
-  ReactComponentInfo,
-} from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector/types';
 import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
 import { clearPaneContent as clearPaneContentValue } from '../paneState';
 import {
@@ -20,10 +16,6 @@ import { renderReactComponentListTree as renderReactComponentListTreeValue } fro
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './noResultStateFlow';
 import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './resetStateFlow';
 import {
-  buildComponentIndexById as buildComponentIndexByIdValue,
-  ensureComponentSearchTextCache as ensureComponentSearchTextCacheValue,
-  expandAncestorPaths as expandAncestorPathsValue,
-  getComponentFilterResult as getComponentFilterResultValue,
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
 } from './search';
 import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './searchInputBindingFlow';
@@ -31,15 +23,10 @@ import { createReactComponentSelectionBindingFlow as createReactComponentSelecti
 import {
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
 } from './searchStatus';
-import {
-  buildReactComponentDetailRenderSignature as buildReactComponentDetailRenderSignatureValue,
-  buildReactListRenderSignature as buildReactListRenderSignatureValue,
-} from './signatures';
 import type {
   FetchSerializedValueAtPathHandler,
   InspectFunctionAtPathHandler,
 } from './jsonRenderTypes';
-import { createReactJsonSection as createReactJsonSectionValue } from './jsonSection';
 import type { ReactInspectorControllerState } from './controllerState';
 import {
   applyReactInspectorPaneState as applyReactInspectorPaneStateValue,
@@ -47,6 +34,7 @@ import {
   buildReactInspectorLoadingPaneState as buildReactInspectorLoadingPaneStateValue,
   buildReactInspectorResetPaneState as buildReactInspectorResetPaneStateValue,
 } from './viewState';
+import { createReactInspectorControllerDerivations as createReactInspectorControllerDerivationsValue } from './controllerDerivations';
 
 interface CreateReactInspectorControllerFlowsOptions {
   state: ReactInspectorControllerState;
@@ -79,73 +67,11 @@ export function createReactInspectorControllerFlows(
     setReactDetailEmpty: options.setReactDetailEmpty,
   };
 
-  /** 파생 데이터나 요약 값을 구성 */
-  function buildReactComponentDetailRenderSignature(component: ReactComponentInfo): string {
-    return buildReactComponentDetailRenderSignatureValue(component);
-  }
-
-  /** 파생 데이터나 요약 값을 구성 */
-  function buildReactListRenderSignature(
-    filterResult: ComponentFilterResult,
-    matchedIndexSet: Set<number>,
-  ): string {
-    return buildReactListRenderSignatureValue(
-      options.state.getReactComponents(),
-      options.state.getComponentSearchQuery(),
-      options.state.getSelectedReactComponentIndex(),
-      options.state.getCollapsedComponentIds(),
-      filterResult,
-      matchedIndexSet,
-    );
-  }
-
-  /** 렌더링에 사용할 DOM/데이터 구조를 생성 */
-  function createJsonSection(
-    title: string,
-    value: unknown,
-    component: ReactComponentInfo,
-    sectionKind: JsonSectionKind,
-  ): HTMLElement {
-    return createReactJsonSectionValue({
-      title,
-      value,
-      component,
-      sectionKind,
-      onInspectFunctionAtPath: options.inspectFunctionAtPath,
-      onFetchSerializedValueAtPath: options.fetchSerializedValueAtPath,
-    });
-  }
-
-  /** 필요한 값/상태를 계산해 반환 */
-  function getComponentFilterResult(): ComponentFilterResult {
-    options.state.setComponentSearchTexts(
-      ensureComponentSearchTextCacheValue(
-        options.state.getReactComponents(),
-        options.state.getComponentSearchQuery(),
-        options.state.getComponentSearchTexts(),
-        options.state.getComponentSearchIncludeDataTokens(),
-      ),
-    );
-    return getComponentFilterResultValue(
-      options.state.getReactComponents(),
-      options.state.getComponentSearchQuery(),
-      options.state.getComponentSearchTexts(),
-    );
-  }
-
-  /** 파생 데이터나 요약 값을 구성 */
-  function buildComponentIndexById(): Map<string, number> {
-    return buildComponentIndexByIdValue(options.state.getReactComponents());
-  }
-
-  /** 부모 경로를 확장 */
-  function expandAncestorPaths(indices: number[]) {
-    expandAncestorPathsValue(
-      options.state.getReactComponents(),
-      indices,
-      options.state.getCollapsedComponentIds(),
-    );
-  }
+  const derivations = createReactInspectorControllerDerivationsValue({
+    state: options.state,
+    inspectFunctionAtPath: options.inspectFunctionAtPath,
+    fetchSerializedValueAtPath: options.fetchSerializedValueAtPath,
+  });
 
   const applySearchNoResultState = createSearchNoResultStateFlowValue({
     getTotalComponentCount: () => options.state.getReactComponents().length,
@@ -162,9 +88,9 @@ export function createReactInspectorControllerFlows(
     readState: options.state.readDetailRenderState,
     writeState: options.state.writeDetailRenderState,
     getReactComponentDetailEl: options.getReactComponentDetailEl,
-    buildRenderSignature: buildReactComponentDetailRenderSignature,
+    buildRenderSignature: derivations.buildReactComponentDetailRenderSignature,
     clearPaneContent: clearPaneContentValue,
-    createJsonSection,
+    createJsonSection: derivations.createJsonSection,
     renderReactComponentDetailPanel: renderReactComponentDetailPanelValue,
   });
 
@@ -178,9 +104,9 @@ export function createReactInspectorControllerFlows(
     writeState: options.state.writeListRenderState,
     setReactListEmpty: options.setReactListEmpty,
     buildReactComponentListEmptyText: buildReactComponentListEmptyTextValue,
-    getComponentFilterResult,
-    buildReactListRenderSignature,
-    buildComponentIndexById,
+    getComponentFilterResult: derivations.getComponentFilterResult,
+    buildReactListRenderSignature: derivations.buildReactListRenderSignature,
+    buildComponentIndexById: derivations.buildComponentIndexById,
     renderReactComponentListTree: renderReactComponentListTreeValue,
     getTreePaneEl: options.getTreePaneEl,
     getReactComponentListEl: options.getReactComponentListEl,
@@ -213,7 +139,7 @@ export function createReactInspectorControllerFlows(
     getReactComponents: options.state.getReactComponents,
     setSelectedComponentIndex: options.state.setSelectedReactComponentIndex,
     clearPageHoverPreview: options.clearPageHoverPreview,
-    expandAncestorPaths,
+    expandAncestorPaths: derivations.expandAncestorPaths,
     renderReactComponentList,
     getReactComponentListEl: options.getReactComponentListEl,
     getSelectedReactComponentIndex: options.state.getSelectedReactComponentIndex,
@@ -230,9 +156,9 @@ export function createReactInspectorControllerFlows(
     getComponentSearchQuery: options.state.getComponentSearchQuery,
     getReactComponents: options.state.getReactComponents,
     getSelectedReactComponentIndex: options.state.getSelectedReactComponentIndex,
-    getComponentFilterResult,
+    getComponentFilterResult: derivations.getComponentFilterResult,
     applySearchNoResultState,
-    expandAncestorPaths,
+    expandAncestorPaths: derivations.expandAncestorPaths,
     selectReactComponent,
     renderReactComponentList,
     setReactStatus: options.setReactStatus,
@@ -257,7 +183,7 @@ export function createReactInspectorControllerFlows(
   const applyReactInspectResult = createReactInspectResultApplyFlowValue({
     readState: options.state.readApplyResultState,
     writeState: options.state.writeApplyResultState,
-    getComponentFilterResult,
+    getComponentFilterResult: derivations.getComponentFilterResult,
     setReactStatus: options.setReactStatus,
     renderReactComponentList,
     selectReactComponent,
