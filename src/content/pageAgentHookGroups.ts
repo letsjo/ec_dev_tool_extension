@@ -1,6 +1,5 @@
 // @ts-nocheck
 import {
-  parseErrorStackFrames,
   parseHookDisplayName,
 } from "./pageAgentHookStack";
 import {
@@ -10,6 +9,7 @@ import {
 } from "./pageAgentHookRuntime";
 import { alignHookInspectMetadataResultLength } from "./pageAgentHookResult";
 import { buildHookInspectMetadataFromLog } from "./pageAgentHookMetadataBuild";
+import { buildPrimitiveStackCacheForHookInspect } from "./pageAgentHookPrimitiveStack";
 
 type AnyRecord = Record<string, any>;
 type FiberLike = AnyRecord & {
@@ -261,71 +261,22 @@ function inspectCustomHookGroupNames(
     })
     : dispatcher;
 
-  function callWarmup(fn: () => unknown) {
-    try {
-      fn();
-    } catch (_) {
-      /** warmup 중 부수효과(unresolved use 등)는 무시한다. */
-    }
-  }
-
-  function buildPrimitiveStackCache() {
-    const cache = new Map();
-    const warmupStartIndex = hookLog.length;
-    const savedCurrentHook = currentHook;
-    const savedSuspendedToken = suspendedToken;
-    currentHook = null;
-    suspendedToken = null;
-
-    try {
-      callWarmup(() => dispatcher.useContext({ _currentValue: null }));
-      callWarmup(() => dispatcher.useState(null));
-      callWarmup(() => dispatcher.useReducer((s) => s, null));
-      callWarmup(() => dispatcher.useRef(null));
-      callWarmup(() => dispatcher.useLayoutEffect(function() {}));
-      callWarmup(() => dispatcher.useInsertionEffect(function() {}));
-      callWarmup(() => dispatcher.useEffect(function() {}));
-      callWarmup(() => dispatcher.useImperativeHandle(null, function() { return null; }));
-      callWarmup(() => dispatcher.useDebugValue(null));
-      callWarmup(() => dispatcher.useCallback(function() {}));
-      callWarmup(() => dispatcher.useTransition());
-      callWarmup(() => dispatcher.useSyncExternalStore(
-        function() { return function() {}; },
-        function() { return null; }
-      ));
-      callWarmup(() => dispatcher.useDeferredValue(null));
-      callWarmup(() => dispatcher.useMemo(function() { return null; }));
-      callWarmup(() => dispatcher.useOptimistic(null));
-      callWarmup(() => dispatcher.useFormState((s) => s, null));
-      callWarmup(() => dispatcher.useActionState((s) => s, null));
-      callWarmup(() => dispatcher.useHostTransitionStatus());
-      callWarmup(() => dispatcher.useId());
-      callWarmup(() => dispatcher.useEffectEvent(function() {}));
-      callWarmup(() => dispatcher.useMemoCache(0));
-      callWarmup(() => dispatcher.use({ _currentValue: null }));
-      callWarmup(() => dispatcher.use({
-        then() {},
-        status: "fulfilled",
-        value: null,
-      }));
-      callWarmup(() => dispatcher.use({
-        then() {},
-      }));
-    } finally {
-      const warmupEntries = hookLog.splice(warmupStartIndex);
-      for (let i = 0; i < warmupEntries.length; i += 1) {
-        const entry = warmupEntries[i];
-        if (!entry || !entry.primitive || cache.has(entry.primitive)) continue;
-        cache.set(entry.primitive, parseErrorStackFrames(entry.stackError));
-      }
-      currentHook = savedCurrentHook;
-      suspendedToken = savedSuspendedToken;
-    }
-
-    return cache;
-  }
-
-  const primitiveStackCache = buildPrimitiveStackCache();
+  const primitiveStackCache = buildPrimitiveStackCacheForHookInspect({
+    hookLog,
+    dispatcher,
+    getCurrentHook() {
+      return currentHook;
+    },
+    setCurrentHook(value: unknown) {
+      currentHook = value;
+    },
+    getSuspendedToken() {
+      return suspendedToken;
+    },
+    setSuspendedToken(value: unknown) {
+      suspendedToken = value;
+    },
+  });
 
   const originalConsoleMethods = {};
   for (const method in console) {
