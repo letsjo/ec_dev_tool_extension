@@ -46,6 +46,19 @@ import {
   type WorkspaceLayoutManager,
 } from './workspace/manager';
 import { initWheelScrollFallback } from './workspace/wheelScrollFallback';
+import {
+  buildReactComponentDetailRenderSignature as buildReactComponentDetailRenderSignatureValue,
+  buildReactComponentUpdateFingerprint as buildReactComponentUpdateFingerprintValue,
+  buildReactListRenderSignature as buildReactListRenderSignatureValue,
+} from './reactInspector/signatures';
+import {
+  buildComponentIndexById as buildComponentIndexByIdValue,
+  buildComponentSearchText as buildComponentSearchTextValue,
+  expandAncestorPaths as expandAncestorPathsValue,
+  getComponentFilterResult as getComponentFilterResultValue,
+  restoreCollapsedById as restoreCollapsedByIdValue,
+  snapshotCollapsedIds as snapshotCollapsedIdsValue,
+} from './reactInspector/search';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -827,106 +840,9 @@ function clearElement(element: HTMLElement) {
   element.innerHTML = '';
 }
 
-/** 해당 기능 흐름을 처리 */
-function updateHashString(hash: number, input: string): number {
-  let next = hash >>> 0;
-  for (let i = 0; i < input.length; i += 1) {
-    next ^= input.charCodeAt(i);
-    next = Math.imul(next, 16777619);
-  }
-  return next >>> 0;
-}
-
-/** 시그니처 비교용 해시를 계산 */
-function hashValueForSignature(value: unknown, budget = 1200): string {
-  let hash = 2166136261 >>> 0;
-  const visited = new WeakSet<object>();
-
-  const walk = (current: unknown, depth: number) => {
-    if (budget <= 0) {
-      hash = updateHashString(hash, '<budget>');
-      return;
-    }
-    budget -= 1;
-
-    if (current === null) {
-      hash = updateHashString(hash, 'null');
-      return;
-    }
-
-    const currentType = typeof current;
-    hash = updateHashString(hash, currentType);
-
-    if (currentType === 'string') {
-      hash = updateHashString(hash, String(current));
-      return;
-    }
-    if (
-      currentType === 'number' ||
-      currentType === 'boolean' ||
-      currentType === 'bigint' ||
-      currentType === 'symbol'
-    ) {
-      hash = updateHashString(hash, String(current));
-      return;
-    }
-    if (currentType !== 'object') {
-      return;
-    }
-
-    const objectValue = current as object;
-    if (visited.has(objectValue)) {
-      hash = updateHashString(hash, '<cycle>');
-      return;
-    }
-    visited.add(objectValue);
-
-    if (depth > 7) {
-      hash = updateHashString(hash, '<depth>');
-      return;
-    }
-
-    if (Array.isArray(current)) {
-      hash = updateHashString(hash, `arr:${current.length}`);
-      const maxLen = Math.min(current.length, 48);
-      for (let i = 0; i < maxLen; i += 1) {
-        hash = updateHashString(hash, `i:${i}`);
-        walk(current[i], depth + 1);
-        if (budget <= 0) break;
-      }
-      return;
-    }
-
-    const entries = Object.entries(current as Record<string, unknown>);
-    hash = updateHashString(hash, `obj:${entries.length}`);
-    let scanned = 0;
-    for (let i = 0; i < entries.length; i += 1) {
-      const [key, child] = entries[i];
-      if (isJsonInternalMetaKey(key)) continue;
-      hash = updateHashString(hash, `k:${key}`);
-      walk(child, depth + 1);
-      scanned += 1;
-      if (scanned >= 90) break;
-      if (budget <= 0) break;
-    }
-  };
-
-  walk(value, 0);
-  return hash.toString(16);
-}
-
 /** 파생 데이터나 요약 값을 구성 */
 function buildReactComponentDetailRenderSignature(component: ReactComponentInfo): string {
-  return [
-    component.id,
-    component.name,
-    component.kind,
-    component.domSelector ?? '',
-    component.domPath ?? '',
-    String(component.hookCount),
-    `p:${hashValueForSignature(component.props)}`,
-    `h:${hashValueForSignature(component.hooks)}`,
-  ].join('|');
+  return buildReactComponentDetailRenderSignatureValue(component);
 }
 
 /** 파생 데이터나 요약 값을 구성 */
@@ -934,23 +850,7 @@ function buildReactComponentUpdateFingerprint(
   component: ReactComponentInfo,
   metadataOnly = false,
 ): string {
-  const baseParts = [
-    component.id,
-    component.parentId ?? '',
-    component.name,
-    component.kind,
-    component.domSelector ?? '',
-    component.domPath ?? '',
-    String(component.hookCount),
-  ];
-  if (metadataOnly) {
-    return baseParts.join('|');
-  }
-  return [
-    ...baseParts,
-    `p:${hashValueForSignature(component.props, 1600)}`,
-    `h:${hashValueForSignature(component.hooks, 1600)}`,
-  ].join('|');
+  return buildReactComponentUpdateFingerprintValue(component, metadataOnly);
 }
 
 /** 파생 데이터나 요약 값을 구성 */
@@ -958,33 +858,14 @@ function buildReactListRenderSignature(
   filterResult: ComponentFilterResult,
   matchedIndexSet: Set<number>,
 ): string {
-  const parts: string[] = [
-    componentSearchQuery.trim().toLowerCase(),
-    `sel:${selectedReactComponentIndex}`,
-    `visible:${filterResult.visibleIndices.length}`,
-    `matched:${filterResult.matchedIndices.length}`,
-  ];
-
-  filterResult.visibleIndices.forEach((index) => {
-    const component = reactComponents[index];
-    const matchFlag = matchedIndexSet.has(index) ? '1' : '0';
-    const collapsedFlag = collapsedComponentIds.has(component.id) ? '1' : '0';
-    parts.push(
-      [
-        String(index),
-        component.id,
-        component.parentId ?? '',
-        component.name,
-        component.kind,
-        String(component.depth),
-        component.domSelector ? 'dom' : 'no-dom',
-        matchFlag,
-        collapsedFlag,
-      ].join(':'),
-    );
-  });
-
-  return parts.join('\u001f');
+  return buildReactListRenderSignatureValue(
+    reactComponents,
+    componentSearchQuery,
+    selectedReactComponentIndex,
+    collapsedComponentIds,
+    filterResult,
+    matchedIndexSet,
+  );
 }
 
 /** 표시용 문자열을 포맷 */
@@ -2167,199 +2048,39 @@ function createJsonSection(
   return sectionEl;
 }
 
-/** 데이터를 순회해 수집 */
-function collectSearchTokens(
-  value: unknown,
-  output: string[],
-  budget: { remaining: number },
-  depth = 0,
-) {
-  if (budget.remaining <= 0 || depth > 3) return;
-  if (value == null) return;
-
-  if (typeof value === 'string') {
-    output.push(value);
-    budget.remaining -= 1;
-    return;
-  }
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    output.push(String(value));
-    budget.remaining -= 1;
-    return;
-  }
-  if (isFunctionToken(value)) {
-    output.push(value.name ?? 'function');
-    budget.remaining -= 1;
-    return;
-  }
-  if (isCircularRefToken(value)) {
-    output.push(`ref${value.refId}`);
-    budget.remaining -= 1;
-    return;
-  }
-  if (isDehydratedToken(value)) {
-    output.push(readDehydratedPreviewText(value));
-    if (typeof value.reason === 'string' && value.reason) {
-      output.push(value.reason);
-    }
-    budget.remaining -= 1;
-    return;
-  }
-  if (typeof value !== 'object') return;
-
-  if (Array.isArray(value)) {
-    const maxLen = Math.min(value.length, 40);
-    for (let i = 0; i < maxLen; i += 1) {
-      collectSearchTokens(value[i], output, budget, depth + 1);
-      if (budget.remaining <= 0) break;
-    }
-    return;
-  }
-
-  const entries = Object.entries(value as Record<string, unknown>);
-  const filteredEntries = entries.filter(([key]) => !isJsonInternalMetaKey(key));
-  const maxLen = Math.min(filteredEntries.length, 48);
-  for (let i = 0; i < maxLen; i += 1) {
-    const [key, child] = filteredEntries[i];
-    output.push(key);
-    budget.remaining -= 1;
-    if (budget.remaining <= 0) break;
-    collectSearchTokens(child, output, budget, depth + 1);
-    if (budget.remaining <= 0) break;
-  }
-}
-
 /** 파생 데이터나 요약 값을 구성 */
 function buildComponentSearchText(component: ReactComponentInfo, includeDataTokens = true): string {
-  const tokens: string[] = [
-    component.name,
-    component.kind,
-    component.domTagName ?? '',
-    component.domSelector ?? '',
-    component.domPath ?? '',
-  ];
-  if (!includeDataTokens) {
-    return tokens.join(' ').toLowerCase();
-  }
-  const budget = { remaining: 220 };
-  collectSearchTokens(component.props, tokens, budget);
-  collectSearchTokens(component.hooks, tokens, budget);
-  return tokens.join(' ').toLowerCase();
+  return buildComponentSearchTextValue(component, includeDataTokens);
 }
 
 /** 필요한 값/상태를 계산해 반환 */
 function getComponentFilterResult(): ComponentFilterResult {
-  const normalized = componentSearchQuery.trim().toLowerCase();
-  if (!normalized) {
-    return {
-      visibleIndices: reactComponents.map((_, index) => index),
-      matchedIndices: reactComponents.map((_, index) => index),
-    };
-  }
-
-  const terms = normalized.split(/\s+/).filter(Boolean);
-  if (terms.length === 0) {
-    return {
-      visibleIndices: reactComponents.map((_, index) => index),
-      matchedIndices: reactComponents.map((_, index) => index),
-    };
-  }
-
-  if (componentSearchTexts.length !== reactComponents.length) {
+  if (componentSearchQuery.trim() && componentSearchTexts.length !== reactComponents.length) {
     componentSearchTexts = reactComponents.map((component) =>
       buildComponentSearchText(component, componentSearchIncludeDataTokens),
     );
   }
-
-  const matchedIndices: number[] = [];
-  for (let index = 0; index < reactComponents.length; index += 1) {
-    const haystack = componentSearchTexts[index] ?? '';
-    const matched = terms.every((term) => haystack.includes(term));
-    if (matched) matchedIndices.push(index);
-  }
-
-  if (matchedIndices.length === 0) {
-    return { visibleIndices: [], matchedIndices: [] };
-  }
-
-  const idToIndex = new Map<string, number>();
-  reactComponents.forEach((component, index) => {
-    idToIndex.set(component.id, index);
-  });
-
-  const visibleSet = new Set<number>();
-  matchedIndices.forEach((matchIndex) => {
-    let currentIndex: number | undefined = matchIndex;
-    let guard = 0;
-    while (currentIndex !== undefined && guard < 220) {
-      if (visibleSet.has(currentIndex)) break;
-      visibleSet.add(currentIndex);
-
-      const parentId = reactComponents[currentIndex].parentId;
-      if (!parentId) break;
-      currentIndex = idToIndex.get(parentId);
-      guard += 1;
-    }
-  });
-
-  const visibleIndices = reactComponents
-    .map((_, index) => index)
-    .filter((index) => visibleSet.has(index));
-
-  return { visibleIndices, matchedIndices };
+  return getComponentFilterResultValue(reactComponents, componentSearchQuery, componentSearchTexts);
 }
 
 /** 파생 데이터나 요약 값을 구성 */
 function buildComponentIndexById(): Map<string, number> {
-  const idToIndex = new Map<string, number>();
-  reactComponents.forEach((component, index) => {
-    idToIndex.set(component.id, index);
-  });
-  return idToIndex;
-}
-
-/** 부모 경로를 확장 */
-function expandAncestorPath(index: number, idToIndex: Map<string, number>) {
-  let parentId = reactComponents[index]?.parentId ?? null;
-  let guard = 0;
-  while (parentId && guard < 220) {
-    collapsedComponentIds.delete(parentId);
-    const parentIndex = idToIndex.get(parentId);
-    if (parentIndex === undefined) break;
-    parentId = reactComponents[parentIndex].parentId;
-    guard += 1;
-  }
+  return buildComponentIndexByIdValue(reactComponents);
 }
 
 /** 부모 경로를 확장 */
 function expandAncestorPaths(indices: number[]) {
-  if (indices.length === 0) return;
-  const idToIndex = buildComponentIndexById();
-  indices.forEach((index) => {
-    expandAncestorPath(index, idToIndex);
-  });
+  expandAncestorPathsValue(reactComponents, indices, collapsedComponentIds);
 }
 
 /** 현재 상태 스냅샷을 만든 */
 function snapshotCollapsedIds(): Set<string> {
-  if (collapsedComponentIds.size === 0 || reactComponents.length === 0) {
-    return new Set<string>();
-  }
-
-  return new Set<string>(collapsedComponentIds);
+  return snapshotCollapsedIdsValue(reactComponents, collapsedComponentIds);
 }
 
 /** 이전 상태를 복원 */
-function restoreCollapsedById(ids: Set<string>) {
-  collapsedComponentIds = new Set<string>();
-  if (ids.size === 0 || reactComponents.length === 0) return;
-
-  const availableIds = new Set<string>(reactComponents.map((component) => component.id));
-  ids.forEach((id) => {
-    if (availableIds.has(id)) {
-      collapsedComponentIds.add(id);
-    }
-  });
+function restoreCollapsedById(ids: ReadonlySet<string>) {
+  collapsedComponentIds = restoreCollapsedByIdValue(reactComponents, ids);
 }
 
 /** 화면 요소를 렌더링 */
