@@ -60,6 +60,7 @@ import {
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
+import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -418,137 +419,25 @@ function renderReactComponentList() {
     return;
   }
 
-  const previousScrollTop = treePaneEl.scrollTop;
-  const previousScrollLeft = treePaneEl.scrollLeft;
-  const selectedItemSelector =
-    selectedReactComponentIndex >= 0
-      ? `.react-component-item[data-component-index="${selectedReactComponentIndex}"]`
-      : '';
-  const previousSelectedItem = selectedItemSelector
-    ? reactComponentListEl.querySelector<HTMLElement>(selectedItemSelector)
-    : null;
-  const previousContainerTop = treePaneEl.getBoundingClientRect().top;
-  const previousSelectedOffsetTop = previousSelectedItem
-    ? previousSelectedItem.getBoundingClientRect().top - previousContainerTop
-    : null;
-
-  const visibleSet = new Set<number>(visibleIndices);
-  const idToIndex = buildComponentIndexById();
-  const childrenByParent = new Map<string | null, number[]>();
-
-  const pushChild = (parentId: string | null, index: number) => {
-    const list = childrenByParent.get(parentId) ?? [];
-    list.push(index);
-    childrenByParent.set(parentId, list);
-  };
-
-  visibleIndices.forEach((index) => {
-    const component = reactComponents[index];
-    const parentId = component.parentId;
-    if (!parentId) {
-      pushChild(null, index);
-      return;
-    }
-    const parentIndex = idToIndex.get(parentId);
-    if (parentIndex === undefined || !visibleSet.has(parentIndex)) {
-      pushChild(null, index);
-      return;
-    }
-    pushChild(parentId, index);
+  renderReactComponentListTreeValue({
+    reactComponents,
+    visibleIndices,
+    matchedIndexSet,
+    selectedReactComponentIndex,
+    componentSearchQuery,
+    collapsedComponentIds,
+    updatedComponentIds,
+    treePaneEl,
+    reactComponentListEl,
+    idToIndex: buildComponentIndexById(),
+    clearPaneContent: clearPaneContentValue,
+    previewPageDomForComponent,
+    clearPageHoverPreview,
+    onSelectComponent: selectReactComponent,
+    onRequestRender: () => {
+      renderReactComponentList();
+    },
   });
-
-  clearPaneContentValue(reactComponentListEl);
-  reactComponentListEl.classList.remove('empty');
-
-  const renderTreeNode = (index: number) => {
-    const component = reactComponents[index];
-    const isActive = index === selectedReactComponentIndex;
-    const isSearchMatch = componentSearchQuery.trim().length > 0 && matchedIndexSet.has(index);
-    const isUpdated = updatedComponentIds.has(component.id);
-    const childIndices = childrenByParent.get(component.id) ?? [];
-    const hasChildren = childIndices.length > 0;
-    const isCollapsed = hasChildren && collapsedComponentIds.has(component.id);
-
-    const row = document.createElement('div');
-    row.className = 'react-tree-row';
-    row.style.paddingLeft = `${6 + component.depth * 12}px`;
-
-    if (hasChildren) {
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'react-tree-toggle';
-      toggle.textContent = isCollapsed ? '▸' : '▾';
-      toggle.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (collapsedComponentIds.has(component.id)) {
-          collapsedComponentIds.delete(component.id);
-        } else {
-          collapsedComponentIds.add(component.id);
-        }
-        renderReactComponentList();
-      });
-      row.appendChild(toggle);
-    } else {
-      const spacer = document.createElement('span');
-      spacer.className = 'react-tree-spacer';
-      spacer.textContent = ' ';
-      row.appendChild(spacer);
-    }
-
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.dataset.componentIndex = String(index);
-    item.className =
-      'react-component-item' +
-      (isActive ? ' active' : '') +
-      (isSearchMatch ? ' search-match' : '') +
-      (isUpdated ? ' updated-flash' : '');
-    const domBadge = component.domSelector ? ' [DOM]' : ' [No DOM]';
-    item.textContent =
-      `${component.name} · ${component.kind}${domBadge}` +
-      (index === selectedReactComponentIndex ? ' (selected)' : '');
-    item.addEventListener('mouseenter', () => {
-      previewPageDomForComponent(component);
-    });
-    item.addEventListener('mouseleave', () => {
-      clearPageHoverPreview();
-    });
-    item.addEventListener('focus', () => {
-      previewPageDomForComponent(component);
-    });
-    item.addEventListener('blur', () => {
-      clearPageHoverPreview();
-    });
-    item.addEventListener('click', () => {
-      selectReactComponent(index);
-    });
-    row.appendChild(item);
-    reactComponentListEl.appendChild(row);
-
-    if (!isCollapsed) {
-      childIndices.forEach((childIndex) => {
-        renderTreeNode(childIndex);
-      });
-    }
-  };
-
-  const rootIndices = childrenByParent.get(null) ?? [];
-  rootIndices.forEach((index) => renderTreeNode(index));
-
-  if (previousSelectedOffsetTop !== null && selectedItemSelector) {
-    const nextSelectedItem = reactComponentListEl.querySelector<HTMLElement>(selectedItemSelector);
-    if (nextSelectedItem) {
-      const nextContainerTop = treePaneEl.getBoundingClientRect().top;
-      const nextSelectedOffsetTop = nextSelectedItem.getBoundingClientRect().top - nextContainerTop;
-      treePaneEl.scrollTop += nextSelectedOffsetTop - previousSelectedOffsetTop;
-    } else {
-      treePaneEl.scrollTop = previousScrollTop;
-    }
-  } else {
-    treePaneEl.scrollTop = previousScrollTop;
-  }
-  treePaneEl.scrollLeft = previousScrollLeft;
 
   lastReactListRenderSignature = nextSignature;
   updatedComponentIds = new Set<string>();
