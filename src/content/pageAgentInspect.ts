@@ -3,6 +3,10 @@ import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
 import { resolveInspectPathValue } from "./pageAgentInspectPathValue";
 import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
+import {
+  resolveInspectPathTargetFiber,
+  resolveInspectRootContext,
+} from "./pageAgentInspectTarget";
 
 type AnyRecord = Record<string, any>;
 type PickPoint = { x: number; y: number };
@@ -97,19 +101,22 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
       : null;
 
     try {
-      const targetEl = resolveTargetElement(selector, pickPoint);
-      let nearest = targetEl ? findNearestFiber(targetEl) : null;
-      if (!nearest || !nearest.fiber) {
-        nearest = findAnyFiberInDocument();
-      }
-      if (!nearest || !nearest.fiber) {
-        return { error: "React fiber를 찾을 수 없습니다. (React 16+ 필요)", selector, pickPoint };
-      }
-
-      let rootFiber = findRootFiber(nearest.fiber);
-      if (!rootFiber) {
+      const resolvedRoot = resolveInspectRootContext({
+        selector,
+        pickPoint,
+        resolveTargetElement,
+        findNearestFiber,
+        findAnyFiberInDocument,
+        findRootFiber,
+      });
+      if (!resolvedRoot.ok) {
+        if (resolvedRoot.reason === "missingNearest") {
+          return { error: "React fiber를 찾을 수 없습니다. (React 16+ 필요)", selector, pickPoint };
+        }
         return { error: "React root fiber를 찾을 수 없습니다.", selector };
       }
+      const { targetEl, nearest } = resolvedRoot;
+      let { rootFiber } = resolvedRoot;
 
       const hostCache = new Map();
       const visiting = new Set();
@@ -224,20 +231,20 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         components,
         idByFiber,
         preferredFiber,
-          targetMatchedIndex,
-          resolvePreferredFiberDomInfo() {
-            return preferredFiber
-              ? getDomInfoForFiber({
-                fiber: preferredFiber,
-                hostCache,
-                visiting,
-                selectedEl: targetEl,
-                buildCssSelector,
-                getElementPath,
-              })
-              : null;
-          },
-        });
+        targetMatchedIndex,
+        resolvePreferredFiberDomInfo() {
+          return preferredFiber
+            ? getDomInfoForFiber({
+              fiber: preferredFiber,
+              hostCache,
+              visiting,
+              selectedEl: targetEl,
+              buildCssSelector,
+              getElementPath,
+            })
+            : null;
+        },
+      });
 
       return {
         selector,
@@ -272,25 +279,29 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
         return { ok: false, error: "componentId가 필요합니다." };
       }
 
-      const targetEl = resolveTargetElement(selector, pickPoint);
-      let nearest = targetEl ? findNearestFiber(targetEl) : null;
-      if (!nearest || !nearest.fiber) {
-        nearest = findAnyFiberInDocument();
-      }
-      if (!nearest || !nearest.fiber) {
-        return { ok: false, error: "React fiber를 찾지 못했습니다." };
-      }
-
-      const fiberIdMap = getFiberIdMap();
-      let rootFiber = findRootFiber(nearest.fiber);
-      if (!rootFiber) {
+      const resolvedRoot = resolveInspectRootContext({
+        selector,
+        pickPoint,
+        resolveTargetElement,
+        findNearestFiber,
+        findAnyFiberInDocument,
+        findRootFiber,
+      });
+      if (!resolvedRoot.ok) {
+        if (resolvedRoot.reason === "missingNearest") {
+          return { ok: false, error: "React fiber를 찾지 못했습니다." };
+        }
         return { ok: false, error: "React root fiber를 찾지 못했습니다." };
       }
-
-      let targetFiber = findFiberByComponentId(rootFiber, componentId, fiberIdMap);
-      if (!targetFiber) {
-        targetFiber = findFiberByComponentIdAcrossDocument(componentId, fiberIdMap);
-      }
+      const fiberIdMap = getFiberIdMap();
+      const { rootFiber } = resolvedRoot;
+      const targetFiber = resolveInspectPathTargetFiber({
+        rootFiber,
+        componentId,
+        fiberIdMap,
+        findFiberByComponentId,
+        findFiberByComponentIdAcrossDocument,
+      });
       if (!targetFiber) {
         return { ok: false, error: "대상 컴포넌트를 찾지 못했습니다." };
       }
