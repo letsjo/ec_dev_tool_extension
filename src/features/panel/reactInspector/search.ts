@@ -111,6 +111,48 @@ export function buildComponentSearchText(
   return tokens.join(' ').toLowerCase();
 }
 
+/** 현재 컴포넌트 목록 기준으로 검색 텍스트 캐시를 새로 생성한다. */
+export function buildComponentSearchTexts(
+  reactComponents: ReactComponentInfo[],
+  includeDataTokens = true,
+): string[] {
+  return reactComponents.map((component) => buildComponentSearchText(component, includeDataTokens));
+}
+
+/**
+ * 검색어가 있을 때만 캐시 길이를 검사해 필요 시 재생성한다.
+ * 검색어가 비어 있으면 기존 캐시를 그대로 유지해 불필요한 직렬화 순회를 피한다.
+ */
+export function ensureComponentSearchTextCache(
+  reactComponents: ReactComponentInfo[],
+  componentSearchQuery: string,
+  componentSearchTexts: string[],
+  includeDataTokens = true,
+): string[] {
+  if (!componentSearchQuery.trim()) return componentSearchTexts;
+  if (componentSearchTexts.length === reactComponents.length) {
+    return componentSearchTexts;
+  }
+  return buildComponentSearchTexts(reactComponents, includeDataTokens);
+}
+
+/**
+ * 상세 데이터가 뒤늦게 도착한 단일 컴포넌트 인덱스만 캐시를 부분 갱신한다.
+ * includeDataTokens=false인 경량 모드에서는 캐시를 갱신하지 않는다.
+ */
+export function patchComponentSearchTextCacheAt(
+  reactComponents: ReactComponentInfo[],
+  componentSearchTexts: string[],
+  componentIndex: number,
+  includeDataTokens: boolean,
+) {
+  if (!includeDataTokens) return;
+  if (componentSearchTexts.length !== reactComponents.length) return;
+  const component = reactComponents[componentIndex];
+  if (!component) return;
+  componentSearchTexts[componentIndex] = buildComponentSearchText(component, true);
+}
+
 /** 검색어 기준으로 매치/가시 인덱스를 계산한다. */
 export function getComponentFilterResult(
   reactComponents: ReactComponentInfo[],

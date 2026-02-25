@@ -43,9 +43,11 @@ import {
 } from './reactInspector/signatures';
 import {
   buildComponentIndexById as buildComponentIndexByIdValue,
-  buildComponentSearchText as buildComponentSearchTextValue,
+  buildComponentSearchTexts as buildComponentSearchTextsValue,
+  ensureComponentSearchTextCache as ensureComponentSearchTextCacheValue,
   expandAncestorPaths as expandAncestorPathsValue,
   getComponentFilterResult as getComponentFilterResultValue,
+  patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
   restoreCollapsedById as restoreCollapsedByIdValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
@@ -549,18 +551,14 @@ function createJsonSection(
   });
 }
 
-/** 파생 데이터나 요약 값을 구성 */
-function buildComponentSearchText(component: ReactComponentInfo, includeDataTokens = true): string {
-  return buildComponentSearchTextValue(component, includeDataTokens);
-}
-
 /** 필요한 값/상태를 계산해 반환 */
 function getComponentFilterResult(): ComponentFilterResult {
-  if (componentSearchQuery.trim() && componentSearchTexts.length !== reactComponents.length) {
-    componentSearchTexts = reactComponents.map((component) =>
-      buildComponentSearchText(component, componentSearchIncludeDataTokens),
-    );
-  }
+  componentSearchTexts = ensureComponentSearchTextCacheValue(
+    reactComponents,
+    componentSearchQuery,
+    componentSearchTexts,
+    componentSearchIncludeDataTokens,
+  );
   return getComponentFilterResultValue(reactComponents, componentSearchQuery, componentSearchTexts);
 }
 
@@ -824,9 +822,12 @@ function applySelectedComponentDetail(result: ReactComponentDetailResult): boole
   };
   reactComponents[componentIndex] = next;
 
-  if (componentSearchTexts.length === reactComponents.length && componentSearchIncludeDataTokens) {
-    componentSearchTexts[componentIndex] = buildComponentSearchText(next, true);
-  }
+  patchComponentSearchTextCacheAtValue(
+    reactComponents,
+    componentSearchTexts,
+    componentIndex,
+    componentSearchIncludeDataTokens,
+  );
 
   if (selectedReactComponentIndex === componentIndex) {
     renderReactComponentDetail(next);
@@ -995,8 +996,9 @@ function applyReactInspectResult(
     });
   }
   componentSearchIncludeDataTokens = !lightweight;
-  componentSearchTexts = reactComponents.map((component) =>
-    buildComponentSearchText(component, componentSearchIncludeDataTokens),
+  componentSearchTexts = buildComponentSearchTextsValue(
+    reactComponents,
+    componentSearchIncludeDataTokens,
   );
 
   if (preserveCollapsed) {
