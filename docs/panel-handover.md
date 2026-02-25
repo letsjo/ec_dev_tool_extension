@@ -62,6 +62,7 @@
   - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
   - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
+  - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
   - `domTree/renderer.ts` 유틸로 DOM 트리 노드 렌더링 위임
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/상세(JSON/hook) 렌더 로직 위임
   - `reactInspector/detailFetchQueue.ts` 유틸로 선택 컴포넌트 상세 지연조회 큐(in-flight/queue/cooldown) 위임
@@ -250,6 +251,11 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `pageAgent/selectionSync.ts`: 선택 컴포넌트 DOM 하이라이트, hover preview 정리, Selected Element/DOM Tree 동기화 전담
 - `controller.ts`: selection index/스크롤/상세 조회 흐름을 관리하고 selection sync 핸들러 호출만 수행
 
+## 7.8 Panel Pane State 모듈 분리 규칙
+
+- `paneState.ts`: 패널 텍스트 반영, `.empty`/`.error` 클래스 토글, empty placeholder signature 생성/반환 전담
+- `controller.ts`: 도메인 상태에 따라 어떤 메시지를 노출할지 결정하고 paneState 유틸 호출만 수행
+
 ## 8. 주요 UI 구성 파일 역할
 
 - `src/ui/sections/PanelViewSection.tsx`
@@ -360,6 +366,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `src/features/panel/domTree/renderer.ts`
 - `src/features/panel/pageAgent/responsePipeline.ts`
 - `src/features/panel/pageAgent/selectionSync.ts`
+- `src/features/panel/paneState.ts`
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/search.ts`
 - `src/features/panel/reactInspector/jsonSection.ts`

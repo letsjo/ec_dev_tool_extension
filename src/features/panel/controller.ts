@@ -59,6 +59,12 @@ import {
 } from './pageAgent/responsePipeline';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createRuntimeRefreshScheduler } from './runtimeRefresh/scheduler';
+import {
+  clearPaneContent as clearPaneContentValue,
+  setPaneEmptyState as setPaneEmptyStateValue,
+  setPaneText as setPaneTextValue,
+  setPaneTextWithErrorState as setPaneTextWithErrorStateValue,
+} from './paneState';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -199,9 +205,7 @@ function setPickerModeActive(active: boolean) {
 
 /** UI 상태 또는 문구를 설정 */
 function setOutput(text: string, isError = false) {
-  outputEl.textContent = text;
-  outputEl.classList.toggle('empty', !text);
-  outputEl.classList.toggle('error', isError);
+  setPaneTextWithErrorStateValue(outputEl, text, isError);
 }
 
 /**
@@ -285,63 +289,40 @@ function onFetch() {
 }
 
 /** UI 상태 또는 문구를 설정 */
-function setPaneText(targetEl: HTMLDivElement, text: string) {
-  targetEl.textContent = text;
-  targetEl.classList.toggle('empty', !text);
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setPaneTextWithErrorState(targetEl: HTMLDivElement, text: string, isError: boolean) {
-  setPaneText(targetEl, text);
-  targetEl.classList.toggle('error', isError);
-}
-
-/** UI 상태 또는 문구를 설정 */
 function setElementOutput(text: string) {
-  setPaneText(elementOutputEl, text);
+  setPaneTextValue(elementOutputEl, text);
 }
 
 /** UI 상태 또는 문구를 설정 */
 function setReactStatus(text: string, isError = false) {
-  reactStatusEl.textContent = text;
-  reactStatusEl.classList.toggle('empty', !text);
-  reactStatusEl.classList.toggle('error', isError);
+  setPaneTextWithErrorStateValue(reactStatusEl, text, isError);
 }
 
 /** UI 상태 또는 문구를 설정 */
 function setReactListEmpty(text: string) {
-  lastReactListRenderSignature = `__empty__:${text}`;
-  reactComponentListEl.textContent = text;
-  reactComponentListEl.classList.add('empty');
+  lastReactListRenderSignature = setPaneEmptyStateValue(reactComponentListEl, text);
 }
 
 /** UI 상태 또는 문구를 설정 */
 function setReactDetailEmpty(text: string) {
-  lastReactDetailRenderSignature = `__empty__:${text}`;
+  lastReactDetailRenderSignature = setPaneEmptyStateValue(reactComponentDetailEl, text);
   lastReactDetailComponentId = null;
-  reactComponentDetailEl.textContent = text;
-  reactComponentDetailEl.classList.add('empty');
 }
 
 /** UI 상태 또는 문구를 설정 */
 function setDomTreeStatus(text: string, isError = false) {
-  setPaneTextWithErrorState(domTreeStatusEl, text, isError);
+  setPaneTextWithErrorStateValue(domTreeStatusEl, text, isError);
 }
 
 /** UI 상태 또는 문구를 설정 */
 function setDomTreeEmpty(text: string) {
-  setPaneText(domTreeOutputEl, text);
+  setPaneTextValue(domTreeOutputEl, text);
 }
 
 /** 기존 상태를 정리 */
 function clearDomTreeOutput() {
-  domTreeOutputEl.innerHTML = '';
+  clearPaneContentValue(domTreeOutputEl);
   domTreeOutputEl.classList.remove('empty');
-}
-
-/** 기존 상태를 정리 */
-function clearElement(element: HTMLElement) {
-  element.innerHTML = '';
 }
 
 /**
@@ -595,7 +576,7 @@ function renderReactComponentDetail(component: ReactComponentInfo) {
     return;
   }
 
-  clearElement(reactComponentDetailEl);
+  clearPaneContentValue(reactComponentDetailEl);
   reactComponentDetailEl.classList.remove('empty');
 
   const content = document.createElement('div');
@@ -680,7 +661,7 @@ function renderReactComponentList() {
     pushChild(parentId, index);
   });
 
-  clearElement(reactComponentListEl);
+  clearPaneContentValue(reactComponentListEl);
   reactComponentListEl.classList.remove('empty');
 
   const renderTreeNode = (index: number) => {
