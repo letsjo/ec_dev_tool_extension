@@ -69,14 +69,9 @@ import {
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import {
-  buildOpenFunctionInSourcesExpression as buildOpenFunctionInSourcesExpressionValue,
-  buildOpenFunctionInSourcesFailureStatusText as buildOpenFunctionInSourcesFailureStatusTextValue,
-  buildOpenFunctionInSourcesSuccessStatusText as buildOpenFunctionInSourcesSuccessStatusTextValue,
-  resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
-} from './reactInspector/openInSources';
-import {
   createReactInspectPathActions as createReactInspectPathActionsValue,
 } from './reactInspector/pathActions';
+import { createFunctionSourceOpener as createFunctionSourceOpenerValue } from './reactInspector/pathOpenAction';
 import { createReactInspectPathRequester as createReactInspectPathRequesterValue } from './reactInspector/pathRequestRunner';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
@@ -146,7 +141,6 @@ let lastReactDetailComponentId: string | null = null;
 let updatedComponentIds = new Set<string>();
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
-const PAGE_FUNCTION_INSPECT_REGISTRY_KEY = '__EC_DEV_TOOL_FUNCTION_INSPECT_REGISTRY__';
 
 let destroyWheelScrollFallback: (() => void) | null = null;
 let workspacePanelElements = new Map<WorkspacePanelId, HTMLDetailsElement>();
@@ -414,28 +408,7 @@ const requestReactInspectPath = createReactInspectPathRequesterValue({
   getStoredLookup: () => lastReactLookup,
 });
 
-/** DevTools 기능을 호출해 이동/열기를 수행 */
-function openFunctionInSources(inspectRefKey: string, functionName: string) {
-  const expression = buildOpenFunctionInSourcesExpressionValue({
-    inspectRefKey,
-    storeKey: PAGE_FUNCTION_INSPECT_REGISTRY_KEY,
-  });
-
-  chrome.devtools.inspectedWindow.eval(expression, (result, exceptionInfo) => {
-    const failureReason = resolveOpenFunctionInSourcesFailureReasonValue({
-      result,
-      exceptionInfo,
-      runtimeErrorMessage: chrome.runtime.lastError
-        ? (chrome.runtime.lastError.message ?? '실행 오류')
-        : null,
-    });
-    if (failureReason) {
-      setReactStatus(buildOpenFunctionInSourcesFailureStatusTextValue(failureReason), true);
-      return;
-    }
-    setReactStatus(buildOpenFunctionInSourcesSuccessStatusTextValue(functionName));
-  });
-}
+const openFunctionInSources = createFunctionSourceOpenerValue({ setReactStatus });
 
 const { inspectFunctionAtPath, fetchSerializedValueAtPath } =
   createReactInspectPathActionsValue({
