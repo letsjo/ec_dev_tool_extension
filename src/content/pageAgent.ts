@@ -15,12 +15,7 @@ import {
 } from "./pageAgentDom";
 import { installPageAgentBridge } from "./pageAgentBridge";
 import { createPageAgentMethodExecutor } from "./pageAgentMethods";
-import { inspectCustomHookGroupNames } from "./pageAgentHookGroups";
-import {
-  inferHookName,
-  normalizeHookStateForDisplay,
-} from "./pageAgentHookState";
-import { applyCustomHookMetadata } from "./pageAgentHookMetadata";
+import { createPageAgentHooksInfoHelpers } from "./pageAgentHooksInfo";
 import { createPageAgentInspectHandlers } from "./pageAgentInspect";
 import {
   makeSerializer,
@@ -104,94 +99,9 @@ const registerFunctionForInspect = (value: Function) =>
     maxFunctionInspectRefs: MAX_FUNCTION_INSPECT_REFS,
   });
 
-/** 필요한 값/상태를 계산해 반환 */
-function getHooksRootValue(fiber: FiberLike | null | undefined, options: AnyRecord | null | undefined) {
-  const includeCustomGroups = options && options.includeCustomGroups === true;
-  if (!fiber) return [];
-  if (fiber.tag === 1) {
-    if (fiber.memoizedState == null) return [];
-    return [{ index: 0, name: "ClassState", state: fiber.memoizedState, group: null, groupPath: null }];
-  }
-
-  const hooks = [];
-  let node = fiber.memoizedState;
-  let guard = 0;
-  const hookTypes = Array.isArray(fiber._debugHookTypes) ? fiber._debugHookTypes : null;
-
-  while (node && guard < 120) {
-    const hookName = inferHookName(node, guard, hookTypes);
-    let nodeValue = node;
-    if (typeof node === "object" && node !== null && "memoizedState" in node) {
-      nodeValue = node.memoizedState;
-    }
-    hooks.push({
-      index: guard,
-      name: hookName,
-      state: normalizeHookStateForDisplay(hookName, nodeValue),
-      group: null,
-      groupPath: null,
-    });
-
-    if (typeof node === "object" && node !== null && "next" in node) {
-      node = node.next;
-      guard += 1;
-      continue;
-    }
-    break;
-  }
-
-  if (includeCustomGroups) {
-    const customMetadata = inspectCustomHookGroupNames(fiber, null, getFiberName);
-    applyCustomHookMetadata(hooks, customMetadata);
-  }
-
-  for (let i = 0; i < hooks.length; i += 1) {
-    hooks[i].state = normalizeHookStateForDisplay(hooks[i].name, hooks[i].state);
-  }
-
-  return hooks;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getHooksCount(fiber: FiberLike | null | undefined) {
-  return getHooksRootValue(fiber, { includeCustomGroups: false }).length;
-}
-
-/** 필요한 값/상태를 계산해 반환 */
-function getHooksInfo(fiber: FiberLike | null | undefined) {
-  const hooks = getHooksRootValue(fiber, { includeCustomGroups: true });
-  const out = [];
-  const maxLen = Math.min(hooks.length, 120);
-  const perHookBudget = 12000;
-  for (let i = 0; i < maxLen; i += 1) {
-    const hook = hooks[i];
-    const hookSerialize = makeSerializer({
-      maxSerializeCalls: perHookBudget,
-      maxDepth: 2,
-      maxArrayLength: 80,
-      maxObjectKeys: 80,
-      maxMapEntries: 60,
-      maxSetEntries: 60,
-    });
-    out.push({
-      index: hook.index,
-      name: hook.name,
-      group: typeof hook.group === "string" ? hook.group : null,
-      groupPath: Array.isArray(hook.groupPath) ? hook.groupPath : null,
-      state: hookSerialize(hook.state),
-    });
-  }
-  if (hooks.length > maxLen) {
-    out.push({
-      index: maxLen,
-      name: "Truncated",
-      group: null,
-      groupPath: null,
-      state: "[+" + String(hooks.length - maxLen) + " more hooks]",
-    });
-  }
-  return { value: out, count: hooks.length };
-}
+const { getHooksRootValue, getHooksCount, getHooksInfo } = createPageAgentHooksInfoHelpers({
+  getFiberName,
+});
 
 const { inspectReactComponents, inspectReactPath } = createPageAgentInspectHandlers({
   maxTraversal: MAX_TRAVERSAL,
