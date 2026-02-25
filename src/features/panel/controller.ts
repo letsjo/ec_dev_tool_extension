@@ -33,13 +33,9 @@ import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializatio
 import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from './lifecycle/runtimeMessageBinding';
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
+import { createPanelPaneSetters as createPanelPaneSettersValue } from './paneSetters';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from './runtimeRefresh/panelRuntimeRefreshFlow';
-import {
-  setPaneEmptyState as setPaneEmptyStateValue,
-  setPaneText as setPaneTextValue,
-  setPaneTextWithErrorState as setPaneTextWithErrorStateValue,
-} from './paneState';
 
 let outputEl!: HTMLDivElement;
 let targetSelectEl: HTMLSelectElement | null = null;
@@ -104,10 +100,26 @@ function setPickerModeActive(active: boolean) {
   selectElementBtnEl.title = active ? '요소 선택 중 (Esc로 취소)' : '요소 선택 모드 시작';
 }
 
-/** UI 상태 또는 문구를 설정 */
-function setOutput(text: string, isError = false) {
-  setPaneTextWithErrorStateValue(outputEl, text, isError);
-}
+const {
+  setOutput,
+  setElementOutput,
+  setReactStatus,
+  setReactListEmpty,
+  setReactDetailEmpty,
+  setDomTreeStatus,
+  setDomTreeEmpty,
+} = createPanelPaneSettersValue({
+  getOutputEl: () => outputEl,
+  getElementOutputEl: () => elementOutputEl,
+  getReactStatusEl: () => reactStatusEl,
+  getReactComponentListEl: () => reactComponentListEl,
+  getReactComponentDetailEl: () => reactComponentDetailEl,
+  getDomTreeStatusEl: () => domTreeStatusEl,
+  getDomTreeOutputEl: () => domTreeOutputEl,
+  setLastReactListRenderSignature: reactInspectorState.setLastReactListRenderSignature,
+  setLastReactDetailRenderSignature: reactInspectorState.setLastReactDetailRenderSignature,
+  setLastReactDetailComponentId: reactInspectorState.setLastReactDetailComponentId,
+});
 
 const { populateTargetSelect, onFetch } = createTargetFetchFlowValue({
   getTargetSelectEl: () => targetSelectEl,
@@ -115,41 +127,6 @@ const { populateTargetSelect, onFetch } = createTargetFetchFlowValue({
   setOutput,
   callInspectedPageAgent,
 });
-
-/** UI 상태 또는 문구를 설정 */
-function setElementOutput(text: string) {
-  setPaneTextValue(elementOutputEl, text);
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setReactStatus(text: string, isError = false) {
-  setPaneTextWithErrorStateValue(reactStatusEl, text, isError);
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setReactListEmpty(text: string) {
-  reactInspectorState.setLastReactListRenderSignature(
-    setPaneEmptyStateValue(reactComponentListEl, text),
-  );
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setReactDetailEmpty(text: string) {
-  reactInspectorState.setLastReactDetailRenderSignature(
-    setPaneEmptyStateValue(reactComponentDetailEl, text),
-  );
-  reactInspectorState.setLastReactDetailComponentId(null);
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setDomTreeStatus(text: string, isError = false) {
-  setPaneTextWithErrorStateValue(domTreeStatusEl, text, isError);
-}
-
-/** UI 상태 또는 문구를 설정 */
-function setDomTreeEmpty(text: string) {
-  setPaneTextValue(domTreeOutputEl, text);
-}
 
 const { fetchDomTree } = createDomTreeFetchFlowValue({
   callInspectedPageAgent,

@@ -66,7 +66,7 @@
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `lifecycle/bootstrapFlow.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
-  - `paneState.ts` 유틸로 패널 텍스트/empty/error 클래스 토글과 empty signature 규칙 위임
+  - `paneState.ts`, `paneSetters.ts` 유틸로 패널 텍스트/empty/error 클래스 토글 규칙과 pane setter 결선 위임
   - `domTree/renderer.ts`, `domTree/fetchFlow.ts` 유틸로 DOM 트리 노드 렌더링과 getDomTree 조회/응답 상태 반영 플로우 위임
   - `reactInspector/signatures.ts`, `reactInspector/search.ts`, `reactInspector/searchTextCache.ts`, `reactInspector/searchFilter.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/fetchFlow.ts`, `reactInspector/inspectDataStage.ts`, `reactInspector/lookup.ts`, `reactInspector/openInSources.ts`, `reactInspector/pathActions.ts`, `reactInspector/pathBindings.ts`, `reactInspector/pathCompletion.ts`, `reactInspector/pathFailure.ts`, `reactInspector/pathOpenAction.ts`, `reactInspector/pathRequest.ts`, `reactInspector/pathRequestCompletion.ts`, `reactInspector/pathRequestRunner.ts`, `reactInspector/pathResponse.ts`, `reactInspector/collectionDisplay.ts`, `reactInspector/hookTreeModel.ts`, `reactInspector/jsonTokenNodes.ts`, `reactInspector/jsonCollectionPreview.ts`, `reactInspector/jsonObjectPreview.ts`, `reactInspector/jsonPreview.ts`, `reactInspector/jsonDehydratedNode.ts`, `reactInspector/jsonObjectArrayNode.ts`, `reactInspector/jsonRowUi.ts`, `reactInspector/jsonRefMap.ts`, `reactInspector/jsonHookTreeRenderer.ts`, `reactInspector/searchStatus.ts`, `reactInspector/controllerState.ts`, `reactInspector/controllerFlows.ts`, `reactInspector/searchInputFlow.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/selectionModel.ts`, `reactInspector/listTreeRenderer.ts`, `reactInspector/detailRenderer.ts`, `reactInspector/detailApply.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/reactInspect fetch request-response stage 오케스트레이션/reactInspect data stage(이전 선택/접힘 스냅샷 + 결과 모델 적용) 계산/lookup 저장·refresh lookup 계산·inspectPath fallback/devtools inspect eval expression 조립·실패 판정·상태 문구 규칙/inspectFunction·serializeValue completion 후처리(action/value) 규칙/inspectFunction/serializeValue 액션 핸들러 오케스트레이션/inspectPath request-open-action bindings 조립/function inspect open action(eval 실행 + 상태 문구) 오케스트레이션/inspectPath 실패 유형 정규화·상태 문구 규칙/inspectPath 호출 args(selector/pickPoint/mode/serializeLimit) 조립/inspectPath 요청 completion을 판별 유니온(`success`/`failure`)으로 정규화하고 success/failure 타입가드 제공/inspectPath request runner 생성(브리지 호출 + completion 반환)/inspectPath 성공 payload 파싱/collection token(map/set) display path/meta 정규화/hook group path 기반 트리 모델 계산/function/circular token 노드 렌더 규칙/collection token + display collection meta(map/set) preview 공통 빌더/object/array preview 공통 빌더 + JSON/hook summary preview 문자열 빌더(primitive/object/collection/dehydrated) 규칙/controller state read-write snapshot 분리/react inspector 결선(controller wiring) 조립 분리/dehydrated token lazy expand + runtime serialize refresh 렌더 규칙/object/array details summary+lazy children 렌더 규칙/JSON row toggle button/spacer/expandable key-value row UI 렌더 규칙/ref id 역참조 맵 수집 규칙/hook tree DOM row/group 재귀 렌더 규칙/검색 텍스트 캐시 생성/부분 갱신/길이 보정 분리 및 검색 필터/조상 확장 분리/검색 상태 문구/검색 입력 이벤트 후속 처리/placeholder 상태/선택 시퀀스/선택 인덱스 계산/컴포넌트 트리 DOM 렌더/스크롤 앵커 보정/상세 패널 DOM 렌더 캐시/상세 응답 병합/상세(JSON/hook) 렌더 로직 위임
   - `controller.ts`의 `applyReactInspectResult`는 내부를 3단계(data stage → selection stage → render stage) 헬퍼로 분리해 오케스트레이션만 담당
@@ -406,7 +406,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.8 Panel Pane State 모듈 분리 규칙
 
 - `paneState.ts`: 패널 텍스트 반영, `.empty`/`.error` 클래스 토글, empty placeholder signature 생성/반환 전담
-- `controller.ts`: 도메인 상태에 따라 어떤 메시지를 노출할지 결정하고 paneState 유틸 호출만 수행
+- `paneSetters.ts`: output/react/dom pane setter 조립(`setOutput`, `setReactStatus`, `setDomTreeStatus` 등)과 React list/detail empty signature 반영 결선 전담
+- `controller.ts`: 도메인 상태에 따라 어떤 메시지를 노출할지 결정하고 paneSetters/paneState 유틸을 조합해 사용
 
 ## 7.9 Panel Element Picker Bridge 모듈 분리 규칙
 
@@ -546,6 +547,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/pageAgent/responsePipeline.ts`
 - `src/features/panel/pageAgent/selectionSync.ts`
 - `src/features/panel/paneState.ts`
+- `src/features/panel/paneSetters.ts`
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/search.ts`
 - `src/features/panel/reactInspector/searchTextCache.ts`
@@ -694,6 +696,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceRenderPipeline.test.ts`: `renderPipeline.ts`의 empty fallback 재사용, patch root 삽입, stale child 정리 분기
   - `tests/workspace/workspaceRenderFlow.test.ts`: `renderFlow.ts`의 panel state 반영, toggle bar 동기화, panel open toggle 분기
   - `tests/workspace/workspaceInteractionBindings.test.ts`: `interactionBindings.ts`의 panel/container 이벤트 바인딩과 cleanup unbind 분기
+  - `tests/pane/paneSetters.test.ts`: `paneSetters.ts`의 output/react/dom pane setter와 list/detail empty signature 결선 분기
   - `tests/reactInspector/jsonObjectPreview.test.ts`: `jsonObjectPreview.ts`의 배열 depth collapse, entry cap, object meta key 필터 preview 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링
   - `tests/reactInspector/jsonRefMap.test.ts`: `jsonRefMap.ts`의 nested ref id 수집, 내부 meta key 제외, 순환 참조 안전 스캔 분기
