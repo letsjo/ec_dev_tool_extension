@@ -47,10 +47,16 @@ import {
   expandAncestorPaths as expandAncestorPathsValue,
   getComponentFilterResult as getComponentFilterResultValue,
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
-  restoreCollapsedById as restoreCollapsedByIdValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from './reactInspector/search';
 import { buildReactInspectResultModel as buildReactInspectResultModelValue } from './reactInspector/resultModel';
+import {
+  buildReactInspectSuccessStatusText as buildReactInspectSuccessStatusTextValue,
+  normalizeReactInspectApplyOptions as normalizeReactInspectApplyOptionsValue,
+  resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue,
+  shouldRenderListOnlyAfterApply as shouldRenderListOnlyAfterApplyValue,
+  type ReactInspectApplyOptions,
+} from './reactInspector/applyFlow';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -103,17 +109,7 @@ let panelContentEl!: HTMLElement;
 let workspacePanelToggleBarEl!: HTMLDivElement;
 let workspaceDockPreviewEl!: HTMLDivElement;
 
-interface ApplyReactInspectOptions {
-  preserveSelection?: boolean;
-  preserveCollapsed?: boolean;
-  highlightSelection?: boolean;
-  scrollSelectionIntoView?: boolean;
-  expandSelectionAncestors?: boolean;
-  lightweight?: boolean;
-  trackUpdates?: boolean;
-  refreshDetail?: boolean;
-  statusText?: string;
-}
+type ApplyReactInspectOptions = ReactInspectApplyOptions;
 
 interface FetchReactInfoOptions {
   keepLookup?: boolean;
@@ -586,11 +582,6 @@ function snapshotCollapsedIds(): Set<string> {
   return snapshotCollapsedIdsValue(reactComponents, collapsedComponentIds);
 }
 
-/** 이전 상태를 복원 */
-function restoreCollapsedById(ids: ReadonlySet<string>) {
-  collapsedComponentIds = restoreCollapsedByIdValue(reactComponents, ids);
-}
-
 /** 화면 요소를 렌더링 */
 function renderReactComponentDetail(component: ReactComponentInfo) {
   const nextSignature = buildReactComponentDetailRenderSignature(component);
@@ -924,28 +915,21 @@ function applyReactInspectResult(
   result: ReactInspectResult,
   options: ApplyReactInspectOptions = {},
 ) {
-  const preserveSelection = options.preserveSelection === true;
-  const preserveCollapsed = options.preserveCollapsed === true;
-  const highlightSelection = options.highlightSelection !== false;
-  const scrollSelectionIntoView = options.scrollSelectionIntoView !== false;
-  const expandSelectionAncestors = options.expandSelectionAncestors !== false;
-  const lightweight = options.lightweight === true;
-  const trackUpdates = options.trackUpdates === true;
-  const refreshDetail = options.refreshDetail !== false;
+  const applyOptions = normalizeReactInspectApplyOptionsValue(options);
 
   // preserve 옵션이 켜져 있으면 이전 선택 대상 id를 기준점으로 저장한다.
   const previousSelectedId = resolvePreviousSelectedIdValue(
-    preserveSelection,
+    applyOptions.preserveSelection,
     reactComponents,
     selectedReactComponentIndex,
   );
-  const previousCollapsedIds = preserveCollapsed ? snapshotCollapsedIds() : new Set<string>();
+  const previousCollapsedIds = applyOptions.preserveCollapsed ? snapshotCollapsedIds() : new Set<string>();
 
   const resultModel = buildReactInspectResultModelValue({
     previousComponents: reactComponents,
     incomingComponents: Array.isArray(result.components) ? result.components : [],
-    lightweight,
-    trackUpdates,
+    lightweight: applyOptions.lightweight,
+    trackUpdates: applyOptions.trackUpdates,
   });
   reactComponents = resultModel.reactComponents;
   updatedComponentIds = resultModel.updatedComponentIds;
@@ -955,11 +939,11 @@ function applyReactInspectResult(
     componentSearchIncludeDataTokens,
   );
 
-  if (preserveCollapsed) {
-    restoreCollapsedById(previousCollapsedIds);
-  } else {
-    collapsedComponentIds = new Set<string>();
-  }
+  collapsedComponentIds = resolveCollapsedComponentIdsValue(
+    reactComponents,
+    applyOptions.preserveCollapsed,
+    previousCollapsedIds,
+  );
 
   if (reactComponents.length === 0) {
     resetReactInspector('React 컴포넌트를 찾지 못했습니다.', true);
@@ -982,19 +966,18 @@ function applyReactInspectResult(
   selectedReactComponentIndex = nextSelection.selectedIndex;
 
   setReactStatus(
-    options.statusText ??
-      `컴포넌트 ${reactComponents.length}개를 찾았습니다. 항목을 클릭하면 페이지 DOM과 함께 확인됩니다.`,
+    buildReactInspectSuccessStatusTextValue(reactComponents.length, applyOptions.statusText),
   );
 
-  if (!refreshDetail && !nextSelection.selectedChanged) {
+  if (shouldRenderListOnlyAfterApplyValue(applyOptions.refreshDetail, nextSelection.selectedChanged)) {
     renderReactComponentList();
     return;
   }
 
   selectReactComponent(selectedReactComponentIndex, {
-    highlightDom: highlightSelection,
-    scrollIntoView: scrollSelectionIntoView,
-    expandAncestors: expandSelectionAncestors,
+    highlightDom: applyOptions.highlightSelection,
+    scrollIntoView: applyOptions.scrollSelectionIntoView,
+    expandAncestors: applyOptions.expandSelectionAncestors,
   });
 }
 
