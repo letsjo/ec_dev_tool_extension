@@ -901,23 +901,11 @@ function resetReactInspector(statusText: string, isError = false) {
   );
 }
 
-/**
- * React inspect 응답을 상태/리스트/선택/상세 패널에 반영하는 핵심 파이프라인.
- *
- * 큰 흐름:
- * 1) 이전 선택/접힘/지문(fingerprint) 스냅샷
- * 2) 신규 컴포넌트 배열 정규화(경량 모드면 기존 props/hooks 재사용)
- * 3) 변경 감지 집합(updatedComponentIds) 계산
- * 4) 검색 필터 기준으로 유효한 선택 인덱스 재결정
- * 5) 필요 시 선택 컴포넌트 상세/하이라이트를 갱신
- */
-function applyReactInspectResult(
+/** apply 파이프라인 1단계: reactInspect 결과를 패널 상태로 정규화/적용한다. */
+function applyReactInspectDataStage(
   result: ReactInspectResult,
-  options: ApplyReactInspectOptions = {},
+  applyOptions: ReturnType<typeof normalizeReactInspectApplyOptionsValue>,
 ) {
-  const applyOptions = normalizeReactInspectApplyOptionsValue(options);
-
-  // preserve 옵션이 켜져 있으면 이전 선택 대상 id를 기준점으로 저장한다.
   const previousSelectedId = resolvePreviousSelectedIdValue(
     applyOptions.preserveSelection,
     reactComponents,
@@ -945,24 +933,31 @@ function applyReactInspectResult(
     previousCollapsedIds,
   );
 
-  if (reactComponents.length === 0) {
-    resetReactInspector('React 컴포넌트를 찾지 못했습니다.', true);
-    return;
-  }
+  return {
+    previousSelectedId,
+  };
+}
 
+/** apply 파이프라인 2단계: 검색 필터 기준으로 최종 선택 인덱스를 결정한다. */
+function resolveReactInspectSelectionStage(
+  result: ReactInspectResult,
+  previousSelectedId: string | null,
+) {
   const filterResult = getComponentFilterResult();
-  const nextSelection = resolveNextSelectionValue({
+  return resolveNextSelectionValue({
     reactComponents,
     filterResult,
     previousSelectedId,
     requestedSelectedIndex:
       typeof result.selectedIndex === 'number' ? result.selectedIndex : undefined,
   });
-  if (!nextSelection) {
-    selectedReactComponentIndex = -1;
-    applySearchNoResultState('inspectResult');
-    return;
-  }
+}
+
+/** apply 파이프라인 3단계: 상태 문구 반영 후 리스트 렌더/선택 반영을 수행한다. */
+function applyReactInspectRenderStage(
+  applyOptions: ReturnType<typeof normalizeReactInspectApplyOptionsValue>,
+  nextSelection: NonNullable<ReturnType<typeof resolveNextSelectionValue>>,
+) {
   selectedReactComponentIndex = nextSelection.selectedIndex;
 
   setReactStatus(
@@ -979,6 +974,37 @@ function applyReactInspectResult(
     scrollIntoView: applyOptions.scrollSelectionIntoView,
     expandAncestors: applyOptions.expandSelectionAncestors,
   });
+}
+
+/**
+ * React inspect 응답을 상태/리스트/선택/상세 패널에 반영하는 핵심 파이프라인.
+ *
+ * 큰 흐름:
+ * 1) 이전 선택/접힘/지문(fingerprint) 스냅샷
+ * 2) 신규 컴포넌트 배열 정규화(경량 모드면 기존 props/hooks 재사용)
+ * 3) 변경 감지 집합(updatedComponentIds) 계산
+ * 4) 검색 필터 기준으로 유효한 선택 인덱스 재결정
+ * 5) 필요 시 선택 컴포넌트 상세/하이라이트를 갱신
+ */
+function applyReactInspectResult(
+  result: ReactInspectResult,
+  options: ApplyReactInspectOptions = {},
+) {
+  const applyOptions = normalizeReactInspectApplyOptionsValue(options);
+  const { previousSelectedId } = applyReactInspectDataStage(result, applyOptions);
+
+  if (reactComponents.length === 0) {
+    resetReactInspector('React 컴포넌트를 찾지 못했습니다.', true);
+    return;
+  }
+
+  const nextSelection = resolveReactInspectSelectionStage(result, previousSelectedId);
+  if (!nextSelection) {
+    selectedReactComponentIndex = -1;
+    applySearchNoResultState('inspectResult');
+    return;
+  }
+  applyReactInspectRenderStage(applyOptions, nextSelection);
 }
 
 /**
