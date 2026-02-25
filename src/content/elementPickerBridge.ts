@@ -76,13 +76,15 @@ function createElementPickerBridge(): ElementPickerBridge {
     script.src = chrome.runtime.getURL("dist/pageAgent.global.js");
     script.async = false;
     script.onload = () => {
+      // 성공적으로 로드된 이후에만 주입 완료 플래그를 고정한다.
+      // 로드 실패 시 재시도 경로를 막지 않기 위함이다.
+      pageAgentScriptInjected = true;
       if (script.parentNode) script.parentNode.removeChild(script);
     };
     script.onerror = () => {
+      pageAgentScriptInjected = false;
       if (script.parentNode) script.parentNode.removeChild(script);
     };
-
-    pageAgentScriptInjected = true;
     mountTarget.appendChild(script);
   }
 
