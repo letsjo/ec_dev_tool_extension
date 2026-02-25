@@ -70,28 +70,23 @@ import {
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import {
-  buildInspectFunctionPathFailureStatusText as buildInspectFunctionPathFailureStatusTextValue,
-} from './reactInspector/pathFailure';
-import {
   buildOpenFunctionInSourcesExpression as buildOpenFunctionInSourcesExpressionValue,
   buildOpenFunctionInSourcesFailureStatusText as buildOpenFunctionInSourcesFailureStatusTextValue,
   buildOpenFunctionInSourcesSuccessStatusText as buildOpenFunctionInSourcesSuccessStatusTextValue,
   resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
 } from './reactInspector/openInSources';
 import {
+  resolveInspectFunctionPathCompletion as resolveInspectFunctionPathCompletionValue,
+  resolveSerializedPathValueFromCompletion as resolveSerializedPathValueFromCompletionValue,
+} from './reactInspector/pathCompletion';
+import {
   buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
   type ReactInspectPathMode,
 } from './reactInspector/pathRequest';
 import {
-  isReactInspectPathRequestFailureCompletion as isReactInspectPathRequestFailureCompletionValue,
-  isReactInspectPathRequestSuccessCompletion as isReactInspectPathRequestSuccessCompletionValue,
   resolveReactInspectPathRequestCompletion as resolveReactInspectPathRequestCompletionValue,
   type ReactInspectPathRequestCompletion,
 } from './reactInspector/pathRequestCompletion';
-import {
-  parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
-  parseSerializedPathResponse as parseSerializedPathResponseValue,
-} from './reactInspector/pathResponse';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -468,16 +463,12 @@ function inspectFunctionAtPath(
     path,
     mode: 'inspectFunction',
     onDone: (completion) => {
-      if (isReactInspectPathRequestFailureCompletionValue(completion)) {
-        setReactStatus(buildInspectFunctionPathFailureStatusTextValue(completion.failure), true);
+      const result = resolveInspectFunctionPathCompletionValue(completion);
+      if (!result.payload) {
+        setReactStatus(result.statusText ?? '함수 이동 실패: 알 수 없는 오류', true);
         return;
       }
-      const payload = parseInspectFunctionPathResponseValue(completion.response);
-      if (!payload) {
-        setReactStatus('함수 이동 실패: inspect reference를 찾지 못했습니다.', true);
-        return;
-      }
-      openFunctionInSources(payload.inspectRefKey, payload.functionName);
+      openFunctionInSources(result.payload.inspectRefKey, result.payload.functionName);
     },
   });
 }
@@ -519,11 +510,7 @@ function fetchSerializedValueAtPath(
     mode: 'serializeValue',
     serializeLimit: 45000,
     onDone: (completion) => {
-      if (!isReactInspectPathRequestSuccessCompletionValue(completion)) {
-        onDone(null);
-        return;
-      }
-      onDone(parseSerializedPathResponseValue(completion.response));
+      onDone(resolveSerializedPathValueFromCompletionValue(completion));
     },
   });
 }
