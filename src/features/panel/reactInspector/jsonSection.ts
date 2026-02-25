@@ -1,7 +1,4 @@
-import {
-  isDehydratedToken,
-  readObjectRefId,
-} from '../../../shared/inspector/guards';
+import { readObjectRefId } from '../../../shared/inspector/guards';
 import type {
   JsonPathSegment,
   JsonSectionKind,
@@ -21,6 +18,7 @@ import {
   createCircularRefNode as createCircularRefNodeValue,
   createFunctionTokenNode as createFunctionTokenNodeValue,
 } from './jsonTokenNodes';
+import { createDehydratedTokenNode as createDehydratedTokenNodeValue } from './jsonDehydratedNode';
 import {
   buildHookInlinePreview,
   buildJsonSummaryPreview,
@@ -333,69 +331,16 @@ function createJsonValueNode(
     return circularRefNode;
   }
 
-  if (isDehydratedToken(value)) {
-    const canRuntimeInspect =
-      context.allowInspect &&
-      (context.section === 'props' || context.section === 'hooks') &&
-      (context.path.length > 0 || depth === 0);
-    if (!canRuntimeInspect) {
-      const text = document.createElement('span');
-      text.className = 'json-primitive';
-      text.textContent = readDehydratedPreviewText(value);
-      return text;
-    }
-
-    const details = document.createElement('details');
-    details.className = 'json-node';
-
-    const summary = document.createElement('summary');
-    const previewText = readDehydratedPreviewText(value);
-    const metaText = typeof value.reason === 'string' && value.reason ? value.reason : null;
-    if (metaText) {
-      const meta = document.createElement('span');
-      meta.className = 'json-summary-meta';
-      meta.textContent = metaText;
-      summary.appendChild(meta);
-      summary.appendChild(document.createTextNode(' '));
-    }
-    const preview = document.createElement('span');
-    preview.className = 'json-summary-preview';
-    preview.textContent = previewText;
-    summary.appendChild(preview);
-    details.appendChild(summary);
-
-    let runtimeRefreshInFlight = false;
-    let runtimeRefreshDone = false;
-    details.addEventListener('toggle', () => {
-      if (!details.open || runtimeRefreshInFlight || runtimeRefreshDone) return;
-      runtimeRefreshInFlight = true;
-      details.classList.add('json-loading');
-
-      fetchSerializedValueAtPath(
-        context.component,
-        context.section,
-        context.path,
-        (nextValue) => {
-          runtimeRefreshInFlight = false;
-          details.classList.remove('json-loading');
-          if (nextValue === null || !details.isConnected) return;
-
-          runtimeRefreshDone = true;
-          const normalized = normalizeCollectionTokenForDisplayValue(nextValue);
-          const replacementNode = createJsonValueNode(normalized, depth, context);
-          details.replaceWith(replacementNode);
-
-          if (
-            replacementNode instanceof HTMLDetailsElement &&
-            !isDehydratedToken(normalized)
-          ) {
-            replacementNode.open = true;
-          }
-        },
-      );
-    });
-
-    return details;
+  const dehydratedTokenNode = createDehydratedTokenNodeValue({
+    value,
+    depth,
+    context,
+    fetchSerializedValueAtPath,
+    createReplacementJsonValueNode: (nextValue, nextDepth) =>
+      createJsonValueNode(nextValue, nextDepth, context),
+  });
+  if (dehydratedTokenNode) {
+    return dehydratedTokenNode;
   }
 
   const normalizedCollectionValue = normalizeCollectionTokenForDisplayValue(value);
