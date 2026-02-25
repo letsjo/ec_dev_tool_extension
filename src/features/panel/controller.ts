@@ -71,6 +71,11 @@ import {
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
 import {
+  buildInspectFunctionPathFailureStatusText as buildInspectFunctionPathFailureStatusTextValue,
+  resolveReactInspectPathRequestFailure as resolveReactInspectPathRequestFailureValue,
+  type ReactInspectPathRequestFailure,
+} from './reactInspector/pathFailure';
+import {
   parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
   parseSerializedPathResponse as parseSerializedPathResponseValue,
 } from './reactInspector/pathResponse';
@@ -407,11 +412,6 @@ const {
 
 type ReactInspectPathMode = 'inspectFunction' | 'serializeValue';
 
-interface ReactInspectPathRequestFailure {
-  kind: 'runtimeError' | 'responseError';
-  message: string;
-}
-
 interface RequestReactInspectPathOptions {
   component: ReactComponentInfo;
   section: JsonSectionKind;
@@ -441,16 +441,12 @@ function requestReactInspectPath(options: RequestReactInspectPathOptions) {
         : {}),
     },
     (res, errorText) => {
-      if (errorText) {
-        options.onDone(null, { kind: 'runtimeError', message: errorText });
+      const failure = resolveReactInspectPathRequestFailureValue(res, errorText);
+      if (failure) {
+        options.onDone(null, failure);
         return;
       }
-      if (!isRecord(res) || res.ok !== true) {
-        const reason = isRecord(res) ? String(res.error ?? '알 수 없는 오류') : '알 수 없는 오류';
-        options.onDone(null, { kind: 'responseError', message: reason });
-        return;
-      }
-      options.onDone(res);
+      options.onDone(res as Record<string, unknown>);
     },
   );
 }
@@ -469,11 +465,7 @@ function inspectFunctionAtPath(
     mode: 'inspectFunction',
     onDone: (res, failure) => {
       if (failure) {
-        if (failure.kind === 'runtimeError') {
-          setReactStatus(`함수 이동 실행 오류: ${failure.message}`, true);
-          return;
-        }
-        setReactStatus(`함수 이동 실패: ${failure.message}`, true);
+        setReactStatus(buildInspectFunctionPathFailureStatusTextValue(failure), true);
         return;
       }
       if (!res) {
