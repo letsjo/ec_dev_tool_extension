@@ -43,6 +43,10 @@ import {
   bindWorkspacePanelInteractions as bindWorkspacePanelInteractionsValue,
   unbindWorkspacePanelInteractions as unbindWorkspacePanelInteractionsValue,
 } from './panelBindings';
+import {
+  bindWorkspaceContainerInteractions as bindWorkspaceContainerInteractionsValue,
+  unbindWorkspaceContainerInteractions as unbindWorkspaceContainerInteractionsValue,
+} from './containerBindings';
 import { resolveWorkspaceDragOverTarget as resolveWorkspaceDragOverTargetValue } from './dragOverTarget';
 import {
   createWorkspaceSplitElement as createWorkspaceSplitElementValue,
@@ -670,24 +674,28 @@ export function createWorkspaceLayoutManager({
       onActionButtonDragStart: onWorkspaceActionButtonDragStart,
     });
 
-    panelContentEl.addEventListener('dragover', onWorkspaceDragOver);
-    panelContentEl.addEventListener('drop', onWorkspaceDrop);
-    panelContentEl.addEventListener('dragleave', onWorkspaceDragLeave);
-    panelContentEl.addEventListener('pointerdown', onWorkspaceSplitResizePointerDown);
-    panelContentEl.addEventListener('dblclick', onWorkspaceSplitDividerDoubleClick);
-    workspacePanelToggleBarEl.addEventListener('click', onWorkspacePanelToggleButtonClick);
+    bindWorkspaceContainerInteractionsValue(panelContentEl, workspacePanelToggleBarEl, {
+      onWorkspaceDragOver,
+      onWorkspaceDrop,
+      onWorkspaceDragLeave,
+      onWorkspaceSplitResizePointerDown,
+      onWorkspaceSplitDividerDoubleClick,
+      onWorkspacePanelToggleButtonClick,
+    });
     initWorkspacePanelBodySizeObserver();
     renderWorkspaceLayout();
   }
 
   /** 워크스페이스 관련 이벤트/옵저버를 해제한다. */
   function destroy() {
-    panelContentEl.removeEventListener('dragover', onWorkspaceDragOver);
-    panelContentEl.removeEventListener('drop', onWorkspaceDrop);
-    panelContentEl.removeEventListener('dragleave', onWorkspaceDragLeave);
-    panelContentEl.removeEventListener('pointerdown', onWorkspaceSplitResizePointerDown);
-    panelContentEl.removeEventListener('dblclick', onWorkspaceSplitDividerDoubleClick);
-    workspacePanelToggleBarEl.removeEventListener('click', onWorkspacePanelToggleButtonClick);
+    unbindWorkspaceContainerInteractionsValue(panelContentEl, workspacePanelToggleBarEl, {
+      onWorkspaceDragOver,
+      onWorkspaceDrop,
+      onWorkspaceDragLeave,
+      onWorkspaceSplitResizePointerDown,
+      onWorkspaceSplitDividerDoubleClick,
+      onWorkspacePanelToggleButtonClick,
+    });
 
     unbindWorkspacePanelInteractionsValue(workspacePanelElements, {
       onPanelDragStart: onWorkspacePanelDragStart,
