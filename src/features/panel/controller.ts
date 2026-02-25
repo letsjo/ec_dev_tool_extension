@@ -71,7 +71,6 @@ import {
 } from './reactInspector/lookup';
 import {
   buildInspectFunctionPathFailureStatusText as buildInspectFunctionPathFailureStatusTextValue,
-  type ReactInspectPathRequestFailure,
 } from './reactInspector/pathFailure';
 import {
   buildOpenFunctionInSourcesExpression as buildOpenFunctionInSourcesExpressionValue,
@@ -83,7 +82,10 @@ import {
   buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
   type ReactInspectPathMode,
 } from './reactInspector/pathRequest';
-import { resolveReactInspectPathRequestCompletion as resolveReactInspectPathRequestCompletionValue } from './reactInspector/pathRequestCompletion';
+import {
+  resolveReactInspectPathRequestCompletion as resolveReactInspectPathRequestCompletionValue,
+  type ReactInspectPathRequestCompletion,
+} from './reactInspector/pathRequestCompletion';
 import {
   parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
   parseSerializedPathResponse as parseSerializedPathResponseValue,
@@ -425,7 +427,7 @@ interface RequestReactInspectPathOptions {
   path: JsonPathSegment[];
   mode: ReactInspectPathMode;
   serializeLimit?: number;
-  onDone: (result: Record<string, unknown> | null, failure?: ReactInspectPathRequestFailure) => void;
+  onDone: (completion: ReactInspectPathRequestCompletion) => void;
 }
 
 /**
@@ -446,7 +448,7 @@ function requestReactInspectPath(options: RequestReactInspectPathOptions) {
     args,
     (res, errorText) => {
       const completion = resolveReactInspectPathRequestCompletionValue(res, errorText);
-      options.onDone(completion.response, completion.failure);
+      options.onDone(completion);
     },
   );
 }
@@ -463,16 +465,16 @@ function inspectFunctionAtPath(
     section,
     path,
     mode: 'inspectFunction',
-    onDone: (res, failure) => {
-      if (failure) {
-        setReactStatus(buildInspectFunctionPathFailureStatusTextValue(failure), true);
+    onDone: (completion) => {
+      if (completion.failure) {
+        setReactStatus(buildInspectFunctionPathFailureStatusTextValue(completion.failure), true);
         return;
       }
-      if (!res) {
+      if (!completion.response) {
         setReactStatus('함수 이동 실패: 알 수 없는 오류', true);
         return;
       }
-      const payload = parseInspectFunctionPathResponseValue(res);
+      const payload = parseInspectFunctionPathResponseValue(completion.response);
       if (!payload) {
         setReactStatus('함수 이동 실패: inspect reference를 찾지 못했습니다.', true);
         return;
@@ -518,12 +520,12 @@ function fetchSerializedValueAtPath(
     path,
     mode: 'serializeValue',
     serializeLimit: 45000,
-    onDone: (res) => {
-      if (!res) {
+    onDone: (completion) => {
+      if (!completion.response) {
         onDone(null);
         return;
       }
-      onDone(parseSerializedPathResponseValue(res));
+      onDone(parseSerializedPathResponseValue(completion.response));
     },
   });
 }
