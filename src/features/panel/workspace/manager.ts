@@ -2,70 +2,67 @@ import { isWorkspacePanelId, WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '
 import {
   appendPanelToWorkspaceLayout,
   collectPanelIdsFromLayout,
-  createDefaultWorkspaceLayout,
   dedupeWorkspaceLayoutPanels,
   getWorkspaceVisiblePanelIds,
-  parseWorkspaceLayoutNode,
   parseWorkspaceNodePath,
   pruneWorkspaceLayoutByVisiblePanels,
   removePanelFromWorkspaceLayout,
   updateWorkspaceSplitRatioByPath,
   WORKSPACE_DOCK_SPLIT_RATIO,
-  type WorkspaceDockDirection,
   type WorkspaceDropTarget,
   type WorkspaceLayoutNode,
   type WorkspacePanelState,
 } from './layoutModel';
-import { applyWorkspaceDockDropToLayout as applyWorkspaceDockDropToLayoutValue } from './dockDropApply';
+import { applyWorkspaceDockDropToLayout } from './dockDropApply';
 import {
-  computeWorkspaceDockDirection as computeWorkspaceDockDirectionValue,
-  findWorkspacePanelByPoint as findWorkspacePanelByPointValue,
-  hideWorkspaceDockPreview as hideWorkspaceDockPreviewValue,
-  showWorkspaceDockPreview as showWorkspaceDockPreviewValue,
+  computeWorkspaceDockDirection,
+  findWorkspacePanelByPoint,
+  hideWorkspaceDockPreview,
+  showWorkspaceDockPreview,
 } from './dockPreview';
 import {
-  getWorkspaceLayoutRootElement as getWorkspaceLayoutRootElementValue,
+  getWorkspaceLayoutRootElement,
 } from './domReuse';
 import {
-  captureWorkspaceScrollSnapshots as captureWorkspaceScrollSnapshotsValue,
-  restoreWorkspaceScrollSnapshots as restoreWorkspaceScrollSnapshotsValue,
+  captureWorkspaceScrollSnapshots,
+  restoreWorkspaceScrollSnapshots,
 } from './scrollSnapshot';
 import {
-  syncWorkspacePanelBodySizes as syncWorkspacePanelBodySizesValue,
-  syncWorkspaceSplitCollapsedRows as syncWorkspaceSplitCollapsedRowsValue,
+  syncWorkspacePanelBodySizes,
+  syncWorkspaceSplitCollapsedRows,
 } from './panelSizing';
 import {
-  bindWorkspacePanelInteractions as bindWorkspacePanelInteractionsValue,
-  unbindWorkspacePanelInteractions as unbindWorkspacePanelInteractionsValue,
+  bindWorkspacePanelInteractions,
+  unbindWorkspacePanelInteractions,
 } from './panelBindings';
 import {
-  bindWorkspaceContainerInteractions as bindWorkspaceContainerInteractionsValue,
-  unbindWorkspaceContainerInteractions as unbindWorkspaceContainerInteractionsValue,
+  bindWorkspaceContainerInteractions,
+  unbindWorkspaceContainerInteractions,
 } from './containerBindings';
-import { resolveWorkspaceDragOverTarget as resolveWorkspaceDragOverTargetValue } from './dragOverTarget';
-import { createWorkspaceDragDropFlow as createWorkspaceDragDropFlowValue } from './dragDropFlow';
+import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
+import { createWorkspaceDragDropFlow } from './dragDropFlow';
 import {
-  renderWorkspacePanelToggleBar as renderWorkspacePanelToggleBarValue,
-  updateWorkspacePanelControlState as updateWorkspacePanelControlStateValue,
+  renderWorkspacePanelToggleBar,
+  updateWorkspacePanelControlState,
 } from './toggleBar';
 import {
-  resetWorkspacePanelSplitClasses as resetWorkspacePanelSplitClassesValue,
+  resetWorkspacePanelSplitClasses,
 } from './layoutDom';
-import { patchWorkspaceLayoutDomNode as patchWorkspaceLayoutDomNodeValue } from './domPatcher';
+import { patchWorkspaceLayoutDomNode } from './domPatcher';
 import {
-  applyWorkspaceSplitRatioStyle as applyWorkspaceSplitRatioStyleValue,
-  computeWorkspaceResizeRatioFromPointer as computeWorkspaceResizeRatioFromPointerValue,
-  createWorkspaceResizeDragStateFromTarget as createWorkspaceResizeDragStateFromTargetValue,
+  applyWorkspaceSplitRatioStyle,
+  computeWorkspaceResizeRatioFromPointer,
+  createWorkspaceResizeDragStateFromTarget,
 } from './splitResize';
 import {
-  startWorkspaceSplitResizeSession as startWorkspaceSplitResizeSessionValue,
-  stopWorkspaceSplitResizeSession as stopWorkspaceSplitResizeSessionValue,
+  startWorkspaceSplitResizeSession,
+  stopWorkspaceSplitResizeSession,
 } from './splitResizeSession';
 import {
-  persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,
-  restoreWorkspaceStateSnapshot as restoreWorkspaceStateSnapshotValue,
+  persistWorkspaceStateSnapshot,
+  restoreWorkspaceStateSnapshot,
 } from './statePersistence';
-import { createWorkspaceResizeFlow as createWorkspaceResizeFlowValue } from './resizeFlow';
+import { createWorkspaceResizeFlow } from './resizeFlow';
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -113,33 +110,14 @@ export function createWorkspaceLayoutManager({
     });
   }
 
-  /**
-   * 워크스페이스 UI 상태를 localStorage에 영속화한다.
-   * - 패널 가시 상태 맵
-   * - split/panel 트리 레이아웃
-   */
-  function persistWorkspaceState() {
-    persistWorkspaceStateSnapshotValue(workspacePanelStateById, workspaceLayoutRoot);
-  }
-
-  /**
-   * localStorage의 워크스페이스 상태를 복원한다.
-   * 과거 버전의 `minimized` 값은 현재 모델(`visible|closed`)로 안전 변환한다.
-   */
-  function restoreWorkspaceState() {
-    const restored = restoreWorkspaceStateSnapshotValue();
-    workspacePanelStateById = restored.workspacePanelStateById;
-    workspaceLayoutRoot = restored.workspaceLayoutRoot;
-  }
-
   /** 레이아웃을 재구성하지 않고 패널 접기/펼치기 상태만 반영 */
   function toggleWorkspacePanelOpenState(panelId: WorkspacePanelId) {
     const panelEl = workspacePanelElements.get(panelId);
     if (!panelEl || panelEl.hidden) return;
     panelEl.open = !panelEl.open;
-    updateWorkspacePanelControlStateValue(workspacePanelElements, panelId);
-    syncWorkspaceSplitCollapsedRowsValue(panelContentEl);
-    syncWorkspacePanelBodySizesValue(workspacePanelElements);
+    updateWorkspacePanelControlState(workspacePanelElements, panelId);
+    syncWorkspaceSplitCollapsedRows(panelContentEl);
+    syncWorkspacePanelBodySizes(workspacePanelElements);
   }
 
   /** 초기화 */
@@ -150,7 +128,7 @@ export function createWorkspaceLayoutManager({
     }
 
     workspacePanelBodySizeObserver = new ResizeObserver(() => {
-      syncWorkspacePanelBodySizesValue(workspacePanelElements);
+      syncWorkspacePanelBodySizes(workspacePanelElements);
     });
     workspacePanelBodySizeObserver.observe(panelContentEl);
     workspacePanelElements.forEach((panelEl) => {
@@ -165,7 +143,7 @@ export function createWorkspaceLayoutManager({
    * 3) 접힘 높이/토글바/패널 body 사이즈/스크롤 위치를 후처리로 복원한다.
    */
   function renderWorkspaceLayout() {
-    resetWorkspacePanelSplitClassesValue(workspacePanelElements);
+    resetWorkspacePanelSplitClasses(workspacePanelElements);
     reconcileWorkspaceLayout();
 
     WORKSPACE_PANEL_IDS.forEach((panelId) => {
@@ -174,7 +152,7 @@ export function createWorkspaceLayoutManager({
       const state = workspacePanelStateById.get(panelId) ?? 'visible';
       panelEl.hidden = state !== 'visible';
       panelEl.dataset.panelState = state;
-      updateWorkspacePanelControlStateValue(workspacePanelElements, panelId);
+      updateWorkspacePanelControlState(workspacePanelElements, panelId);
     });
 
     if (workspaceDockPreviewEl.parentElement !== panelContentEl) {
@@ -183,13 +161,13 @@ export function createWorkspaceLayoutManager({
     if (panelContentEl.firstElementChild !== workspaceDockPreviewEl) {
       panelContentEl.insertBefore(workspaceDockPreviewEl, panelContentEl.firstChild);
     }
-    hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
+    hideWorkspaceDockPreview(workspaceDockPreviewEl);
 
-    const scrollSnapshots = captureWorkspaceScrollSnapshotsValue(panelContentEl);
-    const existingRoot = getWorkspaceLayoutRootElementValue(panelContentEl, workspaceDockPreviewEl);
+    const scrollSnapshots = captureWorkspaceScrollSnapshots(panelContentEl);
+    const existingRoot = getWorkspaceLayoutRootElement(panelContentEl, workspaceDockPreviewEl);
     let nextRoot: HTMLElement;
     if (workspaceLayoutRoot) {
-      nextRoot = patchWorkspaceLayoutDomNodeValue({
+      nextRoot = patchWorkspaceLayoutDomNode({
         layoutNode: workspaceLayoutRoot,
         existingRoot,
         workspacePanelElements,
@@ -216,11 +194,11 @@ export function createWorkspaceLayoutManager({
     });
 
     if (workspaceLayoutRoot) {
-      syncWorkspaceSplitCollapsedRowsValue(panelContentEl);
+      syncWorkspaceSplitCollapsedRows(panelContentEl);
     }
-    renderWorkspacePanelToggleBarValue(workspacePanelToggleBarEl, workspacePanelStateById);
-    syncWorkspacePanelBodySizesValue(workspacePanelElements);
-    restoreWorkspaceScrollSnapshotsValue(scrollSnapshots);
+    renderWorkspacePanelToggleBar(workspacePanelToggleBarEl, workspacePanelStateById);
+    syncWorkspacePanelBodySizes(workspacePanelElements);
+    restoreWorkspaceScrollSnapshots(scrollSnapshots);
   }
 
   /**
@@ -238,13 +216,13 @@ export function createWorkspaceLayoutManager({
       const removal = removePanelFromWorkspaceLayout(workspaceLayoutRoot, panelId);
       workspaceLayoutRoot = removal.node;
     }
-    persistWorkspaceState();
+    persistWorkspaceStateSnapshot(workspacePanelStateById, workspaceLayoutRoot);
     renderWorkspaceLayout();
   }
 
   /** 해당 기능 흐름을 처리 */
   function applyWorkspaceDockDrop(draggedPanelId: WorkspacePanelId, dropTarget: WorkspaceDropTarget) {
-    const nextLayout = applyWorkspaceDockDropToLayoutValue(
+    const nextLayout = applyWorkspaceDockDropToLayout(
       workspaceLayoutRoot,
       draggedPanelId,
       dropTarget,
@@ -253,35 +231,35 @@ export function createWorkspaceLayoutManager({
       return;
     }
     workspaceLayoutRoot = nextLayout.layoutRoot;
-    persistWorkspaceState();
+    persistWorkspaceStateSnapshot(workspacePanelStateById, workspaceLayoutRoot);
     renderWorkspaceLayout();
   }
-  const workspaceDragDropFlow = createWorkspaceDragDropFlowValue({
+  const workspaceDragDropFlow = createWorkspaceDragDropFlow({
     panelContentEl,
     workspacePanelElements,
     isWorkspacePanelId,
-    findWorkspacePanelByPoint: findWorkspacePanelByPointValue,
-    computeWorkspaceDockDirection: computeWorkspaceDockDirectionValue,
-    resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTargetValue,
+    findWorkspacePanelByPoint: findWorkspacePanelByPoint,
+    computeWorkspaceDockDirection: computeWorkspaceDockDirection,
+    resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTarget,
     hideWorkspaceDockPreview() {
-      hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
+      hideWorkspaceDockPreview(workspaceDockPreviewEl);
     },
     showWorkspaceDockPreview(baseRect, direction) {
-      showWorkspaceDockPreviewValue(workspaceDockPreviewEl, panelContentEl, baseRect, direction);
+      showWorkspaceDockPreview(workspaceDockPreviewEl, panelContentEl, baseRect, direction);
     },
     applyWorkspaceDockDrop,
   });
-  const workspaceResizeFlow = createWorkspaceResizeFlowValue({
-    createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTargetValue,
-    startWorkspaceSplitResizeSession: startWorkspaceSplitResizeSessionValue,
-    stopWorkspaceSplitResizeSession: stopWorkspaceSplitResizeSessionValue,
-    computeWorkspaceResizeRatioFromPointer: computeWorkspaceResizeRatioFromPointerValue,
-    applyWorkspaceSplitRatioStyle: applyWorkspaceSplitRatioStyleValue,
+  const workspaceResizeFlow = createWorkspaceResizeFlow({
+    createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTarget,
+    startWorkspaceSplitResizeSession: startWorkspaceSplitResizeSession,
+    stopWorkspaceSplitResizeSession: stopWorkspaceSplitResizeSession,
+    computeWorkspaceResizeRatioFromPointer: computeWorkspaceResizeRatioFromPointer,
+    applyWorkspaceSplitRatioStyle: applyWorkspaceSplitRatioStyle,
     parseWorkspaceNodePath,
     defaultSplitRatio: WORKSPACE_DOCK_SPLIT_RATIO,
     onPersistSplitRatio(splitPath, ratio) {
       workspaceLayoutRoot = updateWorkspaceSplitRatioByPath(workspaceLayoutRoot, splitPath, ratio);
-      persistWorkspaceState();
+      persistWorkspaceStateSnapshot(workspacePanelStateById, workspaceLayoutRoot);
     },
   });
 
@@ -344,9 +322,11 @@ export function createWorkspaceLayoutManager({
    * 4) 마지막에 1회 렌더를 수행한다.
    */
   function initWorkspaceLayoutManager() {
-    restoreWorkspaceState();
+    const restored = restoreWorkspaceStateSnapshot();
+    workspacePanelStateById = restored.workspacePanelStateById;
+    workspaceLayoutRoot = restored.workspaceLayoutRoot;
 
-    bindWorkspacePanelInteractionsValue(workspacePanelElements, {
+    bindWorkspacePanelInteractions(workspacePanelElements, {
       onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
       onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
       onSummaryAction: onWorkspaceSummaryAction,
@@ -355,7 +335,7 @@ export function createWorkspaceLayoutManager({
       onActionButtonDragStart: onWorkspaceActionButtonDragStart,
     });
 
-    bindWorkspaceContainerInteractionsValue(panelContentEl, workspacePanelToggleBarEl, {
+    bindWorkspaceContainerInteractions(panelContentEl, workspacePanelToggleBarEl, {
       onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
       onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
       onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
@@ -369,7 +349,7 @@ export function createWorkspaceLayoutManager({
 
   /** 워크스페이스 관련 이벤트/옵저버를 해제한다. */
   function destroy() {
-    unbindWorkspaceContainerInteractionsValue(panelContentEl, workspacePanelToggleBarEl, {
+    unbindWorkspaceContainerInteractions(panelContentEl, workspacePanelToggleBarEl, {
       onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
       onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
       onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
@@ -378,7 +358,7 @@ export function createWorkspaceLayoutManager({
       onWorkspacePanelToggleButtonClick,
     });
 
-    unbindWorkspacePanelInteractionsValue(workspacePanelElements, {
+    unbindWorkspacePanelInteractions(workspacePanelElements, {
       onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
       onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
       onSummaryAction: onWorkspaceSummaryAction,
@@ -393,7 +373,7 @@ export function createWorkspaceLayoutManager({
     }
 
     workspaceResizeFlow.stopWorkspaceSplitResize(false);
-    hideWorkspaceDockPreviewValue(workspaceDockPreviewEl);
+    hideWorkspaceDockPreview(workspaceDockPreviewEl);
     workspaceDragDropFlow.onWorkspacePanelDragEnd();
   }
 
