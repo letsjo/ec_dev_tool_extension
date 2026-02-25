@@ -10,7 +10,6 @@
 import React from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
-import { TARGETS } from '../../config';
 import { isReactInspectResult } from '../../shared/inspector/guards';
 import type {
   ComponentFilterResult,
@@ -83,6 +82,7 @@ import { createReactJsonSection as createReactJsonSectionValue } from './reactIn
 import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
+import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import {
   handleReactInspectAgentResponse,
@@ -205,85 +205,12 @@ function setOutput(text: string, isError = false) {
   setPaneTextWithErrorStateValue(outputEl, text, isError);
 }
 
-/**
- * eval 결과를 JSON으로 직렬화. 순환 참조·함수 등은 문자열로 대체.
- */
-/** 해당 기능 흐름을 처리 */
-function safeStringify(value: unknown): string {
-  const seen = new WeakSet();
-  return JSON.stringify(
-    value,
-    (_, v) => {
-      if (v === undefined) return '[undefined]';
-      if (typeof v === 'function') return '[Function]';
-      if (typeof v === 'symbol') return String(v);
-      if (v !== null && typeof v === 'object') {
-        if (seen.has(v)) return '[Circular]';
-        seen.add(v);
-      }
-      return v;
-    },
-    2,
-  );
-}
-
-/** 화면 요소를 렌더링 */
-function renderResult(result: unknown): string {
-  if (result == null) return '결과 없음';
-  if (typeof result === 'object' && 'error' in result) {
-    return `오류: ${(result as { error: string }).error}`;
-  }
-  return safeStringify(result);
-}
-
-/** 선택 목록을 채운 */
-function populateTargetSelect() {
-  if (!targetSelectEl) return;
-  const selectEl = targetSelectEl;
-  selectEl.innerHTML = '';
-  TARGETS.forEach((t, i) => {
-    const opt = document.createElement('option');
-    opt.value = String(i);
-    opt.textContent = `${t.label} (${t.path})`;
-    selectEl.appendChild(opt);
-  });
-}
-
-/** 이벤트를 처리 */
-function onFetch() {
-  if (!targetSelectEl || !fetchBtnEl) {
-    setOutput('데이터 가져오기 UI가 비활성화되어 있습니다.', true);
-    return;
-  }
-  const selectEl = targetSelectEl;
-  const fetchEl = fetchBtnEl;
-  const idx = parseInt(selectEl.value, 10);
-  const target = TARGETS[idx];
-  if (!target) {
-    setOutput('대상을 선택해 주세요.', true);
-    return;
-  }
-
-  fetchEl.disabled = true;
-  setOutput('호출 중…');
-
-  callInspectedPageAgent(
-    'fetchTargetData',
-    {
-      targetPath: target.path,
-      methods: target.methods ?? [],
-      autoDiscoverZeroArgMethods: target.autoDiscoverZeroArgMethods === true,
-    },
-    (res, errorText) => {
-      fetchEl.disabled = false;
-      if (errorText) {
-        setOutput(`실행 오류: ${errorText}`, true);
-        return;
-      }
-      setOutput(renderResult(res), !!(res && typeof res === 'object' && 'error' in res));
-    },
-  );
-}
+const { populateTargetSelect, onFetch } = createTargetFetchFlowValue({
+  getTargetSelectEl: () => targetSelectEl,
+  getFetchBtnEl: () => fetchBtnEl,
+  setOutput,
+  callInspectedPageAgent,
+});
 
 /** UI 상태 또는 문구를 설정 */
 function setElementOutput(text: string) {
