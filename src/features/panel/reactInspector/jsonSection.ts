@@ -23,6 +23,10 @@ import {
   type HookRowItem,
   type HookTreeNode,
 } from './hookTreeModel';
+import {
+  createCircularRefNode as createCircularRefNodeValue,
+  createFunctionTokenNode as createFunctionTokenNodeValue,
+} from './jsonTokenNodes';
 
 type InspectFunctionAtPathHandler = (
   component: ReactComponentInfo,
@@ -597,72 +601,23 @@ function createJsonValueNode(
   depth: number,
   context: JsonRenderContext,
 ): HTMLElement {
-  if (isFunctionToken(value)) {
-    const fnName = typeof value.name === 'string' ? value.name.trim() : '';
-    const functionText = fnName ? `${fnName}() {}` : '() => {}';
-
-    if (!context.allowInspect) {
-      const text = document.createElement('span');
-      text.className = 'json-primitive';
-      text.textContent = functionText;
-      return text;
-    }
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'json-link';
-    button.textContent = functionText;
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      inspectFunctionAtPath(context.component, context.section, context.path);
-    });
-    return button;
+  const functionTokenNode = createFunctionTokenNodeValue({
+    value,
+    context,
+    onInspectFunctionAtPath: inspectFunctionAtPath,
+  });
+  if (functionTokenNode) {
+    return functionTokenNode;
   }
 
-  if (isCircularRefToken(value)) {
-    const wrapper = document.createElement('details');
-    wrapper.className = 'json-node';
-
-    const summary = document.createElement('summary');
-    summary.textContent = '[Circular]';
-    wrapper.appendChild(summary);
-
-    let rendered = false;
-    const renderCircularTarget = () => {
-      if (rendered) return;
-      rendered = true;
-
-      const target = context.refMap.get(value.refId);
-      if (!target) {
-        const notFound = document.createElement('div');
-        notFound.className = 'json-row';
-        notFound.textContent = '참조 대상을 찾을 수 없습니다.';
-        wrapper.appendChild(notFound);
-        return;
-      }
-
-      if (context.refStack.includes(value.refId)) {
-        const loop = document.createElement('div');
-        loop.className = 'json-row';
-        loop.textContent = '순환 참조가 반복되어 더 이상 확장하지 않습니다.';
-        wrapper.appendChild(loop);
-        return;
-      }
-
-      const nested = createJsonValueNode(target, depth + 1, {
-        ...context,
-        refStack: [...context.refStack, value.refId],
-        allowInspect: false,
-      });
-      wrapper.appendChild(nested);
-    };
-
-    wrapper.addEventListener('toggle', () => {
-      if (wrapper.open) {
-        renderCircularTarget();
-      }
-    });
-
-    return wrapper;
+  const circularRefNode = createCircularRefNodeValue({
+    value,
+    depth,
+    context,
+    createJsonValueNode,
+  });
+  if (circularRefNode) {
+    return circularRefNode;
   }
 
   if (isDehydratedToken(value)) {
