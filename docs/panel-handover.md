@@ -237,7 +237,7 @@ custom hook stack 파싱/그룹 경로 추론은 `src/content/pageAgentHookGroup
 - `reactInspector/pathRequest.ts`: `reactInspectPath` 요청 args(componentId/selector/pickPoint/section/path/mode/serializeLimit) 조립과 selector fallback 규칙 적용 전담
 - `reactInspector/pathRequestCompletion.ts`: `reactInspectPath` 브리지 콜백 응답을 판별 유니온 completion(`success`/`failure`)으로 정규화하고 success/failure 타입가드를 제공해 controller onDone 분기를 단순화하는 규칙 전담
 - `reactInspector/pathRequestRunner.ts`: `reactInspectPath` request runner 생성(lookup getter + bridge caller 주입), args 조립/브리지 호출/completion 변환 오케스트레이션 전담
-  - bridge 호출 타입은 `bridge/pageAgentClient.ts`의 공용 타입(`CallInspectedPageAgent`)을 재사용
+  - bridge 호출 타입은 `bridge/pageAgentClient.ts`의 공용 타입(`CallInspectedPageAgent`)을 별칭 없이 그대로 재사용
 - `reactInspector/pathResponse.ts`: `reactInspectPath` 성공 응답(`inspectFunction`, `serializeValue`) payload 파싱과 기본값 규칙 전담
 - `reactInspector/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
