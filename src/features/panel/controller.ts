@@ -59,12 +59,13 @@ import {
 } from './reactInspector/applyFlow';
 import {
   buildReactInspectApplyOptions as buildReactInspectApplyOptionsValue,
+  createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
-  ELEMENT_SELECTION_FETCH_OPTIONS,
   resolveSelectedComponentIdForScript as resolveSelectedComponentIdForScriptValue,
   type FetchReactInfoOptions,
 } from './reactInspector/fetchOptions';
 import {
+  resolveInspectPathLookup as resolveInspectPathLookupValue,
   resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
   resolveStoredLookup as resolveStoredLookupValue,
   type RuntimeRefreshLookup,
@@ -406,13 +407,14 @@ function inspectFunctionAtPath(
   section: JsonSectionKind,
   path: JsonPathSegment[],
 ) {
+  const lookup = resolveInspectPathLookupValue(component.domSelector, lastReactLookup);
   setReactStatus('함수 이동 시도 중…');
   callInspectedPageAgent(
     'reactInspectPath',
     {
       componentId: component.id,
-      selector: component.domSelector ?? lastReactLookup?.selector ?? '',
-      pickPoint: component.domSelector ? null : (lastReactLookup?.pickPoint ?? null),
+      selector: lookup.selector,
+      pickPoint: lookup.pickPoint,
       section,
       path,
       mode: 'inspectFunction',
@@ -473,12 +475,13 @@ function fetchSerializedValueAtPath(
   path: JsonPathSegment[],
   onDone: (value: unknown | null) => void,
 ) {
+  const lookup = resolveInspectPathLookupValue(component.domSelector, lastReactLookup);
   callInspectedPageAgent(
     'reactInspectPath',
     {
       componentId: component.id,
-      selector: component.domSelector ?? lastReactLookup?.selector ?? '',
-      pickPoint: component.domSelector ? null : (lastReactLookup?.pickPoint ?? null),
+      selector: lookup.selector,
+      pickPoint: lookup.pickPoint,
       section,
       path,
       mode: 'serializeValue',
@@ -1208,7 +1211,11 @@ chrome.runtime.onMessage.addListener((message: ElementSelectedMessage) => {
     setElementOutput(lines.join('\n'));
 
     fetchDomTree(selectorText || domPathText, clickPoint);
-    fetchReactInfo(selectorText || domPathText, clickPoint, ELEMENT_SELECTION_FETCH_OPTIONS);
+    fetchReactInfo(
+      selectorText || domPathText,
+      clickPoint,
+      createElementSelectionFetchOptionsValue(),
+    );
   }
 });
 

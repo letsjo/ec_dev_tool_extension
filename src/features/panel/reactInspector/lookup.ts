@@ -29,3 +29,23 @@ export function resolveRuntimeRefreshLookup(
   }
   return { selector: '' };
 }
+
+interface ResolvedInspectPathLookup {
+  selector: string;
+  pickPoint: PickPoint | null;
+}
+
+/**
+ * reactInspectPath 호출에 필요한 selector/pickPoint fallback 규칙을 계산한다.
+ * - 컴포넌트에 domSelector가 있으면 selector 우선, pickPoint는 null
+ * - 없으면 마지막 저장 lookup(selector/pickPoint)을 fallback으로 사용
+ */
+export function resolveInspectPathLookup(
+  componentDomSelector: string | null,
+  storedLookup: RuntimeRefreshLookup | null,
+): ResolvedInspectPathLookup {
+  return {
+    selector: componentDomSelector ?? storedLookup?.selector ?? '',
+    pickPoint: componentDomSelector ? null : (storedLookup?.pickPoint ?? null),
+  };
+}

@@ -73,9 +73,13 @@ export function createRuntimeRefreshFetchOptions(
   };
 }
 
-/** 요소 선택 완료 직후의 reactInspect 조회 옵션 프리셋. */
-export const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<FetchReactInfoOptions> = {
+const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<FetchReactInfoOptions> = {
   lightweight: true,
   serializeSelectedComponent: false,
   refreshDetail: true,
 };
+
+/** 요소 선택 완료 직후의 reactInspect 조회 옵션 프리셋을 생성한다. */
+export function createElementSelectionFetchOptions(): FetchReactInfoOptions {
+  return { ...ELEMENT_SELECTION_FETCH_OPTIONS };
+}
