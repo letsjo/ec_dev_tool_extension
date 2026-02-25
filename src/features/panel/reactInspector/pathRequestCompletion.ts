@@ -3,10 +3,15 @@ import {
   type ReactInspectPathRequestFailure,
 } from './pathFailure';
 
-export interface ReactInspectPathRequestCompletion {
-  response: Record<string, unknown> | null;
-  failure?: ReactInspectPathRequestFailure;
-}
+export type ReactInspectPathRequestCompletion =
+  | {
+      kind: 'success';
+      response: Record<string, unknown>;
+    }
+  | {
+      kind: 'failure';
+      failure: ReactInspectPathRequestFailure;
+    };
 
 /**
  * reactInspectPath 브리지 콜백 결과를 completion 형태로 정규화한다.
@@ -18,7 +23,7 @@ export function resolveReactInspectPathRequestCompletion(
 ): ReactInspectPathRequestCompletion {
   const failure = resolveReactInspectPathRequestFailureValue(response, runtimeErrorText);
   if (failure) {
-    return { response: null, failure };
+    return { kind: 'failure', failure };
   }
-  return { response: response as Record<string, unknown> };
+  return { kind: 'success', response: response as Record<string, unknown> };
 }

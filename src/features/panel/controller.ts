@@ -466,12 +466,8 @@ function inspectFunctionAtPath(
     path,
     mode: 'inspectFunction',
     onDone: (completion) => {
-      if (completion.failure) {
+      if (completion.kind === 'failure') {
         setReactStatus(buildInspectFunctionPathFailureStatusTextValue(completion.failure), true);
-        return;
-      }
-      if (!completion.response) {
-        setReactStatus('함수 이동 실패: 알 수 없는 오류', true);
         return;
       }
       const payload = parseInspectFunctionPathResponseValue(completion.response);
@@ -521,7 +517,7 @@ function fetchSerializedValueAtPath(
     mode: 'serializeValue',
     serializeLimit: 45000,
     onDone: (completion) => {
-      if (!completion.response) {
+      if (completion.kind === 'failure') {
         onDone(null);
         return;
       }
