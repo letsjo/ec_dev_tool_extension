@@ -13,6 +13,12 @@ import {
   serializeObjectValue,
   serializeSetValue,
 } from "./pageAgentSerializationStrategies";
+import {
+  buildDehydratedToken,
+  createSeenReferenceStore,
+  mapSerializerInternalKey,
+  readObjectClassName,
+} from "./pageAgentSerializationCore";
 
 type AnyRecord = Record<string, any>;
 
@@ -27,8 +33,7 @@ export { resolveSpecialCollectionPathSegment } from "./pageAgentCollectionPath";
 
 /** 해당 기능 흐름을 처리 */
 export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) {
-  const seenMap = typeof WeakMap === "function" ? new WeakMap() : null;
-  const seenList = [];
+  const seenStore = createSeenReferenceStore();
   let nextId = 1;
 
   const {
@@ -42,110 +47,6 @@ export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOp
 
   let serializeCalls = 0;
   let limitReached = false;
-
-  function mapInternalKey(key: string) {
-    if (key === "_owner") return "[ReactOwner]";
-    if (
-      key === "_store"
-      || key === "__self"
-      || key === "__source"
-      || key === "_debugOwner"
-      || key === "_debugSource"
-    ) {
-      return "[ReactInternal]";
-    }
-    return null;
-  }
-
-  function findSeenId(value: object) {
-    if (seenMap) {
-      const idFromMap = seenMap.get(value);
-      return typeof idFromMap === "number" ? idFromMap : null;
-    }
-    for (let i = 0; i < seenList.length; i += 1) {
-      if (seenList[i].value === value) return seenList[i].id;
-    }
-    return null;
-  }
-
-  function rememberSeen(value: object, id: number) {
-    if (seenMap) {
-      seenMap.set(value, id);
-      return;
-    }
-    seenList.push({ value, id });
-  }
-
-  function buildDehydratedToken(value: unknown, reason: string) {
-    try {
-      if (Array.isArray(value)) {
-        return {
-          __ecType: "dehydrated",
-          valueType: "array",
-          size: value.length,
-          preview: "Array(" + String(value.length) + ")",
-          reason,
-        };
-      }
-      if (typeof Map !== "undefined" && value instanceof Map) {
-        return {
-          __ecType: "dehydrated",
-          valueType: "map",
-          size: value.size,
-          preview: "Map(" + String(value.size) + ")",
-          reason,
-        };
-      }
-      if (typeof Set !== "undefined" && value instanceof Set) {
-        return {
-          __ecType: "dehydrated",
-          valueType: "set",
-          size: value.size,
-          preview: "Set(" + String(value.size) + ")",
-          reason,
-        };
-      }
-      if (value && typeof value === "object") {
-        let keyCount = 0;
-        try {
-          keyCount = Object.keys(value).length;
-        } catch (_) {
-          keyCount = 0;
-        }
-        const className = readObjectClassName(value);
-        const displayName = className || "Object";
-        return {
-          __ecType: "dehydrated",
-          valueType: "object",
-          size: keyCount,
-          preview: displayName + "(" + String(keyCount) + ")",
-          reason,
-        };
-      }
-    } catch (_) {}
-
-    return {
-      __ecType: "dehydrated",
-      valueType: "unknown",
-      preview: "{…}",
-      reason,
-    };
-  }
-
-  function readObjectClassName(value: unknown): string | null {
-    if (!value || typeof value !== "object") return null;
-    try {
-      const proto = Object.getPrototypeOf(value);
-      if (!proto || proto === Object.prototype) return null;
-      const ctor = proto.constructor;
-      if (!ctor || typeof ctor !== "function") return null;
-      const name = typeof ctor.name === "string" ? ctor.name.trim() : "";
-      if (!name || name === "Object") return null;
-      return name;
-    } catch (_) {
-      return null;
-    }
-  }
 
   function serializeValue(value: unknown, depth: number | undefined) {
     const level = typeof depth === "number" ? depth : 0;
@@ -177,7 +78,7 @@ export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOp
       return buildDehydratedToken(value, "maxSerializeCalls");
     }
 
-    const existingId = findSeenId(value);
+    const existingId = seenStore.findSeenId(value);
     if (existingId !== null) {
       return {
         __ecType: "circularRef",
@@ -193,13 +94,13 @@ export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOp
     if (typeof Window !== "undefined" && value instanceof Window) return "[Window]";
 
     const id = nextId++;
-    rememberSeen(value, id);
+    seenStore.rememberSeen(value, id);
 
     try {
       const strategyContext = {
         serializeValue,
         isLimitReached: () => limitReached,
-        mapInternalKey,
+        mapInternalKey: mapSerializerInternalKey,
         summarizeChildrenValue,
         readObjectClassName,
         objectClassNameMetaKey: OBJECT_CLASS_NAME_META_KEY,
