@@ -74,7 +74,7 @@ import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lif
 import { createTargetFetchFlow as createTargetFetchFlowValue } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
-import { createRuntimeRefreshScheduler } from './runtimeRefresh/scheduler';
+import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from './runtimeRefresh/panelRuntimeRefreshFlow';
 import {
   clearPaneContent as clearPaneContentValue,
   setPaneEmptyState as setPaneEmptyStateValue,
@@ -402,7 +402,7 @@ function applySelectedComponentDetail(result: ReactComponentDetailResult): boole
 const detailFetchQueue = createReactDetailFetchQueue({
   cooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
   callInspectedPageAgent,
-  getLookup: () => getLookupForRuntimeRefresh(),
+  getLookup: () => resolveRuntimeRefreshLookupValue(lastReactLookup),
   getSelectedComponent: () =>
     selectedReactComponentIndex >= 0 ? reactComponents[selectedReactComponentIndex] : null,
   findComponentById: (componentId) =>
@@ -528,34 +528,24 @@ const { fetchReactInfo } = createReactInspectFetchFlowValue({
   applyReactInspectResult,
 });
 
-/** 필요한 값/상태를 계산해 반환 */
-function getLookupForRuntimeRefresh(): RuntimeRefreshLookup {
-  return resolveRuntimeRefreshLookupValue(lastReactLookup);
-}
-
-const runtimeRefreshScheduler = createRuntimeRefreshScheduler({
-  minIntervalMs: 1200,
-  debounceMs: 250,
-  isPickerModeActive: () => pickerModeActive,
-  getLookup: () => getLookupForRuntimeRefresh(),
-  runRefresh: (lookup, background, onDone) => {
-    fetchReactInfo(
-      lookup.selector,
-      lookup.pickPoint,
-      createRuntimeRefreshFetchOptionsValue(background, onDone),
-    );
-  },
-});
-
-/** 이벤트를 처리 */
-function onInspectedPageNavigated(url: string) {
-  lastReactLookup = null;
-  runtimeRefreshScheduler.reset();
-  setElementOutput(`페이지 이동 감지: ${url}`);
-  setDomTreeStatus('페이지 변경 감지됨. 요소를 선택하면 DOM 트리를 표시합니다.');
-  setDomTreeEmpty('요소를 선택하면 DOM 트리를 표시합니다.');
-  runtimeRefreshScheduler.refresh(false);
-}
+const { runtimeRefreshScheduler, onInspectedPageNavigated } =
+  createPanelRuntimeRefreshFlowValue({
+    isPickerModeActive: () => pickerModeActive,
+    getStoredLookup: () => lastReactLookup,
+    setStoredLookup: (lookup) => {
+      lastReactLookup = lookup;
+    },
+    runRefresh: (lookup, background, onDone) => {
+      fetchReactInfo(
+        lookup.selector,
+        lookup.pickPoint,
+        createRuntimeRefreshFetchOptionsValue(background, onDone),
+      );
+    },
+    setElementOutput,
+    setDomTreeStatus,
+    setDomTreeEmpty,
+  });
 
 /**
  * 요소 선택 모드를 시작한다.

@@ -348,7 +348,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.5 Runtime Refresh 모듈 분리 규칙
 
 - `runtimeRefresh/scheduler.ts`: runtime 변경 이벤트 debounce, 최소 간격 보장, in-flight 중복 호출 큐 병합 전담
-- `controller.ts`: lookup 계산/조회 함수(`fetchReactInfo`)를 scheduler에 주입하고 네비게이션/언로드 시 reset·dispose만 수행
+- `runtimeRefresh/panelRuntimeRefreshFlow.ts`: stored lookup 정규화, scheduler 결선, 페이지 네비게이션(reset + foreground refresh) 핸들러 조립 전담
+- `controller.ts`: runtime refresh flow에 `fetchReactInfo`/UI setter를 주입하고 schedule/refresh/dispose 호출만 수행
 
 ## 7.6 Panel PageAgent Response 모듈 분리 규칙
 
@@ -603,6 +604,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - 설정 파일: `vitest.config.ts` (`jsdom` 환경, `tests/**/*.test.ts`)
 - 현재 커버하는 리팩터링 축
   - `tests/reactInspector/applyResultFlow.test.ts`: `applyResultFlow.ts`의 empty/reset, no-result, list-only refresh, selection 옵션 적용 분기
+  - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, internal meta 필터링
