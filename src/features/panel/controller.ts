@@ -76,6 +76,11 @@ import {
   type ReactInspectPathRequestFailure,
 } from './reactInspector/pathFailure';
 import {
+  buildOpenFunctionInSourcesFailureStatusText as buildOpenFunctionInSourcesFailureStatusTextValue,
+  buildOpenFunctionInSourcesSuccessStatusText as buildOpenFunctionInSourcesSuccessStatusTextValue,
+  resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
+} from './reactInspector/openInSources';
+import {
   parseInspectFunctionPathResponse as parseInspectFunctionPathResponseValue,
   parseSerializedPathResponse as parseSerializedPathResponseValue,
 } from './reactInspector/pathResponse';
@@ -489,24 +494,18 @@ function openFunctionInSources(inspectRefKey: string, functionName: string) {
   const expression = `(function(){try{const store=window[${storeKeyLiteral}];const fn=store&&store[${refKeyLiteral}];if(typeof fn!=="function"){return {ok:false,error:"inspect 대상 함수를 찾지 못했습니다."};}if(typeof inspect!=="function"){return {ok:false,error:"DevTools inspect 함수를 사용할 수 없습니다."};}inspect(fn);return {ok:true};}catch(error){return {ok:false,error:String(error&&error.message?error.message:error)};}})();`;
 
   chrome.devtools.inspectedWindow.eval(expression, (result, exceptionInfo) => {
-    if (chrome.runtime.lastError) {
-      setReactStatus(`함수 이동 실패: ${chrome.runtime.lastError.message ?? '실행 오류'}`, true);
+    const failureReason = resolveOpenFunctionInSourcesFailureReasonValue({
+      result,
+      exceptionInfo,
+      runtimeErrorMessage: chrome.runtime.lastError
+        ? (chrome.runtime.lastError.message ?? '실행 오류')
+        : null,
+    });
+    if (failureReason) {
+      setReactStatus(buildOpenFunctionInSourcesFailureStatusTextValue(failureReason), true);
       return;
     }
-    if (exceptionInfo && (exceptionInfo as { isException?: boolean }).isException) {
-      const description =
-        (exceptionInfo as { description?: string }).description ?? '예외가 발생했습니다.';
-      setReactStatus(`함수 이동 실패: ${description}`, true);
-      return;
-    }
-    if (!isRecord(result) || result.ok !== true) {
-      const reason = isRecord(result)
-        ? String(result.error ?? '알 수 없는 오류')
-        : '알 수 없는 오류';
-      setReactStatus(`함수 이동 실패: ${reason}`, true);
-      return;
-    }
-    setReactStatus(`함수 ${functionName} 위치로 이동했습니다.`);
+    setReactStatus(buildOpenFunctionInSourcesSuccessStatusTextValue(functionName));
   });
 }
 
