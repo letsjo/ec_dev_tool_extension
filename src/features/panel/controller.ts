@@ -21,7 +21,6 @@ import type {
   ComponentFilterResult,
   DomTreeEvalResult,
   ElementSelectedMessage,
-  JsonPathSegment,
   JsonSectionKind,
   PickPoint,
   PickerStartResponse,
@@ -76,9 +75,8 @@ import {
   resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
 } from './reactInspector/openInSources';
 import {
-  resolveInspectFunctionPathCompletion as resolveInspectFunctionPathCompletionValue,
-  resolveSerializedPathValueFromCompletion as resolveSerializedPathValueFromCompletionValue,
-} from './reactInspector/pathCompletion';
+  createReactInspectPathActions as createReactInspectPathActionsValue,
+} from './reactInspector/pathActions';
 import { createReactInspectPathRequester as createReactInspectPathRequesterValue } from './reactInspector/pathRequestRunner';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
@@ -416,29 +414,6 @@ const requestReactInspectPath = createReactInspectPathRequesterValue({
   getStoredLookup: () => lastReactLookup,
 });
 
-/** 경로 기준 inspect 동작을 수행 */
-function inspectFunctionAtPath(
-  component: ReactComponentInfo,
-  section: JsonSectionKind,
-  path: JsonPathSegment[],
-) {
-  setReactStatus('함수 이동 시도 중…');
-  requestReactInspectPath({
-    component,
-    section,
-    path,
-    mode: 'inspectFunction',
-    onDone: (completion) => {
-      const result = resolveInspectFunctionPathCompletionValue(completion);
-      if (!result.payload) {
-        setReactStatus(result.statusText ?? '함수 이동 실패: 알 수 없는 오류', true);
-        return;
-      }
-      openFunctionInSources(result.payload.inspectRefKey, result.payload.functionName);
-    },
-  });
-}
-
 /** DevTools 기능을 호출해 이동/열기를 수행 */
 function openFunctionInSources(inspectRefKey: string, functionName: string) {
   const expression = buildOpenFunctionInSourcesExpressionValue({
@@ -462,24 +437,12 @@ function openFunctionInSources(inspectRefKey: string, functionName: string) {
   });
 }
 
-/** 페이지/런타임 데이터를 조회 */
-function fetchSerializedValueAtPath(
-  component: ReactComponentInfo,
-  section: JsonSectionKind,
-  path: JsonPathSegment[],
-  onDone: (value: unknown | null) => void,
-) {
-  requestReactInspectPath({
-    component,
-    section,
-    path,
-    mode: 'serializeValue',
-    serializeLimit: 45000,
-    onDone: (completion) => {
-      onDone(resolveSerializedPathValueFromCompletionValue(completion));
-    },
+const { inspectFunctionAtPath, fetchSerializedValueAtPath } =
+  createReactInspectPathActionsValue({
+    requestReactInspectPath,
+    setReactStatus,
+    openFunctionInSources,
   });
-}
 
 /** 파생 데이터나 요약 값을 구성 */
 function buildReactComponentDetailRenderSignature(component: ReactComponentInfo): string {
