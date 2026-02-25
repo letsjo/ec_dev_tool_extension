@@ -7,6 +7,12 @@ import {
   resolveSerializerLimits,
   type SerializerOptions,
 } from "./pageAgentSerializerOptions";
+import {
+  serializeArrayValue,
+  serializeMapValue,
+  serializeObjectValue,
+  serializeSetValue,
+} from "./pageAgentSerializationStrategies";
 
 type AnyRecord = Record<string, any>;
 
@@ -190,108 +196,30 @@ export function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOp
     rememberSeen(value, id);
 
     try {
+      const strategyContext = {
+        serializeValue,
+        isLimitReached: () => limitReached,
+        mapInternalKey,
+        summarizeChildrenValue,
+        readObjectClassName,
+        objectClassNameMetaKey: OBJECT_CLASS_NAME_META_KEY,
+        maxArrayLength: MAX_ARRAY_LENGTH,
+        maxObjectKeys: MAX_OBJECT_KEYS,
+        maxMapEntries: MAX_MAP_ENTRIES,
+        maxSetEntries: MAX_SET_ENTRIES,
+      };
       if (Array.isArray(value)) {
-        const arr = [];
-        try { arr.__ecRefId = id; } catch (_) {}
-        const maxLen = Math.min(value.length, MAX_ARRAY_LENGTH);
-        for (let i = 0; i < maxLen; i += 1) {
-          arr.push(serializeValue(value[i], level + 1));
-          if (limitReached) break;
-        }
-        const serializedLen = arr.length;
-        if (value.length > serializedLen) {
-          arr.push("[+" + String(value.length - serializedLen) + " more]");
-        } else if (limitReached) {
-          arr.push("[TruncatedBySerializeLimit]");
-        }
-        return arr;
+        return serializeArrayValue(value, id, level, strategyContext);
       }
 
       if (typeof Map !== "undefined" && value instanceof Map) {
-        const out = {
-          __ecType: "map",
-          size: value.size,
-          entries: [],
-        };
-        try { out.__ecRefId = id; } catch (_) {}
-        const maxEntries = Math.min(value.size, MAX_MAP_ENTRIES);
-        let entryIndex = 0;
-        for (const [entryKey, entryValue] of value) {
-          if (entryIndex >= maxEntries) break;
-          out.entries.push([
-            serializeValue(entryKey, level + 1),
-            serializeValue(entryValue, level + 1),
-          ]);
-          entryIndex += 1;
-          if (limitReached) break;
-        }
-        if (value.size > out.entries.length) {
-          out.__truncated__ = "[+" + String(value.size - out.entries.length) + " entries]";
-        } else if (limitReached) {
-          out.__truncated__ = "[TruncatedBySerializeLimit]";
-        }
-        return out;
+        return serializeMapValue(value, id, level, strategyContext);
       }
 
       if (typeof Set !== "undefined" && value instanceof Set) {
-        const out = {
-          __ecType: "set",
-          size: value.size,
-          entries: [],
-        };
-        try { out.__ecRefId = id; } catch (_) {}
-        const maxEntries = Math.min(value.size, MAX_SET_ENTRIES);
-        let entryIndex = 0;
-        for (const entryValue of value) {
-          if (entryIndex >= maxEntries) break;
-          out.entries.push(serializeValue(entryValue, level + 1));
-          entryIndex += 1;
-          if (limitReached) break;
-        }
-        if (value.size > out.entries.length) {
-          out.__truncated__ = "[+" + String(value.size - out.entries.length) + " entries]";
-        } else if (limitReached) {
-          out.__truncated__ = "[TruncatedBySerializeLimit]";
-        }
-        return out;
+        return serializeSetValue(value, id, level, strategyContext);
       }
-
-      const out = {};
-      try { out.__ecRefId = id; } catch (_) {}
-      const keys = Object.keys(value);
-      const maxKeys = Math.min(keys.length, MAX_OBJECT_KEYS);
-      for (let j = 0; j < maxKeys; j += 1) {
-        const key = keys[j];
-        const internalReplacement = mapInternalKey(key);
-        if (internalReplacement) {
-          out[key] = internalReplacement;
-          continue;
-        }
-        if (key === "children") {
-          try {
-            out.children = summarizeChildrenValue(value[key]);
-          } catch (e3) {
-            out.children = "[Thrown: " + String(e3 && e3.message) + "]";
-          }
-          continue;
-        }
-        try {
-          out[key] = serializeValue(value[key], level + 1);
-        } catch (e) {
-          out[key] = "[Thrown: " + String(e && e.message) + "]";
-        }
-        if (limitReached) break;
-      }
-      if (keys.length > maxKeys) {
-        out.__truncated__ = "[+" + String(keys.length - maxKeys) + " keys]";
-      } else if (limitReached) {
-        out.__truncated__ = "[TruncatedBySerializeLimit]";
-      }
-      const objectClassName = readObjectClassName(value);
-      if (objectClassName) {
-        out[OBJECT_CLASS_NAME_META_KEY] = objectClassName;
-      }
-      return out;
+      return serializeObjectValue(value, id, level, strategyContext);
     } catch (e2) {
       return String(value);
     }

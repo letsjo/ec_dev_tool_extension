@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이, 선택 element selector/path 정보 계산, main world 스크립트 주입, pageAgent 브리지, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -199,6 +199,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 6.7 pageAgent Serialization 모듈 분리 규칙
 
 - `pageAgentSerialization.ts`: inspect payload 직렬화(`makeSerializer`), props 직렬화(`serializePropsForFiber`) 전담
+- `pageAgentSerializationStrategies.ts`: array/map/set/object 자료형별 직렬화 전략(`__ecRefId`, `__truncated__`, children/internal key 처리) 전담
 - `pageAgentSerializerOptions.ts`: serializer 옵션(`maxDepth`, `maxObjectKeys` 등) 입력을 내부 한계값으로 정규화 전담
 - `pageAgentSerializerSummary.ts`: React-like type name 해석과 `children` 요약 직렬화(`summarizeChildrenValue`) 전담
 - `pageAgentCollectionPath.ts`: inspectPath 특수 collection path token(`__ec_map_entry__`, `__ec_map_value__`, `__ec_set_entry__`) 해석 전담
@@ -580,6 +581,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentFiberDescribe.ts`
 - `src/content/pageAgentFiberRegistry.ts`
 - `src/content/pageAgentSerialization.ts`
+- `src/content/pageAgentSerializationStrategies.ts`
 - `src/content/pageAgentCollectionPath.ts`
 - `src/content/pageAgentSerializerSummary.ts`
 - `src/content/pageAgentSerializerOptions.ts`
