@@ -51,6 +51,7 @@ import { createReactComponentListRenderFlow as createReactComponentListRenderFlo
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './reactInspector/listTreeRenderer';
 import { handleComponentSearchInput as handleComponentSearchInputValue } from './reactInspector/searchInputFlow';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './reactInspector/noResultStateFlow';
+import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './reactInspector/detailQueueFlow';
 import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './reactInspector/resetStateFlow';
 import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './reactInspector/fetchFlow';
 import {
@@ -66,9 +67,7 @@ import {
   buildReactInspectorResetPaneState as buildReactInspectorResetPaneStateValue,
 } from './reactInspector/viewState';
 import { createReactJsonSection as createReactJsonSectionValue } from './reactInspector/jsonSection';
-import { createReactDetailFetchQueue } from './reactInspector/detailFetchQueue';
 import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './reactInspector/detailRenderer';
-import { applySelectedComponentDetailResult as applySelectedComponentDetailResultValue } from './reactInspector/detailApply';
 import { createDomTreeFetchFlow as createDomTreeFetchFlowValue } from './domTree/fetchFlow';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
@@ -367,30 +366,19 @@ function scrollSelectedComponentIntoView() {
   activeItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }
 
-/** 계산/조회 결과를 UI 상태에 반영 */
-function applySelectedComponentDetail(result: ReactComponentDetailResult): boolean {
-  const appliedResult = applySelectedComponentDetailResultValue({
-    result,
-    reactComponents,
-    componentSearchTexts,
-    componentSearchIncludeDataTokens,
-    selectedReactComponentIndex,
-    patchComponentSearchTextCacheAt: patchComponentSearchTextCacheAtValue,
-    renderReactComponentDetail,
-  });
-  reactComponents = appliedResult.reactComponents;
-  return appliedResult.applied;
-}
-
-const detailFetchQueue = createReactDetailFetchQueue({
+const { detailFetchQueue } = createReactDetailQueueFlowValue({
   cooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
   callInspectedPageAgent,
   getLookup: () => resolveRuntimeRefreshLookupValue(lastReactLookup),
-  getSelectedComponent: () =>
-    selectedReactComponentIndex >= 0 ? reactComponents[selectedReactComponentIndex] : null,
-  findComponentById: (componentId) =>
-    reactComponents.find((candidate) => candidate.id === componentId),
-  applySelectedComponentDetail,
+  getReactComponents: () => reactComponents,
+  setReactComponents: (nextComponents) => {
+    reactComponents = nextComponents;
+  },
+  getSelectedReactComponentIndex: () => selectedReactComponentIndex,
+  getComponentSearchTexts: () => componentSearchTexts,
+  getComponentSearchIncludeDataTokens: () => componentSearchIncludeDataTokens,
+  patchComponentSearchTextCacheAt: patchComponentSearchTextCacheAtValue,
+  renderReactComponentDetail,
   setReactDetailEmpty,
 });
 
