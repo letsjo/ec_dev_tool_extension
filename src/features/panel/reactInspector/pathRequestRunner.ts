@@ -3,6 +3,7 @@ import type {
   JsonSectionKind,
   ReactComponentInfo,
 } from '../../../shared/inspector/types';
+import type { CallInspectedPageAgent as CallInspectedPageAgentValue } from '../bridge/pageAgentClient';
 import type { RuntimeRefreshLookup } from './lookup';
 import {
   buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
@@ -22,14 +23,8 @@ export interface RequestReactInspectPathOptions {
   onDone: (completion: ReactInspectPathRequestCompletion) => void;
 }
 
-type CallInspectedPageAgent = (
-  method: string,
-  args: unknown,
-  onDone: (result: unknown | null, errorText?: string) => void,
-) => void;
-
 interface CreateReactInspectPathRequesterOptions {
-  callInspectedPageAgent: CallInspectedPageAgent;
+  callInspectedPageAgent: CallInspectedPageAgentValue;
   getStoredLookup: () => RuntimeRefreshLookup | null;
 }
 

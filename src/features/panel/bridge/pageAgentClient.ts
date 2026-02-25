@@ -5,6 +5,11 @@ export interface CallPageAgentResponse {
 }
 
 export type PageAgentDoneHandler = (result: unknown | null, errorText?: string) => void;
+export type CallInspectedPageAgent = (
+  method: string,
+  args: unknown,
+  onDone: PageAgentDoneHandler,
+) => void;
 
 /**
  * DevTools panel -> background -> pageAgent 브리지 호출 공통 래퍼.
