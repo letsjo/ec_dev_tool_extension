@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
+import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
 
 type AnyRecord = Record<string, any>;
 type PathSegment = string | number;
@@ -260,48 +261,17 @@ export function createPageAgentInspectHandlers(options: CreatePageAgentInspectHa
       }
 
       const preferredFiber = findPreferredSelectedFiber(nearest.fiber);
-      let selectedIndex = -1;
-
-      if (preferredFiber && idByFiber.has(preferredFiber)) {
-        const preferredId = idByFiber.get(preferredFiber);
-        for (let idx = 0; idx < components.length; idx += 1) {
-          if (components[idx].id === preferredId) {
-            selectedIndex = idx;
-            break;
-          }
-        }
-      }
-
-      if (selectedIndex < 0 && targetMatchedIndex >= 0 && targetMatchedIndex < components.length) {
-        selectedIndex = targetMatchedIndex;
-      }
-
-      if (selectedIndex < 0 && preferredFiber) {
-        const preferredDomInfo = getDomInfoForFiber(preferredFiber, hostCache, visiting, targetEl);
-        if (preferredDomInfo && preferredDomInfo.domSelector) {
-          let bestDepth = -1;
-          for (let d = 0; d < components.length; d += 1) {
-            const candidate = components[d];
-            if (candidate.kind === "HostComponent") continue;
-            if (candidate.domSelector !== preferredDomInfo.domSelector) continue;
-            if (candidate.depth >= bestDepth) {
-              bestDepth = candidate.depth;
-              selectedIndex = d;
-            }
-          }
-        }
-      }
-
-      if (selectedIndex < 0) {
-        for (let i = 0; i < components.length; i += 1) {
-          if (components[i].kind !== "HostComponent") {
-            selectedIndex = i;
-            break;
-          }
-        }
-      }
-
-      if (selectedIndex < 0) selectedIndex = 0;
+      const selectedIndex = resolveSelectedComponentIndex({
+        components,
+        idByFiber,
+        preferredFiber,
+        targetMatchedIndex,
+        resolvePreferredFiberDomInfo() {
+          return preferredFiber
+            ? getDomInfoForFiber(preferredFiber, hostCache, visiting, targetEl)
+            : null;
+        },
+      });
 
       return {
         selector,
