@@ -68,11 +68,7 @@ import {
   resolveStoredLookup as resolveStoredLookupValue,
   type RuntimeRefreshLookup,
 } from './reactInspector/lookup';
-import {
-  createReactInspectPathActions as createReactInspectPathActionsValue,
-} from './reactInspector/pathActions';
-import { createFunctionSourceOpener as createFunctionSourceOpenerValue } from './reactInspector/pathOpenAction';
-import { createReactInspectPathRequester as createReactInspectPathRequesterValue } from './reactInspector/pathRequestRunner';
+import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from './reactInspector/pathBindings';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
 } from './reactInspector/selection';
@@ -403,18 +399,11 @@ const {
   },
 });
 
-const requestReactInspectPath = createReactInspectPathRequesterValue({
-  callInspectedPageAgent,
-  getStoredLookup: () => lastReactLookup,
-});
-
-const openFunctionInSources = createFunctionSourceOpenerValue({ setReactStatus });
-
 const { inspectFunctionAtPath, fetchSerializedValueAtPath } =
-  createReactInspectPathActionsValue({
-    requestReactInspectPath,
+  createReactInspectPathBindingsValue({
+    callInspectedPageAgent,
+    getStoredLookup: () => lastReactLookup,
     setReactStatus,
-    openFunctionInSources,
   });
 
 /** 파생 데이터나 요약 값을 구성 */
