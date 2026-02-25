@@ -244,6 +244,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
+- `src/features/panel/workspace/interactionBindings.ts`
 - `src/features/panel/workspace/toggleBar.ts`
 - `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/splitResize.ts`
@@ -292,6 +293,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `layoutDom.ts`: split DOM 골격 생성과 panel split class reset 정리 전담
 - `panelBindings.ts`: panel summary/action 버튼 drag/click/mousedown 이벤트 바인딩/해제 전담
 - `containerBindings.ts`: workspace 컨테이너 drag/drop/pointer/dblclick, toggle bar click 이벤트 바인딩/해제 전담
+- `interactionBindings.ts`: panel/container 이벤트 바인딩 묶음 조립과 통합 unbind cleanup 반환 전담
 - `toggleBar.ts`: footer 토글바 active/aria 상태 렌더와 panel summary 토글 버튼(▾/▸) 문구 동기화 전담
 - `panelSizing.ts`: 접힘 split row(`grid-template-rows`) 계산과 패널 body width/height 동기화 전담
 - `splitResize.ts`: split divider pointerdown 상태 복원, pointer 좌표->ratio 계산, split ratio CSS 반영 전담
@@ -584,6 +586,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
+- `src/features/panel/workspace/interactionBindings.ts`
 - `src/features/panel/workspace/toggleBar.ts`
 - `src/features/panel/workspace/panelSizing.ts`
 - `src/features/panel/workspace/splitResize.ts`
@@ -666,6 +669,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
   - `tests/workspace/workspaceRenderPipeline.test.ts`: `renderPipeline.ts`의 empty fallback 재사용, patch root 삽입, stale child 정리 분기
+  - `tests/workspace/workspaceInteractionBindings.test.ts`: `interactionBindings.ts`의 panel/container 이벤트 바인딩과 cleanup unbind 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링
   - `tests/reactInspector/jsonRefMap.test.ts`: `jsonRefMap.ts`의 nested ref id 수집, 내부 meta key 제외, 순환 참조 안전 스캔 분기
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기

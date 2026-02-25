@@ -29,13 +29,8 @@ import {
   syncWorkspaceSplitCollapsedRows,
 } from './panelSizing';
 import {
-  bindWorkspacePanelInteractions,
-  unbindWorkspacePanelInteractions,
-} from './panelBindings';
-import {
-  bindWorkspaceContainerInteractions,
-  unbindWorkspaceContainerInteractions,
-} from './containerBindings';
+  bindWorkspaceInteractionBindings,
+} from './interactionBindings';
 import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
 import { createWorkspaceDragDropFlow } from './dragDropFlow';
 import {
@@ -86,6 +81,7 @@ export function createWorkspaceLayoutManager({
   let workspaceLayoutRoot: WorkspaceLayoutNode | null = null;
   let workspacePanelStateById = new Map<WorkspacePanelId, WorkspacePanelState>();
   let workspacePanelBodySizeObserver: ResizeObserver | null = null;
+  let unbindWorkspaceInteractions: (() => void) | null = null;
 
   /**
    * 현재 "보여야 하는 패널 집합"과 "레이아웃 트리"를 정합성 있게 맞춘다.
@@ -280,6 +276,24 @@ export function createWorkspaceLayoutManager({
     event.preventDefault();
   }
 
+  const panelInteractionHandlers = {
+    onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
+    onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
+    onSummaryAction: onWorkspaceSummaryAction,
+    onSummaryClick: onWorkspaceSummaryClick,
+    onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
+    onActionButtonDragStart: onWorkspaceActionButtonDragStart,
+  };
+
+  const containerInteractionHandlers = {
+    onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
+    onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
+    onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
+    onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
+    onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
+    onWorkspacePanelToggleButtonClick,
+  };
+
   /**
    * 워크스페이스 상호작용(드래그/리사이즈/토글/옵저버) 초기화 진입점.
    * 순서가 중요한 이유:
@@ -293,22 +307,13 @@ export function createWorkspaceLayoutManager({
     workspacePanelStateById = restored.workspacePanelStateById;
     workspaceLayoutRoot = restored.workspaceLayoutRoot;
 
-    bindWorkspacePanelInteractions(workspacePanelElements, {
-      onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
-      onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
-      onSummaryAction: onWorkspaceSummaryAction,
-      onSummaryClick: onWorkspaceSummaryClick,
-      onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
-      onActionButtonDragStart: onWorkspaceActionButtonDragStart,
-    });
-
-    bindWorkspaceContainerInteractions(panelContentEl, workspacePanelToggleBarEl, {
-      onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
-      onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
-      onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
-      onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
-      onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
-      onWorkspacePanelToggleButtonClick,
+    unbindWorkspaceInteractions?.();
+    unbindWorkspaceInteractions = bindWorkspaceInteractionBindings({
+      panelContentEl,
+      workspacePanelToggleBarEl,
+      workspacePanelElements,
+      panelHandlers: panelInteractionHandlers,
+      containerHandlers: containerInteractionHandlers,
     });
     initWorkspacePanelBodySizeObserver();
     renderWorkspaceLayout();
@@ -316,23 +321,8 @@ export function createWorkspaceLayoutManager({
 
   /** 워크스페이스 관련 이벤트/옵저버를 해제한다. */
   function destroy() {
-    unbindWorkspaceContainerInteractions(panelContentEl, workspacePanelToggleBarEl, {
-      onWorkspaceDragOver: workspaceDragDropFlow.onWorkspaceDragOver,
-      onWorkspaceDrop: workspaceDragDropFlow.onWorkspaceDrop,
-      onWorkspaceDragLeave: workspaceDragDropFlow.onWorkspaceDragLeave,
-      onWorkspaceSplitResizePointerDown: workspaceResizeFlow.onWorkspaceSplitResizePointerDown,
-      onWorkspaceSplitDividerDoubleClick: workspaceResizeFlow.onWorkspaceSplitDividerDoubleClick,
-      onWorkspacePanelToggleButtonClick,
-    });
-
-    unbindWorkspacePanelInteractions(workspacePanelElements, {
-      onPanelDragStart: workspaceDragDropFlow.onWorkspacePanelDragStart,
-      onPanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
-      onSummaryAction: onWorkspaceSummaryAction,
-      onSummaryClick: onWorkspaceSummaryClick,
-      onActionButtonMouseDown: onWorkspaceActionButtonMouseDown,
-      onActionButtonDragStart: onWorkspaceActionButtonDragStart,
-    });
+    unbindWorkspaceInteractions?.();
+    unbindWorkspaceInteractions = null;
 
     if (workspacePanelBodySizeObserver) {
       workspacePanelBodySizeObserver.disconnect();
