@@ -42,6 +42,10 @@ import {
   syncWorkspaceSplitCollapsedRows as syncWorkspaceSplitCollapsedRowsValue,
 } from './panelSizing';
 import {
+  createWorkspaceSplitElement as createWorkspaceSplitElementValue,
+  resetWorkspacePanelSplitClasses as resetWorkspacePanelSplitClassesValue,
+} from './layoutDom';
+import {
   applyWorkspaceSplitRatioStyle as applyWorkspaceSplitRatioStyleValue,
   computeWorkspaceResizeRatioFromPointer as computeWorkspaceResizeRatioFromPointerValue,
   createWorkspaceResizeDragStateFromTarget as createWorkspaceResizeDragStateFromTargetValue,
@@ -204,29 +208,6 @@ export function createWorkspaceLayoutManager({
     return findReusableWorkspaceDomRootValue(layoutNode, existingRoot);
   }
 
-  /** 파생 데이터나 요약 값을 구성 */
-  function createWorkspaceSplitElement(axis: 'row' | 'column'): HTMLDivElement {
-    const splitEl = document.createElement('div');
-    splitEl.className = `workspace-split workspace-split-${axis}`;
-    splitEl.dataset.splitAxis = axis;
-
-    const firstSlot = document.createElement('div');
-    firstSlot.className = 'workspace-split-child workspace-split-child-first';
-    splitEl.appendChild(firstSlot);
-
-    const divider = document.createElement('div');
-    divider.className = `workspace-split-divider workspace-split-divider-${axis}`;
-    divider.setAttribute('role', 'separator');
-    divider.setAttribute('aria-orientation', axis === 'row' ? 'vertical' : 'horizontal');
-    divider.setAttribute('aria-label', 'Resize workspace panels');
-    splitEl.appendChild(divider);
-
-    const secondSlot = document.createElement('div');
-    secondSlot.className = 'workspace-split-child workspace-split-child-second';
-    splitEl.appendChild(secondSlot);
-    return splitEl;
-  }
-
   /** 생성한 노드를 컨테이너에 추가 */
   function patchWorkspaceLayoutDomNode(
     layoutNode: WorkspaceLayoutNode,
@@ -250,7 +231,7 @@ export function createWorkspaceLayoutManager({
     const splitEl =
       reusableRoot && reusableRoot.classList.contains('workspace-split') && reusableRoot.dataset.splitAxis === layoutNode.axis
         ? reusableRoot
-        : createWorkspaceSplitElement(layoutNode.axis);
+        : createWorkspaceSplitElementValue(layoutNode.axis);
 
     splitEl.classList.add('workspace-split', `workspace-split-${layoutNode.axis}`);
     splitEl.classList.remove(layoutNode.axis === 'row' ? 'workspace-split-column' : 'workspace-split-row');
@@ -263,7 +244,7 @@ export function createWorkspaceLayoutManager({
     const divider = splitEl.querySelector<HTMLElement>(':scope > .workspace-split-divider');
     const secondSlot = splitEl.querySelector<HTMLElement>(':scope > .workspace-split-child-second');
     if (!firstSlot || !divider || !secondSlot) {
-      const recreated = createWorkspaceSplitElement(layoutNode.axis);
+      const recreated = createWorkspaceSplitElementValue(layoutNode.axis);
       return patchWorkspaceLayoutDomNode(layoutNode, recreated, path);
     }
 
@@ -335,13 +316,6 @@ export function createWorkspaceLayoutManager({
     syncWorkspacePanelBodySizes();
   }
 
-  /** 레이아웃 class 오염을 정리 */
-  function resetWorkspacePanelSplitClasses() {
-    workspacePanelElements.forEach((panelEl) => {
-      panelEl.classList.remove('workspace-split-child', 'workspace-split-child-first', 'workspace-split-child-second');
-    });
-  }
-
   /** 레이아웃/상태를 동기화 */
   function syncWorkspacePanelBodySizes() {
     syncWorkspacePanelBodySizesValue(workspacePanelElements);
@@ -380,7 +354,7 @@ export function createWorkspaceLayoutManager({
    * 3) 접힘 높이/토글바/패널 body 사이즈/스크롤 위치를 후처리로 복원한다.
    */
   function renderWorkspaceLayout() {
-    resetWorkspacePanelSplitClasses();
+    resetWorkspacePanelSplitClassesValue(workspacePanelElements);
     reconcileWorkspaceLayout();
 
     WORKSPACE_PANEL_IDS.forEach((panelId) => {
