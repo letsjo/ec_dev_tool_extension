@@ -1,5 +1,6 @@
 // @ts-nocheck
 import {
+  parseErrorStackFrames,
   parseHookDisplayName,
 } from "./pageAgentHookStack";
 import {
