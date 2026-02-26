@@ -1,9 +1,9 @@
-import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
+import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 import type {
   ReactComponentDetailResult,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
-import type { RuntimeRefreshLookup } from './lookup';
+} from '../../../../shared/inspector/types';
+import type { RuntimeRefreshLookup } from '../lookup';
 import {
   applySelectedComponentDetailResult as applySelectedComponentDetailResultValue,
 } from './detailApply';

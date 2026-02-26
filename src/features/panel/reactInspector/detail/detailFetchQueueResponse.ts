@@ -1,5 +1,5 @@
-import { isReactInspectResult } from '../../../shared/inspector/guards';
-import type { ReactComponentDetailResult } from '../../../shared/inspector/types';
+import { isReactInspectResult } from '../../../../shared/inspector/guards';
+import type { ReactComponentDetailResult } from '../../../../shared/inspector/types';
 import {
   DETAIL_FETCH_STALE_SELECTION_MESSAGE,
 } from './detailFetchQueueMessages';

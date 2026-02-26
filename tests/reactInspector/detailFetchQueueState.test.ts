@@ -9,7 +9,7 @@ import {
   queueDetailRequestWhileInFlight,
   resetDetailQueueState,
   startDetailRequest,
-} from '../../src/features/panel/reactInspector/detailFetchQueueState';
+} from '../../src/features/panel/reactInspector/detail/detailFetchQueueState';
 
 describe('detailFetchQueueState', () => {
   it('tracks in-flight queue transitions and skips same component replay', () => {

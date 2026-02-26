@@ -1,7 +1,7 @@
 import type {
   ReactComponentDetailResult,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../../shared/inspector/types';
 
 interface ApplySelectedComponentDetailResultOptions {
   result: ReactComponentDetailResult;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveDetailFetchPayload } from '../../src/features/panel/reactInspector/detailFetchQueueResponse';
+import { resolveDetailFetchPayload } from '../../src/features/panel/reactInspector/detail/detailFetchQueueResponse';
 
 describe('detailFetchQueueResponse', () => {
   it('returns prefixed error payload when runtime call fails', () => {

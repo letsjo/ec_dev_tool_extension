@@ -1,7 +1,7 @@
 import type {
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../../shared/inspector/types';
 import {
   renderReactComponentDetailPanel as renderReactComponentDetailPanelValue,
 } from './detailRenderer';

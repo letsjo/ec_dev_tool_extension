@@ -3,9 +3,9 @@ import type { ReactComponentInfo } from '../../../shared/inspector/types';
 import { clearPaneContent as clearPaneContentValue } from '../paneState';
 import {
   createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue,
-} from './detailRenderFlow';
-import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './detailQueueFlow';
-import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './detailRenderer';
+} from './detail/detailRenderFlow';
+import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './detail/detailQueueFlow';
+import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './detail/detailRenderer';
 import {
   resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
 } from './lookup';
