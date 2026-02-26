@@ -809,6 +809,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - 테스트 러너: `vitest` (`npm test`)
 - 설정 파일: `vitest.config.ts` (`jsdom` 환경, `tests/**/*.test.ts`)
+- 최신 전체 검증 스냅샷 (2026-02-26)
+  - `npm test`: `73 files`, `192 tests` 통과
+  - `npx tsc --noEmit`: 통과
+  - `npm run build`: 통과 (`dist/*.global.js` 재생성 성공)
 - 현재 커버하는 리팩터링 축
   - `tests/reactInspector/applyResultFlow.test.ts`: `applyResultFlow.ts`의 empty/reset, no-result, list-only refresh, selection 옵션 적용 분기
   - `tests/reactInspector/listRenderFlow.test.ts`: `listRenderFlow.ts`의 empty/filter empty/signature skip/updated 강제 렌더 분기
