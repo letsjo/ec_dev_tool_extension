@@ -1,9 +1,7 @@
 import { parseInspectReactComponentsArgs } from "./pageAgentInspectComponentsArgs";
-import { buildSourceElementSummary } from "./pageAgentInspectComponentsSource";
-import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
-import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
+import { resolveInspectComponentsSelectionResult } from "./pageAgentInspectComponentsResult";
 import { resolveInspectComponentsRootContext } from "./pageAgentInspectComponentsRoot";
-import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
+import { runInspectComponentsWalk } from "./pageAgentInspectComponentsWalkContext";
 import type { SourceElementSummary } from "./pageAgentInspectComponentsSource";
 import type { ReactComponentInfo } from "../shared/inspector/types";
 
@@ -120,74 +118,51 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       }
       const { targetEl, nearest, rootFiber, hostCache, visiting, fiberIdMap } = resolvedRoot;
 
-      const walked = walkInspectableComponents({
-        rootFiber: rootFiber as Record<string, unknown>,
+      const walked = runInspectComponentsWalk({
+        rootFiber,
         targetEl,
         includeSerializedData,
         selectedComponentId,
         maxTraversal,
         maxComponents,
         isInspectableTag,
-        getDomInfoForFiber(fiber: Record<string, unknown>) {
-          return getDomInfoForFiber({
-            fiber: fiber as {
-              tag?: number;
-              stateNode?: unknown;
-              child?: Record<string, unknown> | null;
-              sibling?: Record<string, unknown> | null;
-            },
-            hostCache,
-            visiting,
-            selectedEl: targetEl,
-            buildCssSelector,
-            getElementPath,
-          });
-        },
-        getStableFiberId: (fiber, map) => getStableFiberId(fiber as InspectFiber | null, map),
+        hostCache,
+        visiting,
+        buildCssSelector,
+        getElementPath,
+        getStableFiberId,
         fiberIdMap,
-        getHooksInfo: (fiber) => getHooksInfo(fiber as InspectFiber | null),
-        getHooksCount: (fiber) => getHooksCount(fiber as InspectFiber | null),
-        serializePropsForFiber: (fiber, serialize) =>
-          serializePropsForFiber(fiber as InspectFiber | null, serialize),
+        getHooksInfo,
+        getHooksCount,
+        serializePropsForFiber,
         makeSerializer,
-        getFiberName: (fiber) => getFiberName(fiber as InspectFiber),
+        getFiberName,
         getFiberKind,
       });
-      const components = walked.components as ReactComponentInfo[];
+      const components = walked.components;
       const { idByFiber, targetMatchedIndex } = walked;
 
       if (components.length === 0) {
         return { error: "분석 가능한 React 컴포넌트를 찾지 못했습니다.", selector };
       }
 
-      const preferredFiber = findPreferredSelectedFiber(nearest.fiber);
-      const selectedIndex = resolveSelectedComponentIndex({
+      const { selectedIndex, sourceElement } = resolveInspectComponentsSelectionResult({
         components,
         idByFiber,
-        preferredFiber,
         targetMatchedIndex,
-        resolvePreferredFiberDomInfo() {
-          return preferredFiber
-            ? getDomInfoForFiber({
-                fiber: preferredFiber,
-                hostCache,
-                visiting,
-                selectedEl: targetEl,
-                buildCssSelector,
-                getElementPath,
-              })
-            : null;
-        },
+        nearest,
+        targetEl,
+        hostCache,
+        visiting,
+        findPreferredSelectedFiber,
+        buildCssSelector,
+        getElementPath,
       });
 
       return {
         selector,
         selectedIndex,
-        sourceElement: buildSourceElementSummary({
-          sourceElement: nearest.sourceElement,
-          buildCssSelector,
-          getElementPath,
-        }),
+        sourceElement,
         rootSummary: {
           totalComponents: components.length,
         },
