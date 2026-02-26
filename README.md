@@ -69,6 +69,9 @@ npm test
 │   │           └── wheelScrollFallback.ts # 패널 wheel 스크롤 보정
 │   ├── content/
 │   │   ├── elementPicker.ts              # 요소 선택 + content/main world 브릿지
+│   │   ├── inspect/
+│   │   │   ├── components/               # reactInspect components 입력/루트해석/walk/결과 조립 모듈
+│   │   │   └── path/                     # reactInspectPath 입력/경로해석/모드응답 모듈
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
 │   │   └── pageAgent.ts                  # main world React/DOM inspector 실행기
 │   ├── shared/
@@ -85,6 +88,16 @@ npm test
 ```
 
 추가로 컴포넌트 트리 탐색 고도화(검색/필터, 상위-하위 이동, live update)를 확장할 수 있습니다.
+
+## 리팩터링 TODO 운영
+
+- 로컬 `todo.md`(gitignored)에서 작업을 주제별로 분리해 관리합니다.
+  - `Refactoring`: 구조 분해/폴더 재배치
+  - `Bug Fix`: 회귀/예외 흐름 수정
+  - `Feature Add`: 기능 확장
+  - `Docs / Comment`: 문서/주석 동기화
+  - `Validation`: 타입/테스트 검증
+- 우선순위(P0~P3) 기준으로 순차 진행하며, 작업 중에도 TODO를 계속 업데이트합니다.
 
 ## UI 디렉터리 규칙
 

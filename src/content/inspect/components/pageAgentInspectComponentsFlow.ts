@@ -3,7 +3,7 @@ import { resolveInspectComponentsSelectionResult } from "./pageAgentInspectCompo
 import { resolveInspectComponentsRootContext } from "./pageAgentInspectComponentsRoot";
 import { runInspectComponentsWalk } from "./pageAgentInspectComponentsWalkContext";
 import type { SourceElementSummary } from "./pageAgentInspectComponentsSource";
-import type { ReactComponentInfo } from "../shared/inspector/types";
+import type { ReactComponentInfo } from "../../../shared/inspector/types";
 
 type InspectFiber = {
   tag?: number;

@@ -1,4 +1,4 @@
-import { isRecord } from "../shared/inspector/guards";
+import { isRecord } from "../../../shared/inspector/guards";
 
 interface InspectReactComponentsArgs {
   selector: string;

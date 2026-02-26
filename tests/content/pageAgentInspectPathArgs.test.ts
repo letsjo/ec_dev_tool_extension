@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseInspectReactPathArgs } from '../../src/content/pageAgentInspectPathArgs';
+import { parseInspectReactPathArgs } from '../../src/content/inspect/path/pageAgentInspectPathArgs';
 
 describe('pageAgentInspectPathArgs', () => {
   it('normalizes inspect path args from unknown payload', () => {

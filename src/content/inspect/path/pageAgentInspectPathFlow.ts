@@ -1,6 +1,6 @@
 import { resolveInspectPathModeResponse } from './pageAgentInspectPathMode';
 import { parseInspectReactPathArgs } from './pageAgentInspectPathArgs';
-import { resolveInspectPathTargetFiber, resolveInspectRootContext } from './pageAgentInspectTarget';
+import { resolveInspectPathTargetFiber, resolveInspectRootContext } from '../../pageAgentInspectTarget';
 import { resolveInspectPathValue } from './pageAgentInspectPathValue';
 
 type FiberLike = Record<string, unknown> & {

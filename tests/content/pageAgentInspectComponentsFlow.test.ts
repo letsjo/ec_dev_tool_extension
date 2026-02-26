@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { parseInspectReactComponentsArgs } from '../../src/content/pageAgentInspectComponentsArgs';
-import { buildSourceElementSummary } from '../../src/content/pageAgentInspectComponentsSource';
-import { createInspectReactComponentsFlow } from '../../src/content/pageAgentInspectComponentsFlow';
+import { parseInspectReactComponentsArgs } from '../../src/content/inspect/components/pageAgentInspectComponentsArgs';
+import { buildSourceElementSummary } from '../../src/content/inspect/components/pageAgentInspectComponentsSource';
+import { createInspectReactComponentsFlow } from '../../src/content/inspect/components/pageAgentInspectComponentsFlow';
 
 describe('pageAgentInspectComponentsFlow', () => {
   it('normalizes inspect component args from unknown input', () => {

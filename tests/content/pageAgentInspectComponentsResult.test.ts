@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveInspectComponentsSelectionResult } from '../../src/content/pageAgentInspectComponentsResult';
+import { resolveInspectComponentsSelectionResult } from '../../src/content/inspect/components/pageAgentInspectComponentsResult';
 
 describe('pageAgentInspectComponentsResult', () => {
   it('computes selected index and source summary from walked components', () => {

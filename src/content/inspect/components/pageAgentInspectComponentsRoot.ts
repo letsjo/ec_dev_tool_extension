@@ -1,4 +1,4 @@
-import { resolveInspectRootContext } from './pageAgentInspectTarget';
+import { resolveInspectRootContext } from '../../pageAgentInspectTarget';
 
 type InspectFiber = {
   tag?: number;

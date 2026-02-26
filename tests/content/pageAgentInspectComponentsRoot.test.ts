@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { resolveInspectComponentsRootContext } from '../../src/content/pageAgentInspectComponentsRoot';
+import { resolveInspectComponentsRootContext } from '../../src/content/inspect/components/pageAgentInspectComponentsRoot';
 
 describe('pageAgentInspectComponentsRoot', () => {
   it('returns missing-nearest error when root context cannot resolve fiber', () => {

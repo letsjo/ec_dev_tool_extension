@@ -1,5 +1,5 @@
-import { createInspectReactComponentsFlow } from './pageAgentInspectComponentsFlow';
-import { createInspectReactPathFlow } from './pageAgentInspectPathFlow';
+import { createInspectReactComponentsFlow } from './inspect/components/pageAgentInspectComponentsFlow';
+import { createInspectReactPathFlow } from './inspect/path/pageAgentInspectPathFlow';
 import type { createPageAgentFiberSearchHelpers } from './pageAgentFiberSearch';
 import type { CreatePageAgentInspectHandlersOptions } from './pageAgentInspectTypes';
 
