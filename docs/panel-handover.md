@@ -277,7 +277,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 6.10 pageAgent Hook Info 모듈 분리 규칙
 
-- `pageAgentHooksInfo.ts`: fiber hook linked-list 순회(`getHooksRootValue`), custom group metadata 병합, hook 개수 집계(`getHooksCount`), panel 전달용 hook payload 직렬화(`getHooksInfo`) 전담
+- `pageAgentHooksInfo.ts`: fiber hook linked-list 순회(`getHooksRootValue`), includeCustomGroups 옵션 안전 파싱, custom group metadata 병합, hook 개수 집계(`getHooksCount`), panel 전달용 hook payload 직렬화(`getHooksInfo`) 전담
 - `pageAgentRuntime.ts`: hook info helper 생성과 inspect 흐름 dependency 결선만 담당
 
 ## 7. 워크스페이스(패널 스플릿) 모델
@@ -937,7 +937,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentHookGroupRuntimeContext.test.ts`: hook group inspect runtime 컨텍스트 해석(null/class fiber/dispatcher 미존재/정상) 분기
   - `tests/content/pageAgentHookDispatcherMethods.test.ts`: dispatcher built-in method(`useSyncExternalStore`, `useTransition`, `use`) 분기
   - `tests/content/reactRuntimeHookLifecycle.test.ts`: runtime hook 설치/세터 인터셉트/commit throttle/beforeunload 정리 분기
-  - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, hook count 집계, class component hook payload 직렬화
+  - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, class component payload 직렬화, includeCustomGroups 옵션 payload 안전 fallback 분기
   - `tests/content/pageAgentSerializationCore.test.ts`: serializer 내부키 매핑, class name 판별, dehydrated 토큰 생성, 순환참조 저장소 동작
   - `tests/content/pageAgentSerializationCoreModules.test.ts`: serializer core 분해 모듈(internal key/dehydrated/seen store) 직접 검증
   - `tests/content/pageAgentSerializationStrategies.test.ts`: array/map/set/object serializer strategy의 truncation/예외 처리/내부키 매핑

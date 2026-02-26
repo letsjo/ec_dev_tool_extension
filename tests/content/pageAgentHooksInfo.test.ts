@@ -62,4 +62,25 @@ describe('createPageAgentHooksInfoHelpers', () => {
       }),
     );
   });
+
+  it('falls back safely when includeCustomGroups option payload is invalid', () => {
+    const helpers = createPageAgentHooksInfoHelpers({
+      getFiberName: () => 'InvalidOptionComp',
+    });
+
+    const hooks = helpers.getHooksRootValue(
+      {
+        tag: 0,
+        memoizedState: {
+          memoizedState: 'state-value',
+          next: null,
+        },
+      },
+      'invalid-option-payload',
+    );
+
+    expect(hooks).toHaveLength(1);
+    expect(hooks[0].name).toContain('Hook#');
+    expect(hooks[0].state).toBe('state-value');
+  });
 });
