@@ -799,7 +799,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `src/ui/sections/shell/PanelViewSection.tsx`
 - `src/ui/sections/workspace/WorkspacePanelsSection.tsx`
-- `src/ui/components/WorkspacePanel.tsx`
+- `src/ui/panels/WorkspacePanelShell.tsx`
 - `src/ui/panels/index.ts`
 - `src/features/panel/workspacePanels.ts`
 - `src/content/elementPicker.ts`

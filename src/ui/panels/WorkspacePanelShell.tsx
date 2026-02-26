@@ -3,15 +3,15 @@ import {
   WORKSPACE_PANEL_CONFIG,
   type WorkspacePanelId,
 } from "../../features/panel/workspacePanels";
-import { PanelActionButton } from "./PanelActionButton";
+import { PanelActionButton } from "../components/PanelActionButton";
 
-interface WorkspacePanelProps {
+interface WorkspacePanelShellProps {
   panelId: WorkspacePanelId;
   children: React.ReactNode;
 }
 
 /** 공통 패널 래퍼(details/summary/actions) */
-export function WorkspacePanel({ panelId, children }: WorkspacePanelProps) {
+export function WorkspacePanelShell({ panelId, children }: WorkspacePanelShellProps) {
   const panelConfig = WORKSPACE_PANEL_CONFIG[panelId];
 
   return (
