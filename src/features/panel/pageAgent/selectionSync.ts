@@ -28,9 +28,17 @@ export function createPanelSelectionSyncHandlers(
     setDomTreeEmpty,
     fetchDomTree,
   } = options;
+  let highlightRequestEpoch = 0;
+
+  /** stale highlight 응답을 무효화하기 위해 세대를 증가시킨다. */
+  function invalidateHighlightRequests() {
+    highlightRequestEpoch += 1;
+    return highlightRequestEpoch;
+  }
 
   /** 기존 상태를 정리 */
   function clearPageComponentHighlight() {
+    invalidateHighlightRequests();
     callInspectedPageAgent('clearComponentHighlight', null, () => {
       /** 동작 없음. */
     });
@@ -79,6 +87,7 @@ export function createPanelSelectionSyncHandlers(
    * Selected Element/DOM Path/DOM Tree 패널을 함께 동기화한다.
    */
   function highlightPageDomForComponent(component: ReactComponentInfo) {
+    const requestEpoch = invalidateHighlightRequests();
     if (!component.domSelector) {
       clearPageComponentHighlight();
       setReactStatus(`선택한 컴포넌트(${component.name})는 연결된 DOM 요소가 없습니다.`);
@@ -92,6 +101,8 @@ export function createPanelSelectionSyncHandlers(
       'highlightComponent',
       { selector: component.domSelector, domPath: component.domPath ?? '' },
       (res, errorText) => {
+        // 이전 highlight 응답이 늦게 돌아오면 최신 선택 결과를 덮어쓰지 않도록 차단한다.
+        if (requestEpoch !== highlightRequestEpoch) return;
         if (errorText) {
           setReactStatus(`DOM 하이라이트 실행 오류: ${errorText}`, true);
           return;
