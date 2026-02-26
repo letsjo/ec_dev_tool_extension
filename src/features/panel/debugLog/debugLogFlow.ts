@@ -4,6 +4,7 @@ interface CreatePanelDebugLogFlowOptions {
   maxEntries?: number;
   now?: () => Date;
   copyText?: (text: string) => Promise<void>;
+  onLogAppended?: (eventName: string, payload?: unknown) => void;
 }
 
 interface PanelDebugLogFlow {
@@ -144,6 +145,7 @@ export function createPanelDebugLogFlow(
       lines.splice(0, lines.length - maxEntries);
     }
 
+    options.onLogAppended?.(eventName, payload);
     ensureCopyBinding();
     tryRender();
   }

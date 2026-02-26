@@ -9,6 +9,7 @@ import {
 } from '../../bridge/pageAgentClient';
 import { createPanelPaneSetters } from '../../paneSetters';
 import { createPanelControllerContext } from '../context';
+import { createPanelDebugDiagnosticsFlow } from '../../debugLog/debugDiagnosticsFlow';
 import { createPanelDebugLogFlow } from '../../debugLog/debugLogFlow';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
@@ -49,9 +50,15 @@ export function createPanelControllerWiring(): PanelControllerWiring {
   const panelControllerContext = createPanelControllerContext({
     initPanelDomRefs,
   });
+  const debugDiagnosticsFlow = createPanelDebugDiagnosticsFlow({
+    getDebugDiagnosticsPaneEl: panelControllerContext.getDebugDiagnosticsPaneEl,
+  });
   const { appendDebugLog } = createPanelDebugLogFlow({
     getDebugLogPaneEl: panelControllerContext.getDebugLogPaneEl,
     getDebugLogCopyBtnEl: panelControllerContext.getDebugLogCopyBtnEl,
+    onLogAppended(eventName) {
+      debugDiagnosticsFlow.recordDebugEvent(eventName);
+    },
   });
   let pageAgentRequestIdSeq = 0;
 

@@ -6,11 +6,13 @@ describe('debugLogFlow', () => {
     const debugLogPaneEl = document.createElement('div');
     debugLogPaneEl.className = 'empty';
     const debugLogCopyBtnEl = document.createElement('button');
+    const onLogAppended = vi.fn();
 
     const flow = createPanelDebugLogFlow({
       getDebugLogPaneEl: () => debugLogPaneEl,
       getDebugLogCopyBtnEl: () => debugLogCopyBtnEl,
       now: () => new Date('2026-02-27T00:00:00.000Z'),
+      onLogAppended,
     });
 
     flow.appendDebugLog('test.event', { ok: true });
@@ -19,6 +21,7 @@ describe('debugLogFlow', () => {
     expect(debugLogPaneEl.textContent).toContain('test.event');
     expect(debugLogPaneEl.textContent).toContain('"ok":true');
     expect(flow.getDebugLogText()).toContain('test.event');
+    expect(onLogAppended).toHaveBeenCalledWith('test.event', { ok: true });
   });
 
   it('drops oldest log lines when maxEntries is exceeded', () => {

@@ -36,6 +36,7 @@ npm test
 12. React 컴포넌트 섹션 우측 검색창에서 이름/selector/path 기준으로 목록을 필터링할 수 있다.
 13. 패널 경계선(Components↔Inspector, Selected Element↔DOM Tree)을 드래그해 영역 폭을 조절할 수 있다.
 14. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, 패널 제목의 `⧉` 버튼으로 전체 로그를 복사해 이슈 재현 기록으로 공유할 수 있다.
+15. Dev-only diagnostics 뷰가 필요하면 DevTools 콘솔에서 `localStorage.setItem('ecDevTool.devDiagnostics', '1')` 실행 후 패널을 새로 열면 Debug Log 상단에 이벤트 집계가 표시된다.
 
 ## 대상 객체 설정
 
@@ -67,7 +68,7 @@ npm test
 │   │       │   ├── context.ts            # panel DOM ref/lifecycle mutable 컨텍스트
 │   │       │   ├── runtime.ts            # runtime refresh + picker + teardown 결선
 │   │       │   └── wiring/               # controller 결선 조립(wiring/data-flow/lifecycle/react)
-│   │       ├── debugLog/                 # Debug Log 패널 누적/복사 플로우
+│   │       ├── debugLog/                 # Debug Log 누적/복사 + dev-only diagnostics 플로우
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/
 │   │           ├── layout/

@@ -18,6 +18,7 @@ function createDomRefsFixture(): PanelDomRefs {
   const reactComponentListEl = document.createElement('div');
   const treePaneEl = document.createElement('div');
   const reactComponentDetailEl = document.createElement('div');
+  const debugDiagnosticsPaneEl = document.createElement('div');
   const debugLogPaneEl = document.createElement('div');
   const debugLogCopyBtnEl = document.createElement('button');
   const workspacePanelElements = new Map([
@@ -41,6 +42,7 @@ function createDomRefsFixture(): PanelDomRefs {
     reactComponentListEl,
     treePaneEl,
     reactComponentDetailEl,
+    debugDiagnosticsPaneEl,
     debugLogPaneEl,
     debugLogCopyBtnEl,
     workspacePanelElements,
