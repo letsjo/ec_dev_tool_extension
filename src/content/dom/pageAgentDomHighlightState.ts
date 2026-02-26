@@ -17,6 +17,7 @@ interface StoredElementStyleSnapshot {
 interface ApplyStyleToSelectorOptions {
   storageKey: string;
   selector: string;
+  targetElement?: Element | null;
   outline: string;
   boxShadow: string;
   shouldScrollIntoView: boolean;
@@ -92,7 +93,9 @@ function clearStoredStyleSnapshot(storageKey: string): { ok: true } | { ok: fals
 function applyStyleToSelector(options: ApplyStyleToSelectorOptions): StyleApplyResult {
   restoreStoredStyleSnapshot(options.storageKey);
 
-  const resolvedElement = options.selector ? document.querySelector(options.selector) : null;
+  const resolvedElement =
+    options.targetElement ??
+    (options.selector ? document.querySelector(options.selector) : null);
   if (!resolvedElement || !isStyleableElement(resolvedElement)) {
     writeStoredStyleSnapshot(options.storageKey, null);
     return {

@@ -62,4 +62,30 @@ describe('createGetDomTreeHandler', () => {
     expect(result.root.children[0].tagName).toBe('span');
     expect(result.root.children[0].textPreview).toBe('hello world');
   });
+
+  it('resolves duplicate selector by domPath when pickPoint is absent', () => {
+    const first = document.createElement('input');
+    first.id = 'name';
+    first.placeholder = '거래처';
+    const second = document.createElement('input');
+    second.id = 'name';
+    second.placeholder = '프로젝트';
+    document.body.append(first, second);
+
+    const getDomTree = createGetDomTreeHandler({
+      buildCssSelector: (el) => (el instanceof Element ? `#${(el as HTMLElement).id}` : ''),
+      getElementPath: (el) =>
+        el instanceof Element ? `path:${(el as HTMLInputElement).placeholder || ''}` : '',
+      resolveTargetElement: (selector) => document.querySelector(selector),
+    });
+
+    const result = getDomTree({
+      selector: '#name',
+      domPath: 'path:프로젝트',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.root.id).toBe('name');
+    expect(result.domPath).toBe('path:프로젝트');
+  });
 });

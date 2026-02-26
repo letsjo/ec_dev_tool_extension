@@ -13,6 +13,7 @@ interface CreateGetDomTreeHandlerOptions {
 interface DomTreeRequestArgs {
   selector: string;
   pickPoint: PickPoint | null;
+  domPath: string;
 }
 
 interface DomTreeSuccessResult {
@@ -61,13 +62,45 @@ function readDomTreeRequestArgs(args: unknown): DomTreeRequestArgs {
     return {
       selector: '',
       pickPoint: null,
+      domPath: '',
     };
   }
 
   return {
     selector: typeof args.selector === 'string' ? args.selector : '',
     pickPoint: isPickPoint(args.pickPoint) ? args.pickPoint : null,
+    domPath: typeof args.domPath === 'string' ? args.domPath : '',
   };
+}
+
+function resolveDomTreeTargetElement(
+  options: CreateGetDomTreeHandlerOptions,
+  selector: string,
+  pickPoint: PickPoint | null,
+  domPath: string,
+): Element | null {
+  const defaultFound = options.resolveTargetElement(selector, pickPoint);
+  if (pickPoint || !selector || !domPath) {
+    return defaultFound;
+  }
+
+  let candidates: Element[] = [];
+  try {
+    candidates = Array.from(document.querySelectorAll(selector));
+  } catch (_) {
+    return defaultFound;
+  }
+  if (candidates.length <= 1) {
+    return defaultFound;
+  }
+
+  // duplicate id/name selector 환경에서는 domPath로 동일 selector 후보를 재매칭한다.
+  for (const candidate of candidates) {
+    if (options.getElementPath(candidate) === domPath) {
+      return candidate;
+    }
+  }
+  return defaultFound;
 }
 
 function truncateText(text: unknown, maxLength: number): string {
@@ -139,14 +172,14 @@ function serializeDomNode(
 export function createGetDomTreeHandler(options: CreateGetDomTreeHandlerOptions) {
   /** selector/pickPoint 기준 DOM tree를 직렬화하고 예외/budget 정보를 함께 반환한다. */
   return function getDomTree(args: unknown): GetDomTreeResult {
-    const { selector, pickPoint } = readDomTreeRequestArgs(args);
+    const { selector, pickPoint, domPath } = readDomTreeRequestArgs(args);
     const context: DomTreeSerializeContext = {
       visitedNodes: 0,
       truncatedByBudget: false,
     };
 
     try {
-      const found = options.resolveTargetElement(selector, pickPoint);
+      const found = resolveDomTreeTargetElement(options, selector, pickPoint, domPath);
       if (!found || found.nodeType !== 1) {
         return {
           ok: false,

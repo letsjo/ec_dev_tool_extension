@@ -119,4 +119,36 @@ describe('createDomHighlightHandlers', () => {
     });
     expect(getWindowStore()[COMPONENT_KEY]).toBeNull();
   });
+
+  it('resolves duplicate selector by domPath when highlighting component', () => {
+    const first = document.createElement('input');
+    first.id = 'name';
+    first.placeholder = '거래처';
+    const second = document.createElement('input');
+    second.id = 'name';
+    second.placeholder = '프로젝트';
+    const wrapper = document.createElement('div');
+    wrapper.id = 'wrapper';
+    wrapper.append(first, second);
+    document.body.append(wrapper);
+
+    const handlers = createDomHighlightHandlers({
+      componentHighlightStorageKey: COMPONENT_KEY,
+      hoverPreviewStorageKey: HOVER_KEY,
+      buildCssSelector: () => '#name',
+      getElementPath: (el) => {
+        if (!(el instanceof Element)) return '';
+        return `path:${(el as HTMLInputElement).placeholder || ''}`;
+      },
+    });
+
+    const result = handlers.highlightComponent({
+      selector: '#name',
+      domPath: 'path:프로젝트',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(first.style.outline).toBe('');
+    expect(second.style.outline).toContain('2px');
+  });
 });

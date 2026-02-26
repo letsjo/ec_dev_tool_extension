@@ -18,7 +18,7 @@ interface CreatePanelControllerRuntimeOptions {
   ) => void;
   fetchReactInfoForElementSelection: (selector: string, pickPoint?: PickPoint) => void;
   clearPageHoverPreview: () => void;
-  fetchDomTree: (selector: string, pickPoint?: PickPoint) => void;
+  fetchDomTree: (selector: string, pickPoint?: PickPoint, domPath?: string) => void;
   setElementOutput: (text: string) => void;
   setReactStatus: (text: string, isError?: boolean) => void;
   setDomTreeStatus: (text: string, isError?: boolean) => void;

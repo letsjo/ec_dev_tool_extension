@@ -26,7 +26,7 @@ interface CreateControllerWiringLifecycleOptions {
     pickPoint?: PickPoint,
     fetchOptions?: FetchReactInfoOptions,
   ) => void;
-  fetchDomTree: (selector: string, pickPoint?: PickPoint) => void;
+  fetchDomTree: (selector: string, pickPoint?: PickPoint, domPath?: string) => void;
   setElementOutput: (text: string) => void;
   setReactStatus: (text: string, isError?: boolean) => void;
   setDomTreeStatus: (text: string, isError?: boolean) => void;

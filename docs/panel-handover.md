@@ -61,7 +61,7 @@
   - `initDomRefs()`로 필수 DOM 참조 수집
   - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
   - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
-  - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
+  - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화(중복 selector 시 domPath 보조 매칭) 위임
   - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected), elementSelected 수신 시 pending runtime refresh reset 위임
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `controllerWiring.ts` 유틸로 pane/target/dom/react/runtime/bootstrap 결선 조립 책임 위임
@@ -72,7 +72,7 @@
   - `lifecycle/bootstrapFlow.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts`, `paneSetters.ts` 유틸로 패널 텍스트/empty/error 클래스 토글 규칙과 pane setter 결선 위임
-  - `domTree/renderer.ts`, `domTree/fetchFlow.ts` 유틸로 DOM 트리 노드 렌더링과 getDomTree 조회/응답 상태 반영, 최신 요청 id 기반 stale 응답 차단 플로우 위임
+  - `domTree/renderer.ts`, `domTree/fetchFlow.ts` 유틸로 DOM 트리 노드 렌더링과 getDomTree 조회/응답 상태 반영(중복 selector 시 domPath 전달), 최신 요청 id 기반 stale 응답 차단 플로우 위임
   - `reactInspector/signatures.ts`, `reactInspector/signatureHash.ts`, `reactInspector/signatureBuilders.ts`, `reactInspector/search/index.ts`, `reactInspector/search/searchTextCache.ts`, `reactInspector/search/searchFilter.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/flow/fetchFlow.ts`, `reactInspector/flow/inspectDataStage.ts`, `reactInspector/lookup.ts`, `reactInspector/openInSources.ts`, `reactInspector/path/pathActions.ts`, `reactInspector/path/pathBindings.ts`, `reactInspector/path/pathCompletion.ts`, `reactInspector/path/pathFailure.ts`, `reactInspector/path/pathOpenAction.ts`, `reactInspector/path/pathRequest.ts`, `reactInspector/path/pathRequestCompletion.ts`, `reactInspector/path/pathRequestRunner.ts`, `reactInspector/path/pathResponse.ts`, `reactInspector/collectionDisplay.ts`, `reactInspector/collectionDisplayMeta.ts`, `reactInspector/collectionDisplayTokenNormalize.ts`, `reactInspector/hookTreeTypes.ts`, `reactInspector/hookTreeNormalization.ts`, `reactInspector/hookTreeBuilders.ts`, `reactInspector/hookTreeModel.ts`, `reactInspector/jsonTokenNodes.ts`, `reactInspector/preview/jsonCollectionPreview.ts`, `reactInspector/preview/jsonPreviewCollection.ts`, `reactInspector/preview/jsonObjectPreview.ts`, `reactInspector/jsonObjectArraySummary.ts`, `reactInspector/jsonObjectArrayChildren.ts`, `reactInspector/preview/jsonPreviewPrimitive.ts`, `reactInspector/preview/jsonPreviewObjectMeta.ts`, `reactInspector/preview/jsonPreviewTokenStrategies.ts`, `reactInspector/preview/jsonPreviewBudget.ts`, `reactInspector/preview/jsonPreview.ts`, `reactInspector/jsonDehydratedNode.ts`, `reactInspector/jsonObjectArrayNode.ts`, `reactInspector/jsonRowUi.ts`, `reactInspector/jsonRefMap.ts`, `reactInspector/jsonHookTreeRenderer.ts`, `reactInspector/search/searchStatus.ts`, `reactInspector/controllerState.ts`, `reactInspector/controllerStateModel.ts`, `reactInspector/controllerDerivations.ts`, `reactInspector/controllerFlowTypes.ts`, `reactInspector/controllerFlowInteractionWiring.ts`, `reactInspector/controllerFlows.ts`, `reactInspector/search/searchInputFlow.ts`, `reactInspector/viewState.ts`, `reactInspector/selection/index.ts`, `reactInspector/selection/selectionModel.ts`, `reactInspector/list/listTreeModel.ts`, `reactInspector/list/listTreeScrollAnchor.ts`, `reactInspector/list/listTreeRenderer.ts`, `reactInspector/detail/detailRenderer.ts`, `reactInspector/detail/detailApply.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/reactInspect fetch request-response stage 오케스트레이션/reactInspect data stage(이전 선택/접힘 스냅샷 + 결과 모델 적용) 계산/lookup 저장·refresh lookup 계산·inspectPath fallback/devtools inspect eval expression 조립·실패 판정·상태 문구 규칙/inspectFunction·serializeValue completion 후처리(action/value) 규칙/inspectFunction/serializeValue 액션 핸들러 오케스트레이션/inspectPath request-open-action bindings 조립/function inspect open action(eval 실행 + 상태 문구) 오케스트레이션/inspectPath 실패 유형 정규화·상태 문구 규칙/inspectPath 호출 args(selector/pickPoint/mode/serializeLimit) 조립/inspectPath 요청 completion을 판별 유니온(`success`/`failure`)으로 정규화하고 success/failure 타입가드 제공/inspectPath request runner 생성(브리지 호출 + completion 반환)/inspectPath 성공 payload 파싱/시그니처 value hash 계산과 detail/update/list 빌더 분리/collection token(map/set) display path/meta 정규화 + token normalize/meta/path 역매핑 책임 분리/hook row 정규화 + explicit/fallback 트리 빌드 전략 분리/function/circular token 노드 렌더 규칙/collection token + display collection meta(map/set) preview 공통 빌더 + summary/hook collection limit 프리셋 분리/object/array preview 공통 빌더 + object/array details summary meta/preview 계산 분리 + object/array children row 렌더(helper)/JSON/hook summary preview 문자열 빌더(primitive/object/collection/dehydrated) 규칙/controller state read-write snapshot 분리/controller mutable model + update writer 분리/controller 파생 계산/검색 캐시 갱신/JSON 섹션 조립 결선 분리/controller interaction 결선(list/detail/search/selection/detailQueue)과 fetch/reset/apply 결선 분리/dehydrated token lazy expand + runtime serialize refresh 렌더 규칙/object/array details summary+lazy children 렌더 규칙/JSON row toggle button/spacer/expandable key-value row UI 렌더 규칙/ref id 역참조 맵 수집 규칙/hook tree DOM row/group 재귀 렌더 규칙/검색 텍스트 캐시 생성/부분 갱신/길이 보정 분리 및 검색 필터/조상 확장 분리/검색 상태 문구/검색 입력 이벤트 후속 처리/placeholder 상태/선택 시퀀스/선택 인덱스 계산/컴포넌트 트리 모델 계산 + 스크롤 앵커 캡처/복원 분리/상세 패널 DOM 렌더 캐시/상세 응답 병합/상세(JSON/hook) 렌더 로직 위임
 - `controllerWiring.ts`는 pane + data flow + react inspector + lifecycle 결선을 조립하고 controller에는 bootstrap 핸들만 반환
 - `controllerWiringDataFlows.ts`는 target fetch + DOM tree fetch + selection sync 결선을 조립해 `controllerWiring.ts`의 fetch/selection 책임을 축소
@@ -147,7 +147,7 @@ fiber stable id map/function inspect registry 관리는 `src/content/pageAgentFi
 hook 이름 추론/Ref 상태 정규화는 `src/content/pageAgentHookState.ts`로 위임합니다.
 custom hook metadata 병합은 `src/content/pageAgentHookMetadata.ts`로 위임합니다.
 fiber hook linked-list 정규화/개수 집계/직렬화 payload 구성은 `src/content/pageAgentHooksInfo.ts`로 위임합니다.
-DOM selector/path 계산은 `src/content/dom/pageAgentDom.ts`로, DOM tree 직렬화는 `src/content/dom/pageAgentDomTree.ts`로, highlight/preview 상태 복원·적용은 `src/content/dom/pageAgentDomHighlight.ts`로 위임합니다.
+DOM selector/path 계산은 `src/content/dom/pageAgentDom.ts`로, DOM tree 직렬화(selector+pickPoint+domPath 보조 해석)는 `src/content/dom/pageAgentDomTree.ts`로, highlight/preview 상태 복원·적용(selector+domPath 후보 매칭 포함)은 `src/content/dom/pageAgentDomHighlight.ts`로 위임합니다.
 브리지 message 리스너 설치와 request/response 표준화는 `src/content/pageAgentBridge.ts`로 위임합니다.
 method -> handler 라우팅(`ping`, `fetchTargetData`, `reactInspect` 등)은 `src/content/pageAgentMethods.ts`로 위임합니다.
 custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group path 추론 유틸은 `src/content/pageAgentHookGrouping.ts`로, dispatcher/ref/render 대상 해석 유틸은 `src/content/pageAgentHookRuntime.ts`로, hook dispatcher 타입/상태/메서드 구성 유틸은 `src/content/hooks/inspect/pageAgentHookDispatcherTypes.ts`/`src/content/hooks/inspect/pageAgentHookDispatcherState.ts`/`src/content/hooks/inspect/pageAgentHookDispatcherMethods.ts`로, dispatcher 조립/Proxy fallback 유틸은 `src/content/hooks/inspect/pageAgentHookDispatcher.ts`로, inspect dispatcher/state+warmup cache 조립 유틸은 `src/content/hooks/inspect/pageAgentHookInspectContext.ts`로, render pass 조립 유틸은 `src/content/hooks/inspect/pageAgentHookInspectRender.ts`로, dispatcher 교체/console mute/render 실행 유틸은 `src/content/hooks/inspect/pageAgentHookRenderExecution.ts`로, 전체 오케스트레이션은 `src/content/pageAgentHookGroups.ts`로 위임합니다.
@@ -163,10 +163,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - DOM 모듈 위치: `src/content/dom/**`
 - `pageAgentDomTree.ts`: DOM tree 직렬화(getDomTree) 전담
-- `pageAgentDomHighlight.ts`: component highlight/hover preview 스타일 적용/복원, scrollIntoView, 상태 스냅샷 전담
+- `pageAgentDomHighlight.ts`: component highlight/hover preview 스타일 적용/복원, scrollIntoView, selector+domPath 중복 후보 보정 전담
 - `pageAgentDomSelectors.ts`: DOM selector/path 계산(`buildCssSelector`, `getElementPath`, `resolveTargetElement`) 전담
 - `pageAgentDom.ts`: DOM tree/highlight handler 결선과 DOM selector helper 재export 전담
-- `pageAgentDomTree.ts`: unknown request payload를 안전 파싱(selector/pickPoint)하고 노드 budget 컨텍스트(`visitedNodes`, `truncatedByBudget`)로 직렬화 상태를 추적
+- `pageAgentDomTree.ts`: unknown request payload를 안전 파싱(selector/pickPoint/domPath)하고 노드 budget 컨텍스트(`visitedNodes`, `truncatedByBudget`)로 직렬화 상태를 추적
 - `pageAgentDomHighlightState.ts`: highlight/preview 스타일 snapshot 저장·복원·clear와 selector 기반 스타일 적용 상태 전이 전담
 - `pageAgentDomHighlight.ts`: highlight/preview 응답 payload(tag/selector/domPath/rect) 조립 오케스트레이션 전담
 - `pageAgent.ts`: 설치 가드와 runtime bootstrap 엔트리 전담
@@ -521,7 +521,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.3 DOM Tree 모듈 분리 규칙
 
 - `domTree/renderer.ts`: DOM 노드 라벨 생성(`<tag>`, `</tag>`)과 트리 `<details>` 렌더링 전담
-- `domTree/fetchFlow.ts`: getDomTree 조회 시작 상태, pageAgent 응답 파이프라인 연결, latest-request-only 응답 반영(stale discard), 결과 렌더/실패 문구 반영 규칙 전담(`getDomTreeOutputEl` getter 기반 지연 DOM 접근)
+- `domTree/fetchFlow.ts`: getDomTree 조회 시작 상태, pageAgent 응답 파이프라인 연결, latest-request-only 응답 반영(stale discard), selector 중복 보정용 domPath 전달, 결과 렌더/실패 문구 반영 규칙 전담(`getDomTreeOutputEl` getter 기반 지연 DOM 접근)
 - `controllerWiring.ts`: DOM Tree UI setter와 fetch flow 결선, 상위 이벤트(요소 선택/런타임 갱신) 오케스트레이션 전담
 
 ## 7.4 Panel Bridge 모듈 분리 규칙
@@ -542,7 +542,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 7.7 Panel Selection Sync 모듈 분리 규칙
 
-- `pageAgent/selectionSync.ts`: 선택 컴포넌트 DOM 하이라이트, hover preview 정리, Selected Element/DOM Tree 동기화 전담
+- `pageAgent/selectionSync.ts`: 선택 컴포넌트 DOM 하이라이트/hover preview 정리 시 selector+domPath를 함께 전달하고, highlight 결과 domPath로 Selected Element/DOM Tree 동기화를 유지하는 계층 전담
 - `controllerWiring.ts`: selection index/스크롤/상세 조회 흐름을 관리하고 selection sync 핸들러 호출 결선 전담
 
 ## 7.8 Panel Pane State 모듈 분리 규칙
@@ -949,6 +949,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/runtimeRefresh/scheduler.test.ts`: `scheduler.ts`의 debounce 병합, min interval 보장, in-flight queued 실행, `reset`/`dispose` 상태 정리 분기
   - `tests/panel/controllerRuntime.test.ts`: `controller/runtime.ts`의 runtime refresh/picker/teardown 결선과 runtime listener remove handle 저장 분기
   - `tests/panel/elementPickerBridgeFlow.test.ts`: `bridgeFlow.ts`의 elementSelected 처리(runtime refresh reset + dom/react fetch)와 pageRuntimeChanged schedule 분기
+  - `tests/panel/selectionSync.test.ts`: `selectionSync.ts`의 highlight/preview payload(selector+domPath)와 DOM Tree 동기화 인자 전달 분기
   - `tests/panel/controllerBootstrap.test.ts`: `controller/bootstrap.ts`의 workspace initialization + bootstrap flow 결선(컨텍스트 getter 주입) 분기
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
@@ -977,10 +978,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/fetchFlow.test.ts`: `fetchFlow.ts`의 latest-response-only 적용과 foreground in-flight 동안 background refresh skip 규칙 분기
   - `tests/reactInspector/jsonRefMap.test.ts`: `jsonRefMap.ts`의 nested ref id 수집, 내부 meta key 제외, 순환 참조 안전 스캔 분기
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기
-  - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 unknown payload 안전 처리, 대상 미발견 에러 처리, DOM tree 직렬화 기본 경로
+  - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 unknown payload 안전 처리, 대상 미발견 에러 처리, DOM tree 직렬화 기본 경로, duplicate selector domPath 보정 분기
   - `tests/content/pageAgentDomSelectors.test.ts`: DOM path/css selector 생성과 selector fallback target resolve 분기
   - `tests/content/elementPickerOverlay.test.ts`: element picker overlay의 pointer/mouse/contextmenu/Escape 이벤트 consume과 선택/취소 상태 전환 분기
-  - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, clear 복원, selector 미발견 에러 처리
+  - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, duplicate selector domPath 매칭, clear 복원, selector 미발견 에러 처리
   - `tests/content/pageAgentDomHighlightState.test.ts`: style snapshot restore/clear와 selector 미발견 실패 분기
   - `tests/content/elementPickerBridge.test.ts`: `elementPickerBridge.ts`의 pageAgent script load 실패 후 재주입, load 성공 후 injected 고정 분기
   - `tests/content/elementPickerPageAgentClient.test.ts`: `elementPickerPageAgentClient.ts`의 request/response resolve, error reject, stop listener cancel 분기

@@ -1,5 +1,5 @@
 import { isPageHighlightResult } from '../../../shared/inspector';
-import type { ReactComponentInfo } from '../../../shared/inspector';
+import type { PickPoint, ReactComponentInfo } from '../../../shared/inspector';
 
 type CallInspectedPageAgent = (
   method: string,
@@ -13,7 +13,7 @@ interface CreatePanelSelectionSyncHandlersOptions {
   setElementOutput: (text: string) => void;
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
-  fetchDomTree: (selector: string) => void;
+  fetchDomTree: (selector: string, pickPoint?: PickPoint, domPath?: string) => void;
 }
 
 /** component 선택 시 pageAgent 기반 DOM 동기화 핸들러를 구성한다. */
@@ -46,9 +46,13 @@ export function createPanelSelectionSyncHandlers(
   /** 해당 기능 흐름을 처리 */
   function previewPageDomForComponent(component: ReactComponentInfo) {
     if (!component.domSelector) return;
-    callInspectedPageAgent('previewComponent', { selector: component.domSelector }, () => {
-      /** 동작 없음. */
-    });
+    callInspectedPageAgent(
+      'previewComponent',
+      { selector: component.domSelector, domPath: component.domPath ?? '' },
+      () => {
+        /** 동작 없음. */
+      },
+    );
   }
 
   /** UI 상태 또는 문구를 설정 */
@@ -86,7 +90,7 @@ export function createPanelSelectionSyncHandlers(
 
     callInspectedPageAgent(
       'highlightComponent',
-      { selector: component.domSelector },
+      { selector: component.domSelector, domPath: component.domPath ?? '' },
       (res, errorText) => {
         if (errorText) {
           setReactStatus(`DOM 하이라이트 실행 오류: ${errorText}`, true);
@@ -102,7 +106,13 @@ export function createPanelSelectionSyncHandlers(
 
         setReactStatus(`컴포넌트 ${component.name} DOM 하이라이트 완료`);
         setElementOutputFromHighlightResult(res, component);
-        fetchDomTree(res.selector ?? component.domSelector ?? '');
+        // 중복 selector(id/name 중복) 환경에서는 domPath를 함께 전달해
+        // selected DOM tree가 highlight target과 동일 요소를 가리키도록 맞춘다.
+        fetchDomTree(
+          res.selector ?? component.domSelector ?? '',
+          undefined,
+          res.domPath ?? component.domPath ?? '',
+        );
       },
     );
   }

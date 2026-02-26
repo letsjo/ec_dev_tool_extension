@@ -15,7 +15,7 @@ interface CreateElementPickerBridgeFlowOptions {
   setReactStatus: (text: string, isError?: boolean) => void;
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
-  fetchDomTree: (selector: string, pickPoint?: PickPoint) => void;
+  fetchDomTree: (selector: string, pickPoint?: PickPoint, domPath?: string) => void;
   fetchReactInfoForElementSelection: (selector: string, pickPoint?: PickPoint) => void;
   resetRuntimeRefresh: () => void;
   scheduleRuntimeRefresh: () => void;

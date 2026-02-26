@@ -62,7 +62,7 @@ export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
     });
   }
 
-  function fetchDomTree(selector: string, pickPoint?: PickPoint) {
+  function fetchDomTree(selector: string, pickPoint?: PickPoint, domPath?: string) {
     const requestId = latestRequestId + 1;
     latestRequestId = requestId;
 
@@ -71,7 +71,7 @@ export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
 
     options.callInspectedPageAgent(
       'getDomTree',
-      { selector, pickPoint: pickPoint ?? null },
+      { selector, pickPoint: pickPoint ?? null, domPath: domPath ?? '' },
       (response, errorText) => {
         // 빠른 연속 선택 시 늦게 도착한 이전 응답이 최신 선택 결과를 덮어쓰지 않도록 막는다.
         if (requestId !== latestRequestId) return;
