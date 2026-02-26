@@ -1,4 +1,4 @@
-import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
+import { isWorkspacePanelId, type WorkspacePanelId } from '../../workspacePanels';
 
 export type WorkspaceDockDirection = 'left' | 'right' | 'top' | 'bottom' | 'center';
 export type WorkspaceNodePathSegment = 'first' | 'second';

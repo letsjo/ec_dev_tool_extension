@@ -63,7 +63,8 @@ npm test
 │   │       ├── controller.ts             # 패널 기능 오케스트레이션 로직
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/
-│   │           ├── layoutModel.ts        # 워크스페이스 레이아웃 트리 모델/연산
+│   │           ├── layout/
+│   │           │   └── layoutModel.ts    # 워크스페이스 레이아웃 트리 모델/연산
 │   │           ├── manager.ts            # 워크스페이스 레이아웃/드래그/리사이즈 상태머신
 │   │           ├── storage.ts            # 워크스페이스 localStorage 유틸
 │   │           └── wheelScrollFallback.ts # 패널 wheel 스크롤 보정

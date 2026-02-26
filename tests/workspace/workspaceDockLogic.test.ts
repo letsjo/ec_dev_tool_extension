@@ -6,7 +6,7 @@ import {
   createWorkspacePanelNode,
   createWorkspaceSplitNode,
   type WorkspaceLayoutNode,
-} from '../../src/features/panel/workspace/layoutModel';
+} from '../../src/features/panel/workspace/layout/layoutModel';
 
 function readPanelOrder(node: WorkspaceLayoutNode | null, output: string[] = []): string[] {
   if (!node) return output;

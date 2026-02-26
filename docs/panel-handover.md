@@ -300,14 +300,14 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspacePanels.ts`
 - `src/features/panel/controller.ts`
 - `src/features/panel/controllerWiring.ts`
-- `src/features/panel/workspace/layoutModel.ts`
-- `src/features/panel/workspace/layoutTypes.ts`
-- `src/features/panel/workspace/layoutTreeOps.ts`
-- `src/features/panel/workspace/layoutTreeCollect.ts`
-- `src/features/panel/workspace/layoutTreeTransform.ts`
-- `src/features/panel/workspace/layoutTreeNormalize.ts`
-- `src/features/panel/workspace/layoutVisibility.ts`
-- `src/features/panel/workspace/layoutReconcile.ts`
+- `src/features/panel/workspace/layout/layoutModel.ts`
+- `src/features/panel/workspace/layout/layoutTypes.ts`
+- `src/features/panel/workspace/layout/layoutTreeOps.ts`
+- `src/features/panel/workspace/layout/layoutTreeCollect.ts`
+- `src/features/panel/workspace/layout/layoutTreeTransform.ts`
+- `src/features/panel/workspace/layout/layoutTreeNormalize.ts`
+- `src/features/panel/workspace/layout/layoutVisibility.ts`
+- `src/features/panel/workspace/layout/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLifecycle.ts`
 - `src/features/panel/workspace/managerInteractionFlowWiring.ts`
@@ -322,7 +322,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/domPatcher.ts`
 - `src/features/panel/workspace/renderPipeline.ts`
 - `src/features/panel/workspace/renderFlow.ts`
-- `src/features/panel/workspace/layoutDom.ts`
+- `src/features/panel/workspace/layout/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
 - `src/features/panel/workspace/interactionBindings.ts`
@@ -652,7 +652,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ### 새 워크스페이스 패널 추가
 
 1. `src/features/panel/workspacePanels.ts`에 panel id/config 추가
-2. 필요 시 `src/features/panel/workspace/layoutModel.ts`의 `createDefaultWorkspaceLayout()` 기본 트리 반영
+2. 필요 시 `src/features/panel/workspace/layout/layoutModel.ts`의 `createDefaultWorkspaceLayout()` 기본 트리 반영
 3. `src/features/panel/workspace/manager.ts`의 이벤트/렌더 파이프라인에서 신규 패널 동작 경로 확인
 4. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
 5. `src/ui/panels/index.ts` export 등록
@@ -761,14 +761,14 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/reactInspector/detail/detailFetchQueueResponse.ts`
 - `src/features/panel/reactInspector/detail/detailFetchQueue.ts`
 - `src/features/panel/runtimeRefresh/scheduler.ts`
-- `src/features/panel/workspace/layoutModel.ts`
-- `src/features/panel/workspace/layoutTypes.ts`
-- `src/features/panel/workspace/layoutTreeOps.ts`
-- `src/features/panel/workspace/layoutTreeCollect.ts`
-- `src/features/panel/workspace/layoutTreeTransform.ts`
-- `src/features/panel/workspace/layoutTreeNormalize.ts`
-- `src/features/panel/workspace/layoutVisibility.ts`
-- `src/features/panel/workspace/layoutReconcile.ts`
+- `src/features/panel/workspace/layout/layoutModel.ts`
+- `src/features/panel/workspace/layout/layoutTypes.ts`
+- `src/features/panel/workspace/layout/layoutTreeOps.ts`
+- `src/features/panel/workspace/layout/layoutTreeCollect.ts`
+- `src/features/panel/workspace/layout/layoutTreeTransform.ts`
+- `src/features/panel/workspace/layout/layoutTreeNormalize.ts`
+- `src/features/panel/workspace/layout/layoutVisibility.ts`
+- `src/features/panel/workspace/layout/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLifecycle.ts`
 - `src/features/panel/workspace/managerInteractionFlowWiring.ts`
@@ -783,7 +783,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/domPatcher.ts`
 - `src/features/panel/workspace/renderPipeline.ts`
 - `src/features/panel/workspace/renderFlow.ts`
-- `src/features/panel/workspace/layoutDom.ts`
+- `src/features/panel/workspace/layout/layoutDom.ts`
 - `src/features/panel/workspace/panelBindings.ts`
 - `src/features/panel/workspace/containerBindings.ts`
 - `src/features/panel/workspace/interactionBindings.ts`

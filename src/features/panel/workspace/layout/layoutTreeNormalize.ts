@@ -1,4 +1,4 @@
-import type { WorkspacePanelId } from '../workspacePanels';
+import type { WorkspacePanelId } from '../../workspacePanels';
 import { createWorkspaceSplitNode, type WorkspaceLayoutNode } from './layoutTypes';
 
 /** 이전 상태를 복원 */

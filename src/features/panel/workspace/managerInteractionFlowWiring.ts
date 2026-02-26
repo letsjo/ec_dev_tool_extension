@@ -3,11 +3,11 @@ import type {
   WorkspaceDropTarget,
   WorkspaceNodePath,
   WorkspacePanelState,
-} from './layoutModel';
+} from './layout/layoutModel';
 import {
   parseWorkspaceNodePath,
   WORKSPACE_DOCK_SPLIT_RATIO,
-} from './layoutModel';
+} from './layout/layoutModel';
 import {
   computeWorkspaceDockDirection,
   findWorkspacePanelByPoint,

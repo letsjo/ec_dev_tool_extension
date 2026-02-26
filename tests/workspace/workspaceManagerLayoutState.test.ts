@@ -4,7 +4,7 @@ import type {
   WorkspaceLayoutNode,
   WorkspaceNodePath,
   WorkspacePanelState,
-} from '../../src/features/panel/workspace/layoutModel';
+} from '../../src/features/panel/workspace/layout/layoutModel';
 import { createWorkspaceManagerLayoutState } from '../../src/features/panel/workspace/managerLayoutState';
 import type { WorkspacePanelId } from '../../src/features/panel/workspacePanels';
 

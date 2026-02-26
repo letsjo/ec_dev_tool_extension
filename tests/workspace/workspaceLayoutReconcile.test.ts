@@ -4,8 +4,8 @@ import {
   createWorkspaceSplitNode,
   type WorkspaceLayoutNode,
   type WorkspacePanelId,
-} from '../../src/features/panel/workspace/layoutModel';
-import { reconcileWorkspaceLayoutState } from '../../src/features/panel/workspace/layoutReconcile';
+} from '../../src/features/panel/workspace/layout/layoutModel';
+import { reconcileWorkspaceLayoutState } from '../../src/features/panel/workspace/layout/layoutReconcile';
 
 function readPanelOrder(node: WorkspaceLayoutNode | null, output: WorkspacePanelId[] = []) {
   if (!node) return output;

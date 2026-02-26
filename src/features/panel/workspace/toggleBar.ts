@@ -1,5 +1,5 @@
 import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
-import type { WorkspacePanelState } from './layoutModel';
+import type { WorkspacePanelState } from './layout/layoutModel';
 
 /** footer 토글바 버튼 상태(active/aria-pressed)를 현재 panel state로 동기화한다. */
 export function renderWorkspacePanelToggleBar(

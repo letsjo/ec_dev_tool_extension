@@ -1,4 +1,4 @@
-import type { WorkspacePanelId } from '../workspacePanels';
+import type { WorkspacePanelId } from '../../workspacePanels';
 
 /** split 축(row/column)에 맞는 기본 DOM 골격을 생성한다. */
 export function createWorkspaceSplitElement(axis: 'row' | 'column'): HTMLDivElement {

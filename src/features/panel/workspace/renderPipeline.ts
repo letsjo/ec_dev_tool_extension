@@ -1,5 +1,5 @@
 import type { WorkspacePanelId } from '../workspacePanels';
-import type { WorkspaceLayoutNode } from './layoutModel';
+import type { WorkspaceLayoutNode } from './layout/layoutModel';
 import { hideWorkspaceDockPreview as hideWorkspaceDockPreviewValue } from './dockPreview';
 import { patchWorkspaceLayoutDomNode as patchWorkspaceLayoutDomNodeValue } from './domPatcher';
 import { getWorkspaceLayoutRootElement as getWorkspaceLayoutRootElementValue } from './domReuse';

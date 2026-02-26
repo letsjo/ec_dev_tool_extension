@@ -9,8 +9,8 @@ import {
   parseWorkspaceNodePath,
   pruneWorkspaceLayoutByVisiblePanels,
   stringifyWorkspaceNodePath,
-} from '../../src/features/panel/workspace/layoutModel';
-import type { WorkspaceLayoutNode } from '../../src/features/panel/workspace/layoutModel';
+} from '../../src/features/panel/workspace/layout/layoutModel';
+import type { WorkspaceLayoutNode } from '../../src/features/panel/workspace/layout/layoutModel';
 import type { WorkspacePanelId } from '../../src/features/panel/workspacePanels';
 
 function readPanelIds(node: WorkspaceLayoutNode | null, output: WorkspacePanelId[] = []) {

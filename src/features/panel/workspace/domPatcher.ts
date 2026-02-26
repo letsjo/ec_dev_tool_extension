@@ -4,13 +4,13 @@ import {
   stringifyWorkspaceNodePath,
   type WorkspaceLayoutNode,
   type WorkspaceNodePath,
-} from "./layoutModel";
+} from "./layout/layoutModel";
 import {
   collectWorkspacePanelIdsFromDom,
   findReusableWorkspaceDomRoot,
   isSameWorkspacePanelIdSet,
 } from "./domReuse";
-import { createWorkspaceSplitElement } from "./layoutDom";
+import { createWorkspaceSplitElement } from "./layout/layoutDom";
 
 interface PatchWorkspaceLayoutDomNodeArgs {
   layoutNode: WorkspaceLayoutNode;

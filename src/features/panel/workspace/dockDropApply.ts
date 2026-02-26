@@ -7,7 +7,7 @@ import {
   swapWorkspaceLayoutPanels,
   type WorkspaceDropTarget,
   type WorkspaceLayoutNode,
-} from './layoutModel';
+} from './layout/layoutModel';
 
 export interface WorkspaceDockDropApplyResult {
   changed: boolean;

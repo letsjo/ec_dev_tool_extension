@@ -4,7 +4,7 @@ import type {
   WorkspaceDropTarget,
   WorkspaceNodePath,
   WorkspacePanelState,
-} from '../../src/features/panel/workspace/layoutModel';
+} from '../../src/features/panel/workspace/layout/layoutModel';
 import type { WorkspaceInteractionBindingsOptions } from '../../src/features/panel/workspace/interactionBindings';
 import { createWorkspaceManagerInteractionFlowWiring } from '../../src/features/panel/workspace/managerInteractionFlowWiring';
 

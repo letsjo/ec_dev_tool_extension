@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { appendPanelToWorkspaceLayout, collectPanelIdsFromLayout } from '../../src/features/panel/workspace/layoutTreeCollect';
-import { dedupeWorkspaceLayoutPanels, pruneWorkspaceLayoutByVisiblePanels } from '../../src/features/panel/workspace/layoutTreeNormalize';
+import { appendPanelToWorkspaceLayout, collectPanelIdsFromLayout } from '../../src/features/panel/workspace/layout/layoutTreeCollect';
+import { dedupeWorkspaceLayoutPanels, pruneWorkspaceLayoutByVisiblePanels } from '../../src/features/panel/workspace/layout/layoutTreeNormalize';
 import {
   insertPanelByDockTarget,
   removePanelFromWorkspaceLayout,
   updateWorkspaceSplitRatioByPath,
-} from '../../src/features/panel/workspace/layoutTreeTransform';
+} from '../../src/features/panel/workspace/layout/layoutTreeTransform';
 import {
   createWorkspacePanelNode,
   createWorkspaceSplitNode,
-} from '../../src/features/panel/workspace/layoutTypes';
+} from '../../src/features/panel/workspace/layout/layoutTypes';
 
 describe('workspace layout tree modules', () => {
   it('collects panel ids and appends panel as column split', () => {

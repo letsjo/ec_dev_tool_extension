@@ -1,5 +1,5 @@
 import type { WorkspacePanelId } from '../workspacePanels';
-import type { WorkspacePanelState } from './layoutModel';
+import type { WorkspacePanelState } from './layout/layoutModel';
 
 export interface CreateWorkspaceActionHandlersOptions {
   isWorkspacePanelId: (value: unknown) => value is WorkspacePanelId;

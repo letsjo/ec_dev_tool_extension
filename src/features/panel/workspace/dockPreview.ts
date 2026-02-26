@@ -1,5 +1,5 @@
 import { isWorkspacePanelId } from '../workspacePanels';
-import type { WorkspaceDockDirection } from './layoutModel';
+import type { WorkspaceDockDirection } from './layout/layoutModel';
 
 /** 조건에 맞는 대상을 탐색 */
 export function findWorkspacePanelByPoint(

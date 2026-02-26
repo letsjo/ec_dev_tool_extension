@@ -2,7 +2,7 @@ import {
   clampWorkspaceSplitRatio,
   parseWorkspaceNodePath,
   type WorkspaceNodePath,
-} from './layoutModel';
+} from './layout/layoutModel';
 
 export interface WorkspaceResizeDragState {
   splitPath: WorkspaceNodePath;

@@ -3,14 +3,14 @@ import type {
   WorkspaceLayoutNode,
   WorkspaceNodePath,
   WorkspacePanelState,
-} from './layoutModel';
+} from './layout/layoutModel';
 import {
   removePanelFromWorkspaceLayout as removePanelFromWorkspaceLayoutValue,
   updateWorkspaceSplitRatioByPath as updateWorkspaceSplitRatioByPathValue,
-} from './layoutModel';
+} from './layout/layoutModel';
 import type { WorkspacePanelId } from '../workspacePanels';
 import { applyWorkspaceDockDropToLayout as applyWorkspaceDockDropToLayoutValue } from './dockDropApply';
-import { reconcileWorkspaceLayoutState as reconcileWorkspaceLayoutStateValue } from './layoutReconcile';
+import { reconcileWorkspaceLayoutState as reconcileWorkspaceLayoutStateValue } from './layout/layoutReconcile';
 import {
   persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,
   restoreWorkspaceStateSnapshot as restoreWorkspaceStateSnapshotValue,
