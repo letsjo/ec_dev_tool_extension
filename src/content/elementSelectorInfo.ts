@@ -27,9 +27,21 @@ function escapeCssIdent(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, "\\$&");
 }
 
+/** duplicate id 환경에서 id selector를 단독으로 사용해도 되는지 판별한다. */
+function isUniqueIdSelector(el: Element): boolean {
+  const id = (el as HTMLElement).id;
+  if (!id) return false;
+  const selector = `#${escapeCssIdent(id)}`;
+  try {
+    return (el.ownerDocument ?? document).querySelectorAll(selector).length === 1;
+  } catch (_) {
+    return false;
+  }
+}
+
 /** element 기준으로 비교적 안정적인 css selector를 생성한다. */
 function buildCssSelector(el: Element): string {
-  if ((el as HTMLElement).id) {
+  if ((el as HTMLElement).id && isUniqueIdSelector(el)) {
     return `#${escapeCssIdent((el as HTMLElement).id)}`;
   }
 
@@ -41,10 +53,9 @@ function buildCssSelector(el: Element): string {
     let segment = tag;
 
     const id = (current as HTMLElement).id;
+    const hasUniqueId = Boolean(id) && isUniqueIdSelector(current);
     if (id) {
       segment += `#${escapeCssIdent(id)}`;
-      segments.unshift(segment);
-      break;
     }
 
     const parentEl: Element | null = current.parentElement;
@@ -65,6 +76,9 @@ function buildCssSelector(el: Element): string {
     }
 
     segments.unshift(segment);
+    if (hasUniqueId) {
+      break;
+    }
     current = parentEl;
     guard += 1;
   }

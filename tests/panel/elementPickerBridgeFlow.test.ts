@@ -39,7 +39,11 @@ describe('elementPickerBridgeFlow', () => {
     expect(setPickerModeActive).toHaveBeenCalledWith(false);
     expect(resetRuntimeRefresh).toHaveBeenCalledTimes(1);
     expect(setElementOutput).toHaveBeenCalledTimes(1);
-    expect(fetchDomTree).toHaveBeenCalledWith('.target', { x: 10, y: 20 });
+    expect(fetchDomTree).toHaveBeenCalledWith(
+      '.target',
+      { x: 10, y: 20 },
+      'html > body > .target',
+    );
     expect(fetchReactInfoForElementSelection).toHaveBeenCalledWith('.target', { x: 10, y: 20 });
   });
 

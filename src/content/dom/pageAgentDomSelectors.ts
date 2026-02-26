@@ -30,10 +30,22 @@ function escapeCssIdent(value: string) {
   return String(value).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
 }
 
+/** duplicate id 여부를 검사해 id selector 단독 사용 가능성을 판별한다. */
+function isUniqueIdSelector(el: Element) {
+  const id = el.id;
+  if (!id) return false;
+  const selector = `#${escapeCssIdent(id)}`;
+  try {
+    return (el.ownerDocument ?? document).querySelectorAll(selector).length === 1;
+  } catch (_) {
+    return false;
+  }
+}
+
 /** 파생 데이터나 요약 값을 구성 */
 function buildCssSelector(el: Element | null) {
   if (!el || el.nodeType !== 1) return '';
-  if (el.id) return `#${escapeCssIdent(el.id)}`;
+  if (el.id && isUniqueIdSelector(el)) return `#${escapeCssIdent(el.id)}`;
 
   const segments: string[] = [];
   let current: Element | null = el;
@@ -42,10 +54,10 @@ function buildCssSelector(el: Element | null) {
     let segment = String(current.tagName || '').toLowerCase();
     if (!segment) break;
 
-    if (current.id) {
+    const currentHasId = Boolean(current.id);
+    const currentHasUniqueId = currentHasId && isUniqueIdSelector(current);
+    if (currentHasId) {
       segment += `#${escapeCssIdent(current.id)}`;
-      segments.unshift(segment);
-      break;
     }
 
     const parent: Element | null = current.parentElement;
@@ -65,6 +77,9 @@ function buildCssSelector(el: Element | null) {
     }
 
     segments.unshift(segment);
+    if (currentHasUniqueId) {
+      break;
+    }
     current = parent;
     guard += 1;
   }

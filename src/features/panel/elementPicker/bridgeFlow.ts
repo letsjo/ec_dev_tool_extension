@@ -23,6 +23,7 @@ interface CreateElementPickerBridgeFlowOptions {
 
 interface SelectedElementSnapshot {
   querySelector: string;
+  domPath: string;
   clickPoint?: PickPoint;
   outputText: string;
 }
@@ -49,6 +50,7 @@ function buildSelectedElementSnapshot(elementInfo: ElementInfo): SelectedElement
 
   return {
     querySelector: selectorText || domPathText,
+    domPath: domPathText,
     clickPoint,
     outputText: lines.join('\n'),
   };
@@ -121,7 +123,11 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
 
       const selectedElement = buildSelectedElementSnapshot(message.elementInfo);
       options.setElementOutput(selectedElement.outputText);
-      options.fetchDomTree(selectedElement.querySelector, selectedElement.clickPoint);
+      options.fetchDomTree(
+        selectedElement.querySelector,
+        selectedElement.clickPoint,
+        selectedElement.domPath,
+      );
       options.fetchReactInfoForElementSelection(
         selectedElement.querySelector,
         selectedElement.clickPoint,

@@ -35,6 +35,30 @@ describe('pageAgentDomSelectors', () => {
     wrapper.remove();
   });
 
+  it('builds scoped selector when id is duplicated', () => {
+    const firstRow = document.createElement('div');
+    firstRow.id = 'row-1';
+    const firstInput = document.createElement('input');
+    firstInput.id = 'name';
+    firstRow.appendChild(firstInput);
+
+    const secondRow = document.createElement('div');
+    secondRow.id = 'row-2';
+    const secondInput = document.createElement('input');
+    secondInput.id = 'name';
+    secondRow.appendChild(secondInput);
+
+    document.body.append(firstRow, secondRow);
+
+    const selector = buildCssSelector(secondInput);
+    expect(selector).not.toBe('#name');
+    expect(document.querySelector(selector)).toBe(secondInput);
+    expect(document.querySelectorAll(selector)).toHaveLength(1);
+
+    firstRow.remove();
+    secondRow.remove();
+  });
+
   it('resolves element by selector and handles invalid selectors safely', () => {
     const target = document.createElement('section');
     target.id = 'selector-target';
