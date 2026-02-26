@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이/하이라이트 상태, runtime hook/pageAgent 브리지 상태, 선택 element selector/path 정보 계산, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentDomTree.ts`, `src/content/pageAgentDomHighlight.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookGroupingAncestor.ts`, `src/content/pageAgentHookGroupingPath.ts`, `src/content/pageAgentHookGroupingPrimitive.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookDispatcherTypes.ts`, `src/content/pageAgentHookDispatcherState.ts`, `src/content/pageAgentHookDispatcherMethodTypes.ts`, `src/content/pageAgentHookDispatcherMethodContextState.ts`, `src/content/pageAgentHookDispatcherMethodEffects.ts`, `src/content/pageAgentHookDispatcherMethodComputed.ts`, `src/content/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberSearchTypes.ts`, `src/content/pageAgentFiberSearchTree.ts`, `src/content/pageAgentFiberSearchDomScan.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationCore.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentDomTree.ts`, `src/content/pageAgentDomHighlight.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookGroupingAncestor.ts`, `src/content/pageAgentHookGroupingPath.ts`, `src/content/pageAgentHookGroupingPrimitive.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookDispatcherTypes.ts`, `src/content/pageAgentHookDispatcherState.ts`, `src/content/pageAgentHookDispatcherMethodTypes.ts`, `src/content/pageAgentHookDispatcherMethodContextState.ts`, `src/content/pageAgentHookDispatcherMethodEffects.ts`, `src/content/pageAgentHookDispatcherMethodComputed.ts`, `src/content/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/pageAgentInspectPathValue.ts`, `src/content/pageAgentInspectPathMode.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberSearchTypes.ts`, `src/content/pageAgentFiberSearchTree.ts`, `src/content/pageAgentFiberSearchDomScan.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationCore.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`, `src/content/reactRuntimeHookLifecycle.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -110,7 +110,7 @@
 
 ### 5.3 런타임 자동 갱신 흐름
 
-1. main world `reactRuntimeHook.ts`가 `onCommitFiberRoot` 감지
+1. main world `reactRuntimeHook.ts`가 `reactRuntimeHookLifecycle.ts`를 통해 `onCommitFiberRoot` 감지 래퍼 설치
 2. content가 `pageRuntimeChanged` 메시지 송신(디바운스/스로틀 적용)
 3. panel이 `runtimeRefresh/scheduler.ts`의 `schedule(true)` 호출
 4. scheduler가 최소 간격을 보장해 경량 React 재조회를 실행
@@ -764,6 +764,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentSerializerSummary.ts`
 - `src/content/pageAgentSerializerOptions.ts`
 - `src/content/reactRuntimeHook.ts`
+- `src/content/reactRuntimeHookLifecycle.ts`
 - `src/background.ts`
 - `panel.html`
 
