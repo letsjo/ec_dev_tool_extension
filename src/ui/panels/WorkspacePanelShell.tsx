@@ -3,7 +3,7 @@ import {
   WORKSPACE_PANEL_CONFIG,
   type WorkspacePanelId,
 } from "../../features/panel/workspacePanels";
-import { PanelActionButton } from "../components/PanelActionButton";
+import { PanelActionButton } from "../components";
 
 interface WorkspacePanelShellProps {
   panelId: WorkspacePanelId;

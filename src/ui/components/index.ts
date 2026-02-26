@@ -1,3 +1,2 @@
-export { IconButton } from "./IconButton";
-export { PanelActionButton } from "./PanelActionButton";
-export { PanelSubtitle } from "./PanelSubtitle";
+export { IconButton, PanelActionButton } from "./actions";
+export { PanelSubtitle } from "./text";

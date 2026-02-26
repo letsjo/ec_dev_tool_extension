@@ -573,7 +573,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `src/ui/components/**`
   - 재사용 가능한 작은 단위 컴포넌트
-  - 버튼/서브타이틀/공통 패널 래퍼처럼 데이터 조회 없이 UI 표현만 담당
+  - `components/actions/**`: 버튼/아이콘 액션 primitive 전담
+  - `components/text/**`: 상태/서브타이틀 텍스트 primitive 전담
 
 - `src/ui/panels/**`
   - 단독으로 렌더 가능한 완성 패널 컴포넌트
