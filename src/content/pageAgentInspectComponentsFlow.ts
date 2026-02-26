@@ -119,6 +119,8 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       const visiting = new Set<object>();
       const fiberIdMap = getFiberIdMap();
 
+      // selector 없이 lightweight refresh가 들어오면 기존 root에 selected id가 없는 경우가 있어
+      // 문서 전체 fallback root를 재탐색해 selection 복원 안정성을 높인다.
       if (
         selectedComponentId &&
         !includeSerializedData &&
