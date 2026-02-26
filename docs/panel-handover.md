@@ -364,8 +364,8 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
 - `src/features/panel/workspace/interaction/splitResize.ts`
 - `src/features/panel/workspace/interaction/splitResizeSession.ts`
 - `src/features/panel/workspace/interaction/resizeFlow.ts`
-- `src/features/panel/workspace/scrollSnapshot.ts`
-- `src/features/panel/workspace/state/statePersistence.ts`
+- `src/features/panel/workspace/persistence/scrollSnapshot.ts`
+- `src/features/panel/workspace/persistence/statePersistence.ts`
 - `src/features/panel/workspace/state/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `panel.html` (레이아웃 CSS)
@@ -432,8 +432,8 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
 - `splitResize.ts`: split divider pointerdown 상태 복원, pointer 좌표->ratio 계산, split ratio CSS 반영 전담
 - `splitResizeSession.ts`: split resize drag 시작/종료 시 전역 pointer 리스너와 body cursor/userSelect 상태 제어 전담
 - `resizeFlow.ts`: split resize pointer down/move/up/cancel 이벤트 전이와 split ratio persist 콜백 오케스트레이션 전담
-- `scrollSnapshot.ts`: 레이아웃 patch 전후 스크롤 위치 캡처/복원 로직 전담
-- `statePersistence.ts`: workspace panel 상태(`visible|closed`)와 layout tree의 localStorage 저장/복원 전담
+- `persistence/scrollSnapshot.ts`: 레이아웃 patch 전후 스크롤 위치 캡처/복원 로직 전담
+- `persistence/statePersistence.ts`: workspace panel 상태(`visible|closed`)와 layout tree의 localStorage 저장/복원 전담
 - `storage.ts`: 워크스페이스 localStorage read/write 유틸
 - `wheelScrollFallback.ts`: 패널 wheel capture 보정 리스너 설치/해제
 - `controller.ts`: panel 실행 엔트리(`runPanel`)와 fatal error fallback 렌더만 담당
@@ -849,8 +849,8 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
 - `src/features/panel/workspace/interaction/splitResize.ts`
 - `src/features/panel/workspace/interaction/splitResizeSession.ts`
 - `src/features/panel/workspace/interaction/resizeFlow.ts`
-- `src/features/panel/workspace/scrollSnapshot.ts`
-- `src/features/panel/workspace/state/statePersistence.ts`
+- `src/features/panel/workspace/persistence/scrollSnapshot.ts`
+- `src/features/panel/workspace/persistence/statePersistence.ts`
 - `src/features/panel/workspace/state/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `src/ui/sections/shell/PanelViewSection.tsx`

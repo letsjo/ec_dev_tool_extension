@@ -14,7 +14,7 @@ import { reconcileWorkspaceLayoutState as reconcileWorkspaceLayoutStateValue } f
 import {
   persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,
   restoreWorkspaceStateSnapshot as restoreWorkspaceStateSnapshotValue,
-} from './statePersistence';
+} from '../persistence/statePersistence';
 
 interface WorkspaceManagerLayoutStateDependencies {
   removePanelFromWorkspaceLayout: typeof removePanelFromWorkspaceLayoutValue;

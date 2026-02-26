@@ -84,6 +84,8 @@ npm test
 │   │           ├── layout/
 │   │           │   └── layoutModel.ts    # 워크스페이스 레이아웃 트리 모델/연산
 │   │           ├── manager.ts            # 워크스페이스 레이아웃/드래그/리사이즈 상태머신
+│   │           ├── persistence/
+│   │           │   └── statePersistence.ts # 워크스페이스 레이아웃/패널 상태 저장·복원
 │   │           ├── render/
 │   │           │   └── renderFlow.ts     # 워크스페이스 DOM 렌더/후처리 파이프라인
 │   │           ├── state/

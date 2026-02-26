@@ -3,7 +3,7 @@ import type { WorkspaceLayoutNode, WorkspacePanelState } from '../layout/layoutM
 import {
   captureWorkspaceScrollSnapshots,
   restoreWorkspaceScrollSnapshots,
-} from '../scrollSnapshot';
+} from '../persistence/scrollSnapshot';
 import {
   syncWorkspacePanelBodySizes,
   syncWorkspaceSplitCollapsedRows,

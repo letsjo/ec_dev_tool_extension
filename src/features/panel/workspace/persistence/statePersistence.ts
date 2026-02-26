@@ -5,7 +5,7 @@ import {
   type WorkspaceLayoutNode,
   type WorkspacePanelState,
 } from '../layout/layoutModel';
-import { readStoredJson, writeStoredJson } from './storage';
+import { readStoredJson, writeStoredJson } from '../state/storage';
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = 'ecDevTool.workspaceLayout.v1';
 const WORKSPACE_PANEL_STATE_STORAGE_KEY = 'ecDevTool.workspacePanelState.v1';
