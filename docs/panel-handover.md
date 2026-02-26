@@ -798,6 +798,11 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/reactRuntimeHook.ts`
 - `src/content/reactRuntimeHookLifecycle.ts`
 - `src/background.ts`
+- `src/background/messageRouter.ts`
+- `src/background/contentScriptBridge.ts`
+- `src/background/messageErrors.ts`
+- `src/background/runtimeRelay.ts`
+- `src/background/runtimeMessageTypes.ts`
 - `panel.html`
 
 ## 12. 단위 테스트(Phase 58+)
@@ -862,6 +867,19 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/elementPickerPageAgentClient.test.ts`: `elementPickerPageAgentClient.ts`의 request/response resolve, error reject, stop listener cancel 분기
   - `tests/content/pageAgentHookDispatcher.test.ts`: `pageAgentHookDispatcher.ts`의 useState cursor 전진, `use` promise unresolved/resolved 처리, context snapshot, generic hook fallback 분기
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
+  - `tests/content/pageAgentInspectTarget.test.ts`: `resolveInspectRootContext`/`resolveInspectPathTargetFiber`의 nearest fallback 및 문서 전역 componentId fallback 분기
+  - `tests/content/pageAgentFiberSearch.test.ts`: componentId 기반 root/fiber 탐색(root match, legacy index, 문서 전역 탐색) 분기
+  - `tests/content/pageAgentHookGrouping.test.ts`: 공통 조상 frame 탐색, primitive frame index 보정, group path 추론, primitive 이름 정규화 분기
+  - `tests/content/pageAgentHookDispatcherMethods.test.ts`: dispatcher built-in method(`useSyncExternalStore`, `useTransition`, `use`) 분기
+  - `tests/content/reactRuntimeHookLifecycle.test.ts`: runtime hook 설치/세터 인터셉트/commit throttle/beforeunload 정리 분기
   - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, hook count 집계, class component hook payload 직렬화
   - `tests/content/pageAgentSerializationCore.test.ts`: serializer 내부키 매핑, class name 판별, dehydrated 토큰 생성, 순환참조 저장소 동작
+  - `tests/content/pageAgentSerializationCoreModules.test.ts`: serializer core 분해 모듈(internal key/dehydrated/seen store) 직접 검증
   - `tests/content/pageAgentSerializationStrategies.test.ts`: array/map/set/object serializer strategy의 truncation/예외 처리/내부키 매핑
+  - `tests/content/pageAgentSerializationValueProps.test.ts`: `makeSerializer`와 `serializePropsForFiber`의 depth/circular/host props truncation 분기
+  - `tests/workspace/layoutTreeModules.test.ts`: `layoutTreeCollect`/`layoutTreeTransform`/`layoutTreeNormalize`의 append/remove/insert/prune/dedupe 분기
+  - `tests/background/messageRouter.test.ts`: background message router의 start/callPageAgent/runtime relay 분기
+  - `tests/panel/devtoolsNetworkBridge.test.ts`: inspected tab id 조회와 onNavigated listener add/remove 브리지 분기
+  - `tests/reactInspector/fetchStages.test.ts`: `fetchRequestStage`/`fetchResponseStage`의 lookup·loading·finish 결선 분기
+  - `tests/reactInspector/listTreeNodeRenderer.test.ts`: components tree row toggle/hover/focus/select 이벤트 결선 분기
+  - `tests/reactInspector/jsonDehydratedNode.test.ts`: dehydrated token lazy expand/runtime refresh replacement 분기
