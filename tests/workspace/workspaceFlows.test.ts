@@ -229,6 +229,42 @@ describe('createWorkspaceResizeFlow', () => {
     expect(onPersistSplitRatio).not.toHaveBeenCalled();
   });
 
+  it('resets cancel state so the next resize session works normally', () => {
+    flow.onWorkspaceSplitResizePointerDown({
+      button: 0,
+      target: dividerEl,
+      preventDefault: vi.fn(),
+    } as unknown as PointerEvent);
+    flow.onWorkspaceSplitResizePointerCancel();
+
+    const afterCancelMovePreventDefault = vi.fn();
+    flow.onWorkspaceSplitResizePointerMove({
+      clientX: 120,
+      clientY: 0,
+      preventDefault: afterCancelMovePreventDefault,
+    } as unknown as PointerEvent);
+
+    expect(computeWorkspaceResizeRatioFromPointer).not.toHaveBeenCalled();
+    expect(afterCancelMovePreventDefault).not.toHaveBeenCalled();
+
+    flow.onWorkspaceSplitResizePointerDown({
+      button: 0,
+      target: dividerEl,
+      preventDefault: vi.fn(),
+    } as unknown as PointerEvent);
+    flow.onWorkspaceSplitResizePointerMove({
+      clientX: 240,
+      clientY: 0,
+      preventDefault: vi.fn(),
+    } as unknown as PointerEvent);
+    flow.onWorkspaceSplitResizePointerUp();
+
+    expect(startWorkspaceSplitResizeSession).toHaveBeenCalledTimes(2);
+    expect(stopWorkspaceSplitResizeSession).toHaveBeenCalledTimes(2);
+    expect(computeWorkspaceResizeRatioFromPointer).toHaveBeenCalledTimes(1);
+    expect(onPersistSplitRatio).toHaveBeenCalledTimes(1);
+  });
+
   it('restores default ratio on divider double click', () => {
     const onDoubleClickPreventDefault = vi.fn();
     flow.onWorkspaceSplitDividerDoubleClick({
