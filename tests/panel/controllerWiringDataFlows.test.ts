@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createControllerWiringDataFlows } from '../../src/features/panel/controllerWiringDataFlows';
+import { createControllerWiringDataFlows } from '../../src/features/panel/controller/wiring/controllerWiringDataFlows';
 
 describe('createControllerWiringDataFlows', () => {
   it('composes target/dom/selection flow dependencies', () => {

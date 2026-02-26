@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/controllerWiring.ts`, `src/features/panel/controllerWiringDataFlows.ts`, `src/features/panel/controllerWiringReactInspector.ts`, `src/features/panel/controllerWiringLifecycle.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/controller/wiring/controllerWiring.ts`, `src/features/panel/controller/wiring/controllerWiringDataFlows.ts`, `src/features/panel/controller/wiring/controllerWiringReactInspector.ts`, `src/features/panel/controller/wiring/controllerWiringLifecycle.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -307,7 +307,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `src/features/panel/workspacePanels.ts`
 - `src/features/panel/controller.ts`
-- `src/features/panel/controllerWiring.ts`
+- `src/features/panel/controller/wiring/controllerWiring.ts`
 - `src/features/panel/workspace/layout/layoutModel.ts`
 - `src/features/panel/workspace/layout/layoutTypes.ts`
 - `src/features/panel/workspace/layout/layoutTreeOps.ts`
@@ -593,14 +593,14 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - 패널 실행 엔트리(`runPanel`)와 fatal error fallback 처리
   - `controllerWiring.ts`에서 조립된 `bootstrapPanel`을 실행
 
-- `src/features/panel/controllerWiring.ts`
+- `src/features/panel/controller/wiring/controllerWiring.ts`
   - 브리지/조회/선택/렌더 상위 결선의 핵심
   - workspace 렌더/이벤트 상태머신은 `workspace/manager.ts`에 위임하고, wheel 보정은 `workspace/wheelScrollFallback.ts`를 사용
-- `src/features/panel/controllerWiringDataFlows.ts`
+- `src/features/panel/controller/wiring/controllerWiringDataFlows.ts`
   - target/dom/selection 동기화 결선 조립 전담
-- `src/features/panel/controllerWiringReactInspector.ts`
+- `src/features/panel/controller/wiring/controllerWiringReactInspector.ts`
   - React Inspector path binding + flow 결선 조립 전담
-- `src/features/panel/controllerWiringLifecycle.ts`
+- `src/features/panel/controller/wiring/controllerWiringLifecycle.ts`
   - runtime refresh + bootstrap 결선 조립 전담
 
 ## 9. 디버깅 체크리스트
@@ -681,7 +681,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 관련 파일 바로가기:
 
 - `src/features/panel/controller.ts`
-- `src/features/panel/controllerWiring.ts`
+- `src/features/panel/controller/wiring/controllerWiring.ts`
 - `src/features/panel/controllerContext.ts`
 - `src/features/panel/controllerRuntime.ts`
 - `src/features/panel/controllerBootstrap.ts`

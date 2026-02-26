@@ -61,6 +61,8 @@ npm test
 │   │   ├── panel.ts                      # 패널 entry
 │   │   └── panel/
 │   │       ├── controller.ts             # 패널 기능 오케스트레이션 로직
+│   │       ├── controller/
+│   │       │   └── wiring/               # controller 결선 조립(wiring/data-flow/lifecycle/react)
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/
 │   │           ├── layout/

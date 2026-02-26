@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PanelControllerContext } from '../../src/features/panel/controllerContext';
-import { createControllerWiringLifecycle } from '../../src/features/panel/controllerWiringLifecycle';
+import { createControllerWiringLifecycle } from '../../src/features/panel/controller/wiring/controllerWiringLifecycle';
 import type { RuntimeRefreshLookup } from '../../src/features/panel/reactInspector/lookup';
 
 describe('createControllerWiringLifecycle', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactComponentInfo } from '../../src/shared/inspector';
 import { createReactInspectorControllerState } from '../../src/features/panel/reactInspector/controllerState';
-import { createControllerWiringReactInspector } from '../../src/features/panel/controllerWiringReactInspector';
+import { createControllerWiringReactInspector } from '../../src/features/panel/controller/wiring/controllerWiringReactInspector';
 
 describe('createControllerWiringReactInspector', () => {
   it('wires path bindings output into controller flows', () => {

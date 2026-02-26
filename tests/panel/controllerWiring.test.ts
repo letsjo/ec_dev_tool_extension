@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPanelControllerWiring } from '../../src/features/panel/controllerWiring';
+import { createPanelControllerWiring } from '../../src/features/panel/controller/wiring/controllerWiring';
 
 describe('createPanelControllerWiring', () => {
   const originalChrome = (globalThis as { chrome?: unknown }).chrome;
