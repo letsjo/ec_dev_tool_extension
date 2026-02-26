@@ -1,6 +1,6 @@
-export { PanelViewSection } from "./PanelViewSection";
-export { PanelHeaderSection } from "./PanelHeaderSection";
-export { PanelFooterSection } from "./PanelFooterSection";
-export { PanelWorkspaceSection } from "./PanelWorkspaceSection";
-export { WorkspaceCanvasSection } from "./WorkspaceCanvasSection";
-export { WorkspacePanelsSection } from "./WorkspacePanelsSection";
+export { PanelViewSection } from "./shell/PanelViewSection";
+export { PanelHeaderSection } from "./shell/PanelHeaderSection";
+export { PanelFooterSection } from "./shell/PanelFooterSection";
+export { PanelWorkspaceSection } from "./workspace/PanelWorkspaceSection";
+export { WorkspaceCanvasSection } from "./workspace/WorkspaceCanvasSection";
+export { WorkspacePanelsSection } from "./workspace/WorkspacePanelsSection";

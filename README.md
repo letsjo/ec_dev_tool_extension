@@ -112,7 +112,8 @@ npm test
 
 - `src/ui/components`: 버튼/라벨/공통 래퍼 같은 최소 단위 UI 컴포넌트
 - `src/ui/panels`: 단독으로 렌더 가능한 "완성 패널" 컴포넌트
-- `src/ui/sections`: 여러 패널/컴포넌트를 조합하는 레이아웃 섹션 컴포넌트
+- `src/ui/sections/shell`: 헤더/뷰 골격 같은 상위 레이아웃 섹션
+- `src/ui/sections/workspace`: 워크스페이스 본문/패널 집합 섹션
 
 ## 인수인계 문서
 

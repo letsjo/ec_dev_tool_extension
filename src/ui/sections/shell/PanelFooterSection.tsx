@@ -2,8 +2,8 @@ import React from "react";
 import {
   WORKSPACE_PANEL_CONFIG,
   WORKSPACE_PANEL_IDS,
-} from "../../features/panel/workspacePanels";
-import { PanelActionButton } from "../components";
+} from "../../../features/panel/workspacePanels";
+import { PanelActionButton } from "../../components";
 
 /** 패널 하단 토글 바 */
 export function PanelFooterSection() {

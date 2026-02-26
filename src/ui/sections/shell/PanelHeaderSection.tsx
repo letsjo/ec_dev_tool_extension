@@ -1,5 +1,5 @@
 import React from "react";
-import { IconButton, PanelSubtitle } from "../components";
+import { IconButton, PanelSubtitle } from "../../components";
 
 /** 패널 상단 툴바/상태 영역 */
 export function PanelHeaderSection() {

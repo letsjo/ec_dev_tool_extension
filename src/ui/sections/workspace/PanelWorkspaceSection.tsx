@@ -1,5 +1,5 @@
 import React from "react";
-import { PanelFooterSection } from "./PanelFooterSection";
+import { PanelFooterSection } from "../shell/PanelFooterSection";
 import { WorkspaceCanvasSection } from "./WorkspaceCanvasSection";
 
 /** 워크스페이스(메인 캔버스 + footer) */

@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/controllerWiring.ts`, `src/features/panel/controllerWiringDataFlows.ts`, `src/features/panel/controllerWiringReactInspector.ts`, `src/features/panel/controllerWiringLifecycle.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/controllerWiring.ts`, `src/features/panel/controllerWiringDataFlows.ts`, `src/features/panel/controllerWiringReactInspector.ts`, `src/features/panel/controllerWiringLifecycle.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -559,7 +559,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 8. 주요 UI 구성 파일 역할
 
-- `src/ui/sections/PanelViewSection.tsx`
+- `src/ui/sections/shell/PanelViewSection.tsx`
   - UI 조립 전용 최상위 섹션 컴포넌트
   - `PanelHeaderSection`, `PanelWorkspaceSection`을 조합해 패널 골격을 구성
 
@@ -656,7 +656,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 3. `src/features/panel/workspace/manager.ts`의 이벤트/렌더 파이프라인에서 신규 패널 동작 경로 확인
 4. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
 5. `src/ui/panels/index.ts` export 등록
-6. `src/ui/sections/WorkspacePanelsSection.tsx` 조립 목록에 추가
+6. `src/ui/sections/workspace/WorkspacePanelsSection.tsx` 조립 목록에 추가
 7. `controllerWiring.ts`(필요 시 `controllerContext.ts`)에서 필요한 DOM ref/getter 결선 추가
 8. `panel.html`에서 필요 스타일 추가
 
@@ -797,8 +797,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/state/statePersistence.ts`
 - `src/features/panel/workspace/state/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
-- `src/ui/sections/PanelViewSection.tsx`
-- `src/ui/sections/WorkspacePanelsSection.tsx`
+- `src/ui/sections/shell/PanelViewSection.tsx`
+- `src/ui/sections/workspace/WorkspacePanelsSection.tsx`
 - `src/ui/components/WorkspacePanel.tsx`
 - `src/ui/panels/index.ts`
 - `src/features/panel/workspacePanels.ts`
