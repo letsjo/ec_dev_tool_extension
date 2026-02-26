@@ -142,8 +142,8 @@ npm test
 - `src/ui/panels/react`: React 트리/인스펙터 패널
 - `src/ui/panels/element`: 선택 요소/경로/DOM 패널
 - `src/ui/panels/common`: 공통 패널(raw result 등)
-- `src/ui/sections/shell`: 헤더/뷰 골격 같은 상위 레이아웃 섹션
-- `src/ui/sections/workspace`: 워크스페이스 본문/패널 집합 섹션
+- `src/ui/sections/shell`: 헤더/뷰 골격 같은 상위 레이아웃 섹션(`PanelToolbarSection`, `PanelStatusSection` 포함)
+- `src/ui/sections/workspace`: 워크스페이스 본문/패널 집합 섹션(`PanelFooterSection`, canvas/panels 포함)
 
 ## 인수인계 문서
 

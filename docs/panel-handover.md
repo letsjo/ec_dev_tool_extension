@@ -617,7 +617,9 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
 
 - `src/ui/sections/**`
   - 화면 조립/레이아웃 전용 섹션 컴포넌트
-  - `PanelHeaderSection`, `PanelWorkspaceSection`, `WorkspaceCanvasSection`, `WorkspacePanelsSection`으로 화면 계층을 구성
+  - `PanelHeaderSection`은 `PanelToolbarSection`/`PanelStatusSection`으로 header 책임을 분리하고,
+    `PanelWorkspaceSection`은 `PanelFooterSection`/`WorkspaceCanvasSection`으로 workspace 책임을 분리한다.
+  - 최종적으로 `PanelHeaderSection`, `PanelWorkspaceSection`, `WorkspaceCanvasSection`, `WorkspacePanelsSection`으로 화면 계층을 구성
   - `WorkspacePanelsSection`에서 패널 등록 순서와 레이아웃 구성을 일관되게 유지
 
 - `panel.html`
