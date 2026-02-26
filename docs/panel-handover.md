@@ -17,7 +17,7 @@
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
-- 파일: `src/background.ts`
+- 파일: `src/background.ts`, `src/background/messageRouter.ts`, `src/background/contentScriptBridge.ts`, `src/background/messageErrors.ts`, `src/background/runtimeRelay.ts`, `src/background/runtimeMessageTypes.ts`
 - 역할: panel ↔ content 메시지 중계, content script 미주입 탭 복구
 
 3. Content script (isolated world)
