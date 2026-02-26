@@ -1,3 +1,4 @@
+import { isPickPoint } from '../../../shared/inspector';
 import { resolveInspectRootContext } from '../../pageAgentInspectTarget';
 
 type InspectFiber = {
@@ -78,12 +79,13 @@ function resolveInspectComponentsRootContext(
   const visiting = new Set<object>();
   const fiberIdMap = options.getFiberIdMap();
 
-  // selector 없이 lightweight refresh가 들어오면 기존 root에 selected id가 없는 경우가 있어
-  // 문서 전체 fallback root를 재탐색해 selection 복원 안정성을 높인다.
+  // selector/pickPoint 모두 비어있는 lightweight refresh에서만 selected id fallback을 허용한다.
+  // pickPoint가 있으면 최신 사용자 선택 타깃을 우선해 stale selected id로 root를 바꾸지 않는다.
   if (
     options.selectedComponentId &&
     !options.includeSerializedData &&
     !options.selector &&
+    !isPickPoint(options.pickPoint) &&
     !options.rootHasComponentId(rootFiber, options.selectedComponentId, fiberIdMap)
   ) {
     const matchedRoot = options.findRootFiberByComponentId(options.selectedComponentId, fiberIdMap);

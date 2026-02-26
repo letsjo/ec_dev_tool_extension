@@ -238,7 +238,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - inspect components 모듈 위치: `src/content/inspect/components/**`
 - `pageAgentInspectComponentsArgs.ts`: `reactInspect` 입력 파싱/정규화 전담
 - `pageAgentInspectComponentsSource.ts`: `reactInspect` 응답의 source element 요약(selector/path/tag) 조립 전담
-- `pageAgentInspectComponentsRoot.ts`: `reactInspect` root 해석 + lightweight fallback root 재탐색(selected id 복원) + walk cache(fiberIdMap/hostCache/visiting) 준비 전담
+- `pageAgentInspectComponentsRoot.ts`: `reactInspect` root 해석 + lightweight fallback root 재탐색(selected id 복원, selector/pickPoint 모두 비어있을 때만 허용) + walk cache(fiberIdMap/hostCache/visiting) 준비 전담
 - `pageAgentInspectComponentsWalkContext.ts`: `walkInspectableComponents` 호출 결선(getDomInfo/getHooks/getStableId/serializer)과 typed 결과 정규화 전담
 - `pageAgentInspectComponentsResult.ts`: walked components에서 selectedIndex/source summary 계산 전담
 - `pageAgentInspectComponentsFlow.ts`: `reactInspect` root helper + walk helper + result helper를 조합해 응답 payload를 조립하는 오케스트레이션 전담
@@ -983,7 +983,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentHookState.test.ts`: hook 이름 추론(queue/reducer/memoizedState 패턴)과 Ref state display 정규화 분기
   - `tests/content/pageAgentInspectPathArgs.test.ts`: `reactInspectPath` 입력 파싱(componentId/path/mode/serializeLimit clamp) 분기
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
-  - `tests/content/pageAgentInspectComponentsRoot.test.ts`: root 해석 실패 응답과 lightweight fallback root 재탐색 분기
+  - `tests/content/pageAgentInspectComponentsRoot.test.ts`: root 해석 실패 응답, lightweight fallback root 재탐색 분기, pickPoint 우선(stale selected id fallback 차단) 분기
   - `tests/content/pageAgentInspectComponentsResult.test.ts`: walked components에서 selectedIndex/source summary 계산 분기
   - `tests/content/pageAgentInspectComponentsFlow.test.ts`: `reactInspect` 입력 파싱/nearest source summary/기본 selectedIndex/nearest 미해석 에러 분기
   - `tests/content/pageAgentInspect.test.ts`: `createPageAgentInspectHandlers` 결선 후 `reactInspect`/`reactInspectPath` 기본 가드 에러 + roundtrip(component 목록 id -> inspectPath serialize) 회귀 분기
