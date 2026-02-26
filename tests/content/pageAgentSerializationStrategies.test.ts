@@ -4,7 +4,7 @@ import {
   serializeMapValue,
   serializeObjectValue,
   serializeSetValue,
-} from '../../src/content/pageAgentSerializationStrategies';
+} from '../../src/content/serialization/pageAgentSerializationStrategies';
 
 type AnyRecord = Record<string, any>;
 

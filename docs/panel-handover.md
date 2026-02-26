@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이/하이라이트 상태, runtime hook/pageAgent 브리지 상태, 선택 element selector/path 정보 계산, runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentRuntime.ts`, `src/content/pageAgentRuntimeBootstrap.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentDomSelectors.ts`, `src/content/pageAgentDomTree.ts`, `src/content/pageAgentDomHighlight.ts`, `src/content/pageAgentDomHighlightState.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentBridgeMessages.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentTargetFetch.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookGroupRuntimeContext.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookGroupingAncestor.ts`, `src/content/pageAgentHookGroupingPath.ts`, `src/content/pageAgentHookGroupingPrimitive.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookInspectContext.ts`, `src/content/pageAgentHookInspectRender.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookDispatcherTypes.ts`, `src/content/pageAgentHookDispatcherState.ts`, `src/content/pageAgentHookDispatcherMethodTypes.ts`, `src/content/pageAgentHookDispatcherMethodContextState.ts`, `src/content/pageAgentHookDispatcherMethodEffects.ts`, `src/content/pageAgentHookDispatcherMethodComputed.ts`, `src/content/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectTypes.ts`, `src/content/pageAgentInspectFlowWiring.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/inspect/path/pageAgentInspectPathArgs.ts`, `src/content/inspect/path/pageAgentInspectPathValue.ts`, `src/content/inspect/path/pageAgentInspectPathMode.ts`, `src/content/inspect/path/pageAgentInspectPathFlow.ts`, `src/content/inspect/components/pageAgentInspectComponentsArgs.ts`, `src/content/inspect/components/pageAgentInspectComponentsSource.ts`, `src/content/inspect/components/pageAgentInspectComponentsRoot.ts`, `src/content/inspect/components/pageAgentInspectComponentsWalkContext.ts`, `src/content/inspect/components/pageAgentInspectComponentsResult.ts`, `src/content/inspect/components/pageAgentInspectComponentsFlow.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberSearchTypes.ts`, `src/content/pageAgentFiberSearchTree.ts`, `src/content/pageAgentFiberSearchDomScan.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/pageAgentSerialization.ts`, `src/content/pageAgentSerializationValue.ts`, `src/content/pageAgentSerializationValuePrimitives.ts`, `src/content/pageAgentSerializationProps.ts`, `src/content/pageAgentSerializationPropsBudget.ts`, `src/content/pageAgentSerializationPropsEntries.ts`, `src/content/pageAgentSerializationCore.ts`, `src/content/pageAgentSerializationCoreInternalKey.ts`, `src/content/pageAgentSerializationCoreDehydrated.ts`, `src/content/pageAgentSerializationCoreSeenStore.ts`, `src/content/pageAgentSerializationStrategies.ts`, `src/content/pageAgentSerializationStrategyTypes.ts`, `src/content/pageAgentSerializationCollectionStrategies.ts`, `src/content/pageAgentSerializationObjectStrategy.ts`, `src/content/pageAgentCollectionPath.ts`, `src/content/pageAgentSerializerSummary.ts`, `src/content/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`, `src/content/reactRuntimeHookLifecycle.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentRuntime.ts`, `src/content/pageAgentRuntimeBootstrap.ts`, `src/content/pageAgentDom.ts`, `src/content/pageAgentDomSelectors.ts`, `src/content/pageAgentDomTree.ts`, `src/content/pageAgentDomHighlight.ts`, `src/content/pageAgentDomHighlightState.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentBridgeMessages.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentTargetFetch.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookGroupRuntimeContext.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookGroupingAncestor.ts`, `src/content/pageAgentHookGroupingPath.ts`, `src/content/pageAgentHookGroupingPrimitive.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/pageAgentHookPrimitiveStack.ts`, `src/content/pageAgentHookInspectContext.ts`, `src/content/pageAgentHookInspectRender.ts`, `src/content/pageAgentHookRenderExecution.ts`, `src/content/pageAgentHookDispatcher.ts`, `src/content/pageAgentHookDispatcherTypes.ts`, `src/content/pageAgentHookDispatcherState.ts`, `src/content/pageAgentHookDispatcherMethodTypes.ts`, `src/content/pageAgentHookDispatcherMethodContextState.ts`, `src/content/pageAgentHookDispatcherMethodEffects.ts`, `src/content/pageAgentHookDispatcherMethodComputed.ts`, `src/content/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectTypes.ts`, `src/content/pageAgentInspectFlowWiring.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/inspect/path/pageAgentInspectPathArgs.ts`, `src/content/inspect/path/pageAgentInspectPathValue.ts`, `src/content/inspect/path/pageAgentInspectPathMode.ts`, `src/content/inspect/path/pageAgentInspectPathFlow.ts`, `src/content/inspect/components/pageAgentInspectComponentsArgs.ts`, `src/content/inspect/components/pageAgentInspectComponentsSource.ts`, `src/content/inspect/components/pageAgentInspectComponentsRoot.ts`, `src/content/inspect/components/pageAgentInspectComponentsWalkContext.ts`, `src/content/inspect/components/pageAgentInspectComponentsResult.ts`, `src/content/inspect/components/pageAgentInspectComponentsFlow.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberSearchTypes.ts`, `src/content/pageAgentFiberSearchTree.ts`, `src/content/pageAgentFiberSearchDomScan.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/serialization/pageAgentSerialization.ts`, `src/content/serialization/pageAgentSerializationValue.ts`, `src/content/serialization/pageAgentSerializationValuePrimitives.ts`, `src/content/serialization/pageAgentSerializationProps.ts`, `src/content/serialization/pageAgentSerializationPropsBudget.ts`, `src/content/serialization/pageAgentSerializationPropsEntries.ts`, `src/content/serialization/pageAgentSerializationCore.ts`, `src/content/serialization/pageAgentSerializationCoreInternalKey.ts`, `src/content/serialization/pageAgentSerializationCoreDehydrated.ts`, `src/content/serialization/pageAgentSerializationCoreSeenStore.ts`, `src/content/serialization/pageAgentSerializationStrategies.ts`, `src/content/serialization/pageAgentSerializationStrategyTypes.ts`, `src/content/serialization/pageAgentSerializationCollectionStrategies.ts`, `src/content/serialization/pageAgentSerializationObjectStrategy.ts`, `src/content/serialization/pageAgentCollectionPath.ts`, `src/content/serialization/pageAgentSerializerSummary.ts`, `src/content/serialization/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`, `src/content/reactRuntimeHookLifecycle.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -140,7 +140,7 @@ componentId 기반 root/fiber 탐색은 `src/content/pageAgentFiberSearch.ts`로
 DOM element에서 React fiber 추적(`__reactFiber$`, `__reactContainer$`) 유틸은 `src/content/pageAgentFiberElement.ts`로 위임합니다.
 fiber name/tag/선택 대상 계산 유틸은 `src/content/pageAgentFiberDescribe.ts`로 위임합니다.
 fiber stable id map/function inspect registry 관리는 `src/content/pageAgentFiberRegistry.ts`로 위임합니다.
-값 직렬화 public export 배럴은 `src/content/pageAgentSerialization.ts`로, value serializer 오케스트레이션(`makeSerializer`)은 `src/content/pageAgentSerializationValue.ts`로, primitive/special-object probe는 `src/content/pageAgentSerializationValuePrimitives.ts`로, fiber props 직렬화 오케스트레이션은 `src/content/pageAgentSerializationProps.ts`로, fiber props budget 결정은 `src/content/pageAgentSerializationPropsBudget.ts`로, fiber props key loop 직렬화는 `src/content/pageAgentSerializationPropsEntries.ts`로, serializer core helper(내부키 매핑/순환참조 저장소/dehydrated 토큰/클래스명 판별)는 `src/content/pageAgentSerializationCore.ts`로, serializer 옵션 정규화는 `src/content/pageAgentSerializerOptions.ts`로, children/type summary 요약은 `src/content/pageAgentSerializerSummary.ts`로, collection path token 해석은 `src/content/pageAgentCollectionPath.ts`로 위임합니다.
+값 직렬화 public export 배럴은 `src/content/serialization/pageAgentSerialization.ts`로, value serializer 오케스트레이션(`makeSerializer`)은 `src/content/serialization/pageAgentSerializationValue.ts`로, primitive/special-object probe는 `src/content/serialization/pageAgentSerializationValuePrimitives.ts`로, fiber props 직렬화 오케스트레이션은 `src/content/serialization/pageAgentSerializationProps.ts`로, fiber props budget 결정은 `src/content/serialization/pageAgentSerializationPropsBudget.ts`로, fiber props key loop 직렬화는 `src/content/serialization/pageAgentSerializationPropsEntries.ts`로, serializer core helper(내부키 매핑/순환참조 저장소/dehydrated 토큰/클래스명 판별)는 `src/content/serialization/pageAgentSerializationCore.ts`로, serializer 옵션 정규화는 `src/content/serialization/pageAgentSerializerOptions.ts`로, children/type summary 요약은 `src/content/serialization/pageAgentSerializerSummary.ts`로, collection path token 해석은 `src/content/serialization/pageAgentCollectionPath.ts`로 위임합니다.
 hook 이름 추론/Ref 상태 정규화는 `src/content/pageAgentHookState.ts`로 위임합니다.
 custom hook metadata 병합은 `src/content/pageAgentHookMetadata.ts`로 위임합니다.
 fiber hook linked-list 정규화/개수 집계/직렬화 payload 구성은 `src/content/pageAgentHooksInfo.ts`로 위임합니다.
@@ -255,6 +255,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 6.7 pageAgent Serialization 모듈 분리 규칙
 
+- serialization 모듈 위치: `src/content/serialization/**`
 - `pageAgentSerialization.ts`: serializer public export 배럴(`makeSerializer`, `serializePropsForFiber`, `resolveSpecialCollectionPathSegment`) 전담
 - `pageAgentSerializationValue.ts`: inspect payload value serializer 오케스트레이션(`makeSerializer`), depth/call budget + circular 처리 + strategy dispatch 전담
 - `pageAgentSerializationValuePrimitives.ts`: primitive/special object probe(`serializePrimitiveValue`, `serializeSpecialObjectValue`) 전담
@@ -856,23 +857,23 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentFiberElement.ts`
 - `src/content/pageAgentFiberDescribe.ts`
 - `src/content/pageAgentFiberRegistry.ts`
-- `src/content/pageAgentSerialization.ts`
-- `src/content/pageAgentSerializationValue.ts`
-- `src/content/pageAgentSerializationValuePrimitives.ts`
-- `src/content/pageAgentSerializationProps.ts`
-- `src/content/pageAgentSerializationPropsBudget.ts`
-- `src/content/pageAgentSerializationPropsEntries.ts`
-- `src/content/pageAgentSerializationCore.ts`
-- `src/content/pageAgentSerializationCoreInternalKey.ts`
-- `src/content/pageAgentSerializationCoreDehydrated.ts`
-- `src/content/pageAgentSerializationCoreSeenStore.ts`
-- `src/content/pageAgentSerializationStrategies.ts`
-- `src/content/pageAgentSerializationStrategyTypes.ts`
-- `src/content/pageAgentSerializationCollectionStrategies.ts`
-- `src/content/pageAgentSerializationObjectStrategy.ts`
-- `src/content/pageAgentCollectionPath.ts`
-- `src/content/pageAgentSerializerSummary.ts`
-- `src/content/pageAgentSerializerOptions.ts`
+- `src/content/serialization/pageAgentSerialization.ts`
+- `src/content/serialization/pageAgentSerializationValue.ts`
+- `src/content/serialization/pageAgentSerializationValuePrimitives.ts`
+- `src/content/serialization/pageAgentSerializationProps.ts`
+- `src/content/serialization/pageAgentSerializationPropsBudget.ts`
+- `src/content/serialization/pageAgentSerializationPropsEntries.ts`
+- `src/content/serialization/pageAgentSerializationCore.ts`
+- `src/content/serialization/pageAgentSerializationCoreInternalKey.ts`
+- `src/content/serialization/pageAgentSerializationCoreDehydrated.ts`
+- `src/content/serialization/pageAgentSerializationCoreSeenStore.ts`
+- `src/content/serialization/pageAgentSerializationStrategies.ts`
+- `src/content/serialization/pageAgentSerializationStrategyTypes.ts`
+- `src/content/serialization/pageAgentSerializationCollectionStrategies.ts`
+- `src/content/serialization/pageAgentSerializationObjectStrategy.ts`
+- `src/content/serialization/pageAgentCollectionPath.ts`
+- `src/content/serialization/pageAgentSerializerSummary.ts`
+- `src/content/serialization/pageAgentSerializerOptions.ts`
 - `src/content/reactRuntimeHook.ts`
 - `src/content/reactRuntimeHookLifecycle.ts`
 - `src/background.ts`

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   serializePrimitiveValue,
   serializeSpecialObjectValue,
-} from '../../src/content/pageAgentSerializationValuePrimitives';
+} from '../../src/content/serialization/pageAgentSerializationValuePrimitives';
 
 describe('pageAgentSerializationValuePrimitives', () => {
   it('serializes primitive/function tokens and leaves objects unhandled', () => {

@@ -4,7 +4,7 @@ import {
   createSeenReferenceStore,
   mapSerializerInternalKey,
   readObjectClassName,
-} from '../../src/content/pageAgentSerializationCore';
+} from '../../src/content/serialization/pageAgentSerializationCore';
 
 describe('pageAgentSerializationCore', () => {
   it('maps React internal keys to readable placeholder values', () => {

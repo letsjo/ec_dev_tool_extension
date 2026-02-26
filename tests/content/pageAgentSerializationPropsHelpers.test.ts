@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resolveFiberPropsBudget } from '../../src/content/pageAgentSerializationPropsBudget';
-import { serializePropsObjectEntries } from '../../src/content/pageAgentSerializationPropsEntries';
+import { resolveFiberPropsBudget } from '../../src/content/serialization/pageAgentSerializationPropsBudget';
+import { serializePropsObjectEntries } from '../../src/content/serialization/pageAgentSerializationPropsEntries';
 
 describe('pageAgentSerializationProps helpers', () => {
   it('resolves host/non-host fiber props budgets', () => {

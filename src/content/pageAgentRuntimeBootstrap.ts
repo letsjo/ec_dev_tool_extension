@@ -29,7 +29,7 @@ import {
   makeSerializer,
   resolveSpecialCollectionPathSegment,
   serializePropsForFiber,
-} from './pageAgentSerialization';
+} from './serialization/pageAgentSerialization';
 import type { FiberLike } from './pageAgentFiberSearchTypes';
 
 type MethodExecutor = (method: string, args: unknown) => unknown;

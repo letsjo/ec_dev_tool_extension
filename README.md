@@ -72,6 +72,7 @@ npm test
 │   │   ├── inspect/
 │   │   │   ├── components/               # reactInspect components 입력/루트해석/walk/결과 조립 모듈
 │   │   │   └── path/                     # reactInspectPath 입력/경로해석/모드응답 모듈
+│   │   ├── serialization/                # pageAgent serializer 전략/props/path 토큰 모듈
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
 │   │   └── pageAgent.ts                  # main world React/DOM inspector 실행기
 │   ├── shared/
@@ -97,6 +98,7 @@ npm test
   - `Feature Add`: 기능 확장
   - `Docs / Comment`: 문서/주석 동기화
   - `Validation`: 타입/테스트 검증
+- 리팩터링 대상은 `src` 전체(UI 포함)이며, 발견 즉시 TODO 항목을 추가/갱신합니다.
 - 우선순위(P0~P3) 기준으로 순차 진행하며, 작업 중에도 TODO를 계속 업데이트합니다.
 
 ## UI 디렉터리 규칙

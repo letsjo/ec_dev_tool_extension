@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { mapSerializerInternalKey } from '../../src/content/pageAgentSerializationCoreInternalKey';
+import { mapSerializerInternalKey } from '../../src/content/serialization/pageAgentSerializationCoreInternalKey';
 import {
   buildDehydratedToken,
   readObjectClassName,
-} from '../../src/content/pageAgentSerializationCoreDehydrated';
-import { createSeenReferenceStore } from '../../src/content/pageAgentSerializationCoreSeenStore';
+} from '../../src/content/serialization/pageAgentSerializationCoreDehydrated';
+import { createSeenReferenceStore } from '../../src/content/serialization/pageAgentSerializationCoreSeenStore';
 
 describe('pageAgentSerializationCore modules', () => {
   it('maps internal react keys to readable placeholders', () => {

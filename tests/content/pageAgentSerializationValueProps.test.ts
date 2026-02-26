@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { makeSerializer } from '../../src/content/pageAgentSerializationValue';
-import { serializePropsForFiber } from '../../src/content/pageAgentSerializationProps';
+import { makeSerializer } from '../../src/content/serialization/pageAgentSerializationValue';
+import { serializePropsForFiber } from '../../src/content/serialization/pageAgentSerializationProps';
 
 describe('pageAgentSerializationValue/Props', () => {
   it('serializes circular references and function tokens', () => {
