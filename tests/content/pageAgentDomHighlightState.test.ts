@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   applyStyleToSelector,
   clearStoredStyleSnapshot,
-} from '../../src/content/pageAgentDomHighlightState';
+} from '../../src/content/dom/pageAgentDomHighlightState';
 
 const STORAGE_KEY = '__TEST_DOM_HIGHLIGHT_STATE__';
 

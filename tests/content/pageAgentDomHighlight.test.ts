@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDomHighlightHandlers } from '../../src/content/pageAgentDomHighlight';
+import { createDomHighlightHandlers } from '../../src/content/dom/pageAgentDomHighlight';
 
 const COMPONENT_KEY = '__TEST_COMPONENT_HIGHLIGHT__';
 const HOVER_KEY = '__TEST_HOVER_PREVIEW__';

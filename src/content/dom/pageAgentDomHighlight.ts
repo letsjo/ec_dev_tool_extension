@@ -2,8 +2,8 @@ import {
   applyStyleToSelector,
   clearStoredStyleSnapshot,
 } from './pageAgentDomHighlightState';
-import { isRecord } from '../shared/inspector/guards';
-import type { PageHighlightResult } from '../shared/inspector/types';
+import { isRecord } from '../../shared/inspector/guards';
+import type { PageHighlightResult } from '../../shared/inspector/types';
 
 interface CreateDomHighlightHandlersOptions {
   componentHighlightStorageKey: string;

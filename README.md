@@ -68,6 +68,7 @@ npm test
 │   │           ├── storage.ts            # 워크스페이스 localStorage 유틸
 │   │           └── wheelScrollFallback.ts # 패널 wheel 스크롤 보정
 │   ├── content/
+│   │   ├── dom/                          # DOM selector/tree/highlight 핸들러 모듈
 │   │   ├── elementPicker.ts              # 요소 선택 + content/main world 브릿지
 │   │   ├── inspect/
 │   │   │   ├── components/               # reactInspect components 입력/루트해석/walk/결과 조립 모듈

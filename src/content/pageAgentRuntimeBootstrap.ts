@@ -3,7 +3,7 @@ import {
   createPageDomHandlers,
   getElementPath,
   resolveTargetElement as resolveTargetElementValue,
-} from './pageAgentDom';
+} from './dom/pageAgentDom';
 import type { PickPoint } from '../shared/inspector/types';
 import {
   findAnyFiberInDocument,

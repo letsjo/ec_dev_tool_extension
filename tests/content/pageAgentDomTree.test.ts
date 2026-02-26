@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGetDomTreeHandler } from '../../src/content/pageAgentDomTree';
+import { createGetDomTreeHandler } from '../../src/content/dom/pageAgentDomTree';
 
 describe('createGetDomTreeHandler', () => {
   it('handles unknown request payload safely', () => {

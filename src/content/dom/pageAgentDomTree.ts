@@ -1,5 +1,5 @@
-import { isPickPoint, isRecord } from '../shared/inspector/guards';
-import type { DomTreeAttribute, DomTreeNode, PickPoint } from '../shared/inspector/types';
+import { isPickPoint, isRecord } from '../../shared/inspector/guards';
+import type { DomTreeAttribute, DomTreeNode, PickPoint } from '../../shared/inspector/types';
 
 interface CreateGetDomTreeHandlerOptions {
   buildCssSelector: (el: Element | null) => string;

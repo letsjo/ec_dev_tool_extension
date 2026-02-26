@@ -3,7 +3,7 @@ import {
   buildCssSelector,
   getElementPath,
   resolveTargetElement,
-} from '../../src/content/pageAgentDomSelectors';
+} from '../../src/content/dom/pageAgentDomSelectors';
 
 describe('pageAgentDomSelectors', () => {
   it('builds readable element path with id/class segments', () => {
