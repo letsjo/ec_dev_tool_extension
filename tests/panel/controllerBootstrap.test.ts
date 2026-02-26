@@ -49,6 +49,12 @@ describe('createPanelControllerBootstrap', () => {
     const createPanelBootstrapFlow = vi.fn(() => ({
       bootstrapPanel,
     }));
+    const createWorkspaceInitializationBindings = vi.fn(() => ({
+      getPanelWorkspaceEl: panelControllerContext.getPanelWorkspaceEl,
+    }));
+    const createBootstrapFlowBindings = vi.fn(() => ({
+      initDomRefs: panelControllerContext.initDomRefs,
+    }));
 
     const result = createPanelControllerBootstrap(
       {
@@ -72,23 +78,33 @@ describe('createPanelControllerBootstrap', () => {
       {
         createPanelWorkspaceInitialization,
         createPanelBootstrapFlow,
+        createWorkspaceInitializationBindings,
+        createBootstrapFlowBindings,
       },
     );
 
+    expect(createWorkspaceInitializationBindings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        panelControllerContext,
+      }),
+    );
     expect(createPanelWorkspaceInitialization).toHaveBeenCalledWith(
       expect.objectContaining({
         getPanelWorkspaceEl: panelControllerContext.getPanelWorkspaceEl,
-        getWorkspacePanelElements: panelControllerContext.getWorkspacePanelElements,
-        setWorkspaceLayoutManager: panelControllerContext.setWorkspaceLayoutManager,
+      }),
+    );
+    expect(createBootstrapFlowBindings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        panelControllerContext,
+      }),
+      expect.objectContaining({
+        initializeWorkspaceLayout,
+        initializeWheelFallback,
       }),
     );
     expect(createPanelBootstrapFlow).toHaveBeenCalledWith(
       expect.objectContaining({
         initDomRefs: panelControllerContext.initDomRefs,
-        initializeWorkspaceLayout,
-        initializeWheelFallback,
-        setPickerModeActive: panelControllerContext.setPickerModeActive,
-        getPayloadModeBtnEl: panelControllerContext.getPayloadModeBtnEl,
       }),
     );
     expect(result.bootstrapPanel).toBe(bootstrapPanel);

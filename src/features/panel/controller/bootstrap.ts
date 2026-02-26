@@ -3,6 +3,10 @@ import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializatio
 import type { PanelControllerContext } from './context';
 import type { createWorkspaceLayoutManager as createWorkspaceLayoutManagerValue } from '../workspace/manager';
 import type { initWheelScrollFallback as initWheelScrollFallbackValue } from '../workspace/wheelScrollFallback';
+import {
+  createBootstrapFlowBindings as createBootstrapFlowBindingsValue,
+  createWorkspaceInitializationBindings as createWorkspaceInitializationBindingsValue,
+} from './bootstrapBindings';
 
 interface CreatePanelControllerBootstrapOptions {
   panelControllerContext: PanelControllerContext;
@@ -26,11 +30,15 @@ interface CreatePanelControllerBootstrapOptions {
 interface PanelControllerBootstrapDependencies {
   createPanelWorkspaceInitialization: typeof createPanelWorkspaceInitializationValue;
   createPanelBootstrapFlow: typeof createPanelBootstrapFlowValue;
+  createWorkspaceInitializationBindings: typeof createWorkspaceInitializationBindingsValue;
+  createBootstrapFlowBindings: typeof createBootstrapFlowBindingsValue;
 }
 
 const PANEL_CONTROLLER_BOOTSTRAP_DEFAULT_DEPS: PanelControllerBootstrapDependencies = {
   createPanelWorkspaceInitialization: createPanelWorkspaceInitializationValue,
   createPanelBootstrapFlow: createPanelBootstrapFlowValue,
+  createWorkspaceInitializationBindings: createWorkspaceInitializationBindingsValue,
+  createBootstrapFlowBindings: createBootstrapFlowBindingsValue,
 };
 
 /** controller bootstrap/workspace 초기화 결선을 조립한다. */
@@ -38,41 +46,13 @@ export function createPanelControllerBootstrap(
   options: CreatePanelControllerBootstrapOptions,
   deps: PanelControllerBootstrapDependencies = PANEL_CONTROLLER_BOOTSTRAP_DEFAULT_DEPS,
 ): { bootstrapPanel: () => void } {
+  const workspaceInitializationBindings = deps.createWorkspaceInitializationBindings(options);
   const { initializeWorkspaceLayout, initializeWheelFallback } =
-    deps.createPanelWorkspaceInitialization({
-      getPanelWorkspaceEl: options.panelControllerContext.getPanelWorkspaceEl,
-      getPanelContentEl: options.panelControllerContext.getPanelContentEl,
-      getWorkspacePanelToggleBarEl: options.panelControllerContext.getWorkspacePanelToggleBarEl,
-      getWorkspaceDockPreviewEl: options.panelControllerContext.getWorkspaceDockPreviewEl,
-      getWorkspacePanelElements: options.panelControllerContext.getWorkspacePanelElements,
-      createWorkspaceLayoutManager: options.createWorkspaceLayoutManager,
-      initWheelScrollFallback: options.initWheelScrollFallback,
-      setWorkspaceLayoutManager: options.panelControllerContext.setWorkspaceLayoutManager,
-      setDestroyWheelScrollFallback: options.panelControllerContext.setDestroyWheelScrollFallback,
-    });
+    deps.createPanelWorkspaceInitialization(workspaceInitializationBindings);
 
-  return deps.createPanelBootstrapFlow({
-    mountPanelView: options.mountPanelView,
-    initDomRefs: options.panelControllerContext.initDomRefs,
+  const bootstrapFlowBindings = deps.createBootstrapFlowBindings(options, {
     initializeWorkspaceLayout,
     initializeWheelFallback,
-    setPickerModeActive: options.panelControllerContext.setPickerModeActive,
-    populateTargetSelect: options.populateTargetSelect,
-    setElementOutput: options.setElementOutput,
-    setDomTreeStatus: options.setDomTreeStatus,
-    setDomTreeEmpty: options.setDomTreeEmpty,
-    getFetchBtnEl: options.panelControllerContext.getFetchBtnEl,
-    getSelectElementBtnEl: options.panelControllerContext.getSelectElementBtnEl,
-    getPayloadModeBtnEl: options.panelControllerContext.getPayloadModeBtnEl,
-    getComponentSearchInputEl: options.panelControllerContext.getComponentSearchInputEl,
-    getReactComponentListEl: options.panelControllerContext.getReactComponentListEl,
-    onFetch: options.onFetch,
-    onSelectElement: options.onSelectElement,
-    onTogglePayloadMode: options.onTogglePayloadMode,
-    onComponentSearchInput: options.onComponentSearchInput,
-    clearPageHoverPreview: options.clearPageHoverPreview,
-    addNavigatedListener: options.addNavigatedListener,
-    onBeforeUnload: options.onPanelBeforeUnload,
-    runInitialRefresh: options.runInitialRefresh,
   });
+  return deps.createPanelBootstrapFlow(bootstrapFlowBindings);
 }

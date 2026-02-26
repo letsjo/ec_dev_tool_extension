@@ -66,6 +66,7 @@ npm test
 │   │       ├── controller.ts             # 패널 기능 오케스트레이션 로직
 │   │       ├── controller/
 │   │       │   ├── bootstrap.ts          # 패널 bootstrap/workspace 초기화 결선
+│   │       │   ├── bootstrapBindings.ts  # bootstrap/workspace 결선 입력 바인딩 helper
 │   │       │   ├── context.ts            # panel DOM ref/lifecycle mutable 컨텍스트
 │   │       │   ├── runtime.ts            # runtime refresh + picker/teardown 결선 조립
 │   │       │   ├── runtimePickerFlow.ts  # picker bridge + runtime listener 결선
