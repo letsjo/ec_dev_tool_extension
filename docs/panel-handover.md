@@ -162,6 +162,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentDomHighlight.ts`: component highlight/hover preview 스타일 적용/복원, scrollIntoView, 상태 스냅샷 전담
 - `pageAgentDomSelectors.ts`: DOM selector/path 계산(`buildCssSelector`, `getElementPath`, `resolveTargetElement`) 전담
 - `pageAgentDom.ts`: DOM tree/highlight handler 결선과 DOM selector helper 재export 전담
+- `pageAgentDomTree.ts`: unknown request payload를 안전 파싱(selector/pickPoint)하고 노드 budget 컨텍스트(`visitedNodes`, `truncatedByBudget`)로 직렬화 상태를 추적
 - `pageAgent.ts`: 설치 가드와 runtime bootstrap 엔트리 전담
 - `pageAgentRuntime.ts`: 요청 method 라우팅/핸들러 조립과 bridge 설치 전담
 
@@ -913,7 +914,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링
   - `tests/reactInspector/jsonRefMap.test.ts`: `jsonRefMap.ts`의 nested ref id 수집, 내부 meta key 제외, 순환 참조 안전 스캔 분기
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기
-  - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 대상 미발견 에러 처리와 DOM tree 직렬화 기본 경로
+  - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 unknown payload 안전 처리, 대상 미발견 에러 처리, DOM tree 직렬화 기본 경로
   - `tests/content/pageAgentDomSelectors.test.ts`: DOM path/css selector 생성과 selector fallback target resolve 분기
   - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, clear 복원, selector 미발견 에러 처리
   - `tests/content/elementPickerBridge.test.ts`: `elementPickerBridge.ts`의 pageAgent script load 실패 후 재주입, load 성공 후 injected 고정 분기

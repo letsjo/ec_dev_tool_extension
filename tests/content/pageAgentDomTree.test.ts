@@ -2,6 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { createGetDomTreeHandler } from '../../src/content/pageAgentDomTree';
 
 describe('createGetDomTreeHandler', () => {
+  it('handles unknown request payload safely', () => {
+    const getDomTree = createGetDomTreeHandler({
+      buildCssSelector: () => '',
+      getElementPath: () => '',
+      resolveTargetElement: () => null,
+    });
+
+    expect(getDomTree('invalid-payload')).toEqual({
+      ok: false,
+      error: '요소를 찾을 수 없습니다.',
+      selector: '',
+    });
+  });
+
   it('returns error when target element is missing', () => {
     const getDomTree = createGetDomTreeHandler({
       buildCssSelector: () => '',
