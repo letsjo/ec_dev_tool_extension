@@ -11,23 +11,23 @@ export function DebugLogPanel() {
         <>
           <PanelActionButton
             id="debugLogCopyBtn"
-            className="workspace-panel-action"
+            className="workspace-panel-action workspace-panel-action-wide"
             data-panel-action="copyDebugLog"
             data-panel-target="debugLogPanel"
             title="디버그 로그 전체 복사"
             aria-label="Copy debug logs"
           >
-            ⧉
+            Copy
           </PanelActionButton>
           <PanelActionButton
             id="debugLogClearBtn"
-            className="workspace-panel-action"
+            className="workspace-panel-action workspace-panel-action-wide"
             data-panel-action="clearDebugLog"
             data-panel-target="debugLogPanel"
             title="디버그 로그 전체 지우기"
             aria-label="Clear debug logs"
           >
-            ⌫
+            Clear
           </PanelActionButton>
         </>
       }

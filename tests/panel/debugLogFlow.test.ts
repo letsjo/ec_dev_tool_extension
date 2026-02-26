@@ -71,6 +71,26 @@ describe('debugLogFlow', () => {
     expect(copyText).toHaveBeenCalledWith(expect.stringContaining('copy.target'));
   });
 
+  it('binds copy handler immediately even before first log append', async () => {
+    const debugLogPaneEl = document.createElement('div');
+    const debugLogCopyBtnEl = document.createElement('button');
+    const debugLogClearBtnEl = document.createElement('button');
+    const copyText = vi.fn(async () => {});
+
+    createPanelDebugLogFlow({
+      getDebugLogPaneEl: () => debugLogPaneEl,
+      getDebugLogCopyBtnEl: () => debugLogCopyBtnEl,
+      getDebugLogClearBtnEl: () => debugLogClearBtnEl,
+      copyText,
+      now: () => new Date('2026-02-27T00:00:00.000Z'),
+    });
+
+    debugLogCopyBtnEl.click();
+    await Promise.resolve();
+
+    expect(copyText).toHaveBeenCalledWith('');
+  });
+
   it('clears accumulated logs when clear button is clicked', () => {
     const debugLogPaneEl = document.createElement('div');
     debugLogPaneEl.className = 'empty';
@@ -113,5 +133,32 @@ describe('debugLogFlow', () => {
     const text = flow.getDebugLogText();
     expect(text).toContain('[ERROR] pageAgent.response');
     expect(text).toContain('[ERROR] debugLog.copy.failure');
+  });
+
+  it('keeps manual scroll position when user is not near bottom', () => {
+    const debugLogPaneEl = document.createElement('div');
+    const debugLogCopyBtnEl = document.createElement('button');
+    const debugLogClearBtnEl = document.createElement('button');
+
+    Object.defineProperty(debugLogPaneEl, 'scrollHeight', {
+      configurable: true,
+      get: () => 500,
+    });
+    Object.defineProperty(debugLogPaneEl, 'clientHeight', {
+      configurable: true,
+      get: () => 100,
+    });
+    debugLogPaneEl.scrollTop = 120;
+
+    const flow = createPanelDebugLogFlow({
+      getDebugLogPaneEl: () => debugLogPaneEl,
+      getDebugLogCopyBtnEl: () => debugLogCopyBtnEl,
+      getDebugLogClearBtnEl: () => debugLogClearBtnEl,
+      now: () => new Date('2026-02-27T00:00:00.000Z'),
+    });
+
+    flow.appendDebugLog('event.keep-scroll');
+
+    expect(debugLogPaneEl.scrollTop).toBe(120);
   });
 });

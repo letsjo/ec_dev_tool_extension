@@ -534,8 +534,9 @@
     }
 
     #debugLogPane {
-      white-space: pre;
-      word-break: normal;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
       padding: 10px;
       background: #1b2230;
       color: #cfe0ff;
@@ -1235,6 +1236,13 @@
       cursor: pointer;
     }
 
+    .workspace-panel-action-wide {
+      width: auto;
+      min-width: 36px;
+      padding: 0 7px;
+      font-size: 10px;
+    }
+
     .workspace-panel-action:hover {
       background: #3b4356;
     }
@@ -1354,7 +1362,9 @@
     #panelContent #rawResultPanel > #output,
     #panelContent #debugLogPanel > #debugLogPane {
       box-sizing: border-box;
-      overflow: auto;
+      overflow: auto !important;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable both-edges;
     }
 
     #panelContent #debugLogPanel > #debugDiagnosticsPane {

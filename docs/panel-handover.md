@@ -119,7 +119,8 @@
   - `fetchDomTree(selector, pickPoint, domPath)` 실행(중복 selector 환경 보정)
   - `fetchReactInfo(..., { lightweight: payloadMode==='lite' })` 실행
   - selectionSync highlight는 request epoch를 사용해, 이전 선택에서 늦게 도착한 highlight 응답이 최신 Selected Element/DOM Tree를 덮어쓰지 못하게 차단
-  - 액션/브리지 요청/응답은 Debug Log 패널에 누적되며, title의 `⧉`(전체 복사), `⌫`(전체 지우기) 버튼으로 로그를 관리할 수 있다.
+  - 액션/브리지 요청/응답은 Debug Log 패널에 누적되며, title의 `Copy`(전체 복사), `Clear`(전체 지우기) 버튼으로 로그를 관리할 수 있다.
+  - 사용자가 로그 하단 근처를 보고 있을 때만 auto-follow를 적용해, 수동 스크롤로 과거 로그를 검토할 때 위치를 유지한다.
   - 오류 이벤트(`.failure/.error`, `hasError/isError/error/errorText`)는 `[ERROR]`로 표시된다.
   - `localStorage['ecDevTool.devDiagnostics']='1'`이면 Debug Log 상단 diagnostics pane에서 이벤트 총량/오류 수/최근 이벤트/top event 집계를 실시간 확인 가능
   - `fetchDomTree`/`fetchReactInfo`는 latest request id 비교로 늦게 도착한 이전 응답을 폐기해 트리/선택 상태 역전을 방지

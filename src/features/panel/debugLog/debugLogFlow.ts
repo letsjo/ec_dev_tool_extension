@@ -17,6 +17,7 @@ interface PanelDebugLogFlow {
 const DEFAULT_MAX_DEBUG_LOG_ENTRIES = 700;
 const MAX_RENDER_PAYLOAD_LENGTH = 1400;
 const MAX_RENDER_LINE_LENGTH = 1800;
+const AUTO_SCROLL_BOTTOM_GAP_PX = 24;
 const DEBUG_LOG_PLACEHOLDER_TEXT = '디버그 로그가 여기에 누적됩니다.';
 
 function isRecordValue(value: unknown): value is Record<string, unknown> {
@@ -92,6 +93,15 @@ function buildDebugLogLine(now: Date, eventName: string, payload?: unknown): str
     : merged;
 }
 
+/**
+ * 사용자가 이미 로그 하단을 보고 있을 때만 새 로그 도착 시 auto-follow 한다.
+ * 수동으로 위로 스크롤한 상태에서는 위치를 유지해 과거 로그 검토를 방해하지 않는다.
+ */
+function shouldAutoScrollToBottom(paneEl: HTMLDivElement): boolean {
+  const distanceToBottom = paneEl.scrollHeight - paneEl.scrollTop - paneEl.clientHeight;
+  return distanceToBottom <= AUTO_SCROLL_BOTTOM_GAP_PX;
+}
+
 async function copyTextWithFallback(text: string): Promise<void> {
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     await navigator.clipboard.writeText(text);
@@ -139,10 +149,13 @@ export function createPanelDebugLogFlow(
       return;
     }
 
+    const shouldStickToBottom = shouldAutoScrollToBottom(paneEl);
     const text = getDebugLogText();
     paneEl.textContent = text || DEBUG_LOG_PLACEHOLDER_TEXT;
     paneEl.classList.toggle('empty', lines.length === 0);
-    paneEl.scrollTop = paneEl.scrollHeight;
+    if (shouldStickToBottom) {
+      paneEl.scrollTop = paneEl.scrollHeight;
+    }
   }
 
   function ensureCopyBinding() {
@@ -211,6 +224,10 @@ export function createPanelDebugLogFlow(
     ensureClearBinding();
     tryRender();
   }
+
+  ensureCopyBinding();
+  ensureClearBinding();
+  tryRender();
 
   return {
     appendDebugLog,
