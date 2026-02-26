@@ -2,8 +2,8 @@ import { parseInspectReactComponentsArgs } from "./pageAgentInspectComponentsArg
 import { buildSourceElementSummary } from "./pageAgentInspectComponentsSource";
 import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
 import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
+import { resolveInspectComponentsRootContext } from "./pageAgentInspectComponentsRoot";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
-import { resolveInspectRootContext } from "./pageAgentInspectTarget";
 import type { SourceElementSummary } from "./pageAgentInspectComponentsSource";
 import type { ReactComponentInfo } from "../shared/inspector/types";
 
@@ -98,40 +98,27 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       parseInspectReactComponentsArgs(args);
 
     try {
-      const resolvedRoot = resolveInspectRootContext({
+      const resolvedRoot = resolveInspectComponentsRootContext({
         selector,
         pickPoint,
+        selectedComponentId,
+        includeSerializedData,
         resolveTargetElement,
         findNearestFiber,
         findAnyFiberInDocument,
         findRootFiber,
+        getFiberIdMap,
+        rootHasComponentId,
+        findRootFiberByComponentId,
       });
       if (!resolvedRoot.ok) {
-        if (resolvedRoot.reason === "missingNearest") {
-          return { error: "React fiber를 찾을 수 없습니다. (React 16+ 필요)", selector, pickPoint };
-        }
-        return { error: "React root fiber를 찾을 수 없습니다.", selector };
+        return {
+          error: resolvedRoot.error,
+          selector: resolvedRoot.selector,
+          pickPoint: resolvedRoot.pickPoint,
+        };
       }
-      const { targetEl, nearest } = resolvedRoot;
-      let { rootFiber } = resolvedRoot;
-
-      const hostCache = new Map<object, Element | null>();
-      const visiting = new Set<object>();
-      const fiberIdMap = getFiberIdMap();
-
-      // selector 없이 lightweight refresh가 들어오면 기존 root에 selected id가 없는 경우가 있어
-      // 문서 전체 fallback root를 재탐색해 selection 복원 안정성을 높인다.
-      if (
-        selectedComponentId &&
-        !includeSerializedData &&
-        !selector &&
-        !rootHasComponentId(rootFiber, selectedComponentId, fiberIdMap)
-      ) {
-        const matchedRoot = findRootFiberByComponentId(selectedComponentId, fiberIdMap);
-        if (matchedRoot) {
-          rootFiber = matchedRoot;
-        }
-      }
+      const { targetEl, nearest, rootFiber, hostCache, visiting, fiberIdMap } = resolvedRoot;
 
       const walked = walkInspectableComponents({
         rootFiber: rootFiber as Record<string, unknown>,
