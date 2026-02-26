@@ -4,11 +4,12 @@ import {
   isFunctionToken,
   isRecord,
 } from '../../../shared/inspector/guards';
-import {
-  buildCollectionPreviewFromValue,
-  type CollectionPreviewBudget,
-} from './jsonCollectionPreview';
+import type { CollectionPreviewBudget } from './jsonCollectionPreview';
 import { buildArrayPreview, buildObjectPreview } from './jsonObjectPreview';
+import {
+  buildHookInlineCollectionPreview as buildHookInlineCollectionPreviewValue,
+  buildJsonSummaryCollectionPreview as buildJsonSummaryCollectionPreviewValue,
+} from './jsonPreviewCollection';
 
 const OBJECT_CLASS_NAME_META_KEY = '__ecObjectClassName';
 
@@ -77,18 +78,12 @@ export function buildJsonSummaryPreview(
   if (isCircularRefToken(value)) return `[Circular #${value.refId}]`;
   if (isDehydratedToken(value)) return readDehydratedPreviewText(value);
 
-  const collectionPreview = buildCollectionPreviewFromValue({
+  const collectionPreview = buildJsonSummaryCollectionPreviewValue(
     value,
     depth,
     budget,
-    renderValue: buildJsonSummaryPreview,
-    limits: {
-      mapTokenMaxLen: 2,
-      setTokenMaxLen: 3,
-      mapArrayMaxLen: 2,
-      setArrayMaxLen: 3,
-    },
-  });
+    buildJsonSummaryPreview,
+  );
   if (collectionPreview) return collectionPreview;
 
   if (value === null || typeof value !== 'object') return formatPrimitive(value);
@@ -133,18 +128,12 @@ export function buildHookInlinePreview(
   if (isCircularRefToken(value)) return '{…}';
   if (isDehydratedToken(value)) return readDehydratedPreviewText(value);
 
-  const collectionPreview = buildCollectionPreviewFromValue({
+  const collectionPreview = buildHookInlineCollectionPreviewValue(
     value,
     depth,
     budget,
-    renderValue: buildHookInlinePreview,
-    limits: {
-      mapTokenMaxLen: 2,
-      setTokenMaxLen: 3,
-      mapArrayMaxLen: 2,
-      setArrayMaxLen: 4,
-    },
-  });
+    buildHookInlinePreview,
+  );
   if (collectionPreview) return collectionPreview;
 
   if (value === null) return 'null';
