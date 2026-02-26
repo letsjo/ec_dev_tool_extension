@@ -74,6 +74,7 @@ npm test
 │   │       │       ├── controllerWiringDebug.ts       # pageAgent/pane debug 래퍼 결선
 │   │       │       ├── controllerWiringDataFlows.ts   # target/dom/selection data flow 결선
 │   │       │       ├── controllerWiringLifecycle.ts   # runtime+bootstrap lifecycle 결선
+│   │       │       ├── controllerWiringLifecycleRefresh.ts # payload mode/fetch preset 결선
 │   │       │       └── controllerWiringReactInspector.ts # react inspector 결선
 │   │       ├── debugLog/                 # Debug Log 누적/복사 + dev-only diagnostics 플로우
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의

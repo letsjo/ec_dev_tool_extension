@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PanelControllerContext } from '../../src/features/panel/controller/context';
 import { createControllerWiringLifecycle } from '../../src/features/panel/controller/wiring/controllerWiringLifecycle';
+import {
+  createLifecycleReactFetchBindings,
+  createPayloadModeToggleHandler,
+} from '../../src/features/panel/controller/wiring/controllerWiringLifecycleRefresh';
 import type { RuntimeRefreshLookup } from '../../src/features/panel/reactInspector/lookup';
 
 describe('createControllerWiringLifecycle', () => {
@@ -67,6 +71,8 @@ describe('createControllerWiringLifecycle', () => {
         }),
         createRuntimeRefreshFetchOptions,
         createElementSelectionFetchOptions,
+        createLifecycleReactFetchBindings,
+        createPayloadModeToggleHandler,
         mountPanelView: vi.fn(),
         createWorkspaceLayoutManager: vi.fn() as any,
         initWheelScrollFallback: vi.fn() as any,

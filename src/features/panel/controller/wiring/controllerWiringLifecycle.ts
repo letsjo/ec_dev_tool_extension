@@ -11,12 +11,15 @@ import { createPanelControllerRuntime as createPanelControllerRuntimeValue } fro
 import {
   createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
-  type ReactPayloadMode,
   type FetchReactInfoOptions,
 } from '../../reactInspector/fetchOptions';
 import type { RuntimeRefreshLookup } from '../../reactInspector/lookup';
 import { createWorkspaceLayoutManager as createWorkspaceLayoutManagerValue } from '../../workspace/manager';
 import { initWheelScrollFallback as initWheelScrollFallbackValue } from '../../workspace/wheelScrollFallback';
+import {
+  createLifecycleReactFetchBindings as createLifecycleReactFetchBindingsValue,
+  createPayloadModeToggleHandler as createPayloadModeToggleHandlerValue,
+} from './controllerWiringLifecycleRefresh';
 
 interface CreateControllerWiringLifecycleOptions {
   panelControllerContext: PanelControllerContext;
@@ -44,6 +47,8 @@ interface ControllerWiringLifecycleDependencies {
   createPanelControllerBootstrap: typeof createPanelControllerBootstrapValue;
   createRuntimeRefreshFetchOptions: typeof createRuntimeRefreshFetchOptionsValue;
   createElementSelectionFetchOptions: typeof createElementSelectionFetchOptionsValue;
+  createLifecycleReactFetchBindings: typeof createLifecycleReactFetchBindingsValue;
+  createPayloadModeToggleHandler: typeof createPayloadModeToggleHandlerValue;
   mountPanelView: typeof mountPanelViewValue;
   createWorkspaceLayoutManager: typeof createWorkspaceLayoutManagerValue;
   initWheelScrollFallback: typeof initWheelScrollFallbackValue;
@@ -57,6 +62,8 @@ const DEFAULT_DEPS: ControllerWiringLifecycleDependencies = {
   createPanelControllerBootstrap: createPanelControllerBootstrapValue,
   createRuntimeRefreshFetchOptions: createRuntimeRefreshFetchOptionsValue,
   createElementSelectionFetchOptions: createElementSelectionFetchOptionsValue,
+  createLifecycleReactFetchBindings: createLifecycleReactFetchBindingsValue,
+  createPayloadModeToggleHandler: createPayloadModeToggleHandlerValue,
   mountPanelView: mountPanelViewValue,
   createWorkspaceLayoutManager: createWorkspaceLayoutManagerValue,
   initWheelScrollFallback: initWheelScrollFallbackValue,
@@ -74,6 +81,16 @@ function createControllerWiringLifecycle(
   deps: ControllerWiringLifecycleDependencies = DEFAULT_DEPS,
 ) {
   const {
+    fetchReactInfoForRuntimeRefresh,
+    fetchReactInfoForElementSelection,
+  } = deps.createLifecycleReactFetchBindings({
+    panelControllerContext: options.panelControllerContext,
+    fetchReactInfo: options.fetchReactInfo,
+    createRuntimeRefreshFetchOptions: deps.createRuntimeRefreshFetchOptions,
+    createElementSelectionFetchOptions: deps.createElementSelectionFetchOptions,
+  });
+
+  const {
     runtimeRefreshScheduler,
     onInspectedPageNavigated,
     onSelectElement,
@@ -82,24 +99,8 @@ function createControllerWiringLifecycle(
     panelControllerContext: options.panelControllerContext,
     getStoredLookup: options.getStoredLookup,
     setStoredLookup: options.setStoredLookup,
-    fetchReactInfoForRuntimeRefresh: (lookup, background, onDone) => {
-      options.fetchReactInfo(
-        lookup.selector,
-        lookup.pickPoint,
-        deps.createRuntimeRefreshFetchOptions(
-          background,
-          options.panelControllerContext.getReactPayloadMode(),
-          onDone,
-        ),
-      );
-    },
-    fetchReactInfoForElementSelection: (selector, pickPoint) => {
-      options.fetchReactInfo(
-        selector,
-        pickPoint,
-        deps.createElementSelectionFetchOptions(options.panelControllerContext.getReactPayloadMode()),
-      );
-    },
+    fetchReactInfoForRuntimeRefresh,
+    fetchReactInfoForElementSelection,
     clearPageHoverPreview: options.clearPageHoverPreview,
     fetchDomTree: options.fetchDomTree,
     setElementOutput: options.setElementOutput,
@@ -111,14 +112,11 @@ function createControllerWiringLifecycle(
     appendDebugLog: options.appendDebugLog,
   });
 
-  function onTogglePayloadMode() {
-    const currentMode = options.panelControllerContext.getReactPayloadMode();
-    const nextMode: ReactPayloadMode = currentMode === 'lite' ? 'full' : 'lite';
-    options.panelControllerContext.setReactPayloadMode(nextMode);
-    options.appendDebugLog?.('reactInspect.payloadMode.toggle', { mode: nextMode });
-    // 모드 전환 직후 현재 선택/lookup 기준으로 재조회해 패널 내용을 즉시 동기화한다.
-    runtimeRefreshScheduler.refresh(false);
-  }
+  const onTogglePayloadMode = deps.createPayloadModeToggleHandler({
+    panelControllerContext: options.panelControllerContext,
+    runtimeRefreshScheduler,
+    appendDebugLog: options.appendDebugLog,
+  });
 
   return deps.createPanelControllerBootstrap({
     panelControllerContext: options.panelControllerContext,
