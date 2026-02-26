@@ -84,9 +84,9 @@ export function createWorkspaceManagerInteractionFlowWiring(
     panelContentEl: options.panelContentEl,
     workspacePanelElements: options.workspacePanelElements,
     isWorkspacePanelId,
-    findWorkspacePanelByPoint: findWorkspacePanelByPoint,
-    computeWorkspaceDockDirection: computeWorkspaceDockDirection,
-    resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTarget,
+    findWorkspacePanelByPoint,
+    computeWorkspaceDockDirection,
+    resolveWorkspaceDragOverTarget,
     hideWorkspaceDockPreview() {
       hideWorkspaceDockPreview(options.workspaceDockPreviewEl);
     },
@@ -98,21 +98,17 @@ export function createWorkspaceManagerInteractionFlowWiring(
         direction,
       );
     },
-    applyWorkspaceDockDrop(draggedPanelId, dropTarget) {
-      options.applyWorkspaceDockDrop(draggedPanelId, dropTarget);
-    },
+    applyWorkspaceDockDrop: options.applyWorkspaceDockDrop,
   });
   const workspaceResizeFlow = dependencies.createWorkspaceResizeFlow({
-    createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTarget,
-    startWorkspaceSplitResizeSession: startWorkspaceSplitResizeSession,
-    stopWorkspaceSplitResizeSession: stopWorkspaceSplitResizeSession,
-    computeWorkspaceResizeRatioFromPointer: computeWorkspaceResizeRatioFromPointer,
-    applyWorkspaceSplitRatioStyle: applyWorkspaceSplitRatioStyle,
+    createWorkspaceResizeDragStateFromTarget,
+    startWorkspaceSplitResizeSession,
+    stopWorkspaceSplitResizeSession,
+    computeWorkspaceResizeRatioFromPointer,
+    applyWorkspaceSplitRatioStyle,
     parseWorkspaceNodePath,
     defaultSplitRatio: WORKSPACE_DOCK_SPLIT_RATIO,
-    onPersistSplitRatio(splitPath, ratio) {
-      options.persistWorkspaceSplitRatio(splitPath, ratio);
-    },
+    onPersistSplitRatio: options.persistWorkspaceSplitRatio,
   });
   const workspaceActionHandlers = dependencies.createWorkspaceActionHandlers({
     isWorkspacePanelId,

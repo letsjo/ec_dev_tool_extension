@@ -15,6 +15,11 @@ import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelPaneSetters } from './paneSetters';
 import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createPanelControllerContext } from './controllerContext';
+import {
+  addInspectedPageNavigatedListener,
+  getInspectedTabId,
+  removeInspectedPageNavigatedListener,
+} from './devtoolsNetworkBridge';
 import { createPanelControllerRuntime } from './controllerRuntime';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
@@ -76,9 +81,7 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     setElementOutput,
     setDomTreeStatus,
     setDomTreeEmpty,
-    fetchDomTree: (selector) => {
-      fetchDomTree(selector);
-    },
+    fetchDomTree,
   });
 
   const { inspectFunctionAtPath, fetchSerializedValueAtPath } = createReactInspectPathBindings({
@@ -133,10 +136,8 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     setReactStatus,
     setDomTreeStatus,
     setDomTreeEmpty,
-    getInspectedTabId: () => chrome.devtools.inspectedWindow.tabId,
-    removeNavigatedListener(listener) {
-      chrome.devtools.network.onNavigated.removeListener(listener);
-    },
+    getInspectedTabId,
+    removeNavigatedListener: removeInspectedPageNavigatedListener,
   });
 
   const { bootstrapPanel } = createPanelControllerBootstrap({
@@ -152,13 +153,9 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     onSelectElement,
     onComponentSearchInput,
     clearPageHoverPreview,
-    addNavigatedListener: () => {
-      chrome.devtools.network.onNavigated.addListener(onInspectedPageNavigated);
-    },
+    addNavigatedListener: addInspectedPageNavigatedListener.bind(null, onInspectedPageNavigated),
     onPanelBeforeUnload,
-    runInitialRefresh: () => {
-      runtimeRefreshScheduler.refresh(false);
-    },
+    runInitialRefresh: runtimeRefreshScheduler.refresh.bind(runtimeRefreshScheduler, false),
   });
 
   return {

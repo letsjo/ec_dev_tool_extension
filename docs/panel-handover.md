@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/controllerWiring.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/controllerWiring.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -65,6 +65,7 @@
   - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected) 위임
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `controllerWiring.ts` 유틸로 pane/target/dom/react/runtime/bootstrap 결선 조립 책임 위임
+  - `devtoolsNetworkBridge.ts` 유틸로 inspected tab id 조회와 network.onNavigated listener add/remove 결선 책임 위임
   - `controllerContext.ts` 유틸로 panel DOM ref/picker 상태/workspace lifecycle 핸들 저장·조회 책임 위임
   - `controllerRuntime.ts` 유틸로 runtime refresh + element picker bridge + runtime message listener + teardown 결선 책임 위임
   - `controllerBootstrap.ts` 유틸로 workspace 초기화 결선 + bootstrap flow 결선 책임 위임
