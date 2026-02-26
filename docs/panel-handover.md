@@ -264,6 +264,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutModel.ts`
 - `src/features/panel/workspace/layoutTypes.ts`
 - `src/features/panel/workspace/layoutTreeOps.ts`
+- `src/features/panel/workspace/layoutTreeCollect.ts`
+- `src/features/panel/workspace/layoutTreeTransform.ts`
+- `src/features/panel/workspace/layoutTreeNormalize.ts`
 - `src/features/panel/workspace/layoutVisibility.ts`
 - `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
@@ -320,7 +323,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `layoutModel.ts`: workspace layout 모듈(`layoutTypes/layoutTreeOps/layoutVisibility`) public export 배럴 전담
 - `layoutTypes.ts`: layout 타입(`panel/split/path/drop/state`)과 node path/ratio 정규화, node 생성, 기본 레이아웃, persisted layout parse 전담
-- `layoutTreeOps.ts`: panel id 수집, remove/append/insert/swap, split ratio path 업데이트, visible prune, duplicate panel dedupe 같은 트리 변환 순수 로직 전담
+- `layoutTreeOps.ts`: layout tree helper public export 배럴 전담
+- `layoutTreeCollect.ts`: panel id 수집, panel append 변환 전담
+- `layoutTreeTransform.ts`: remove/insert/swap, split ratio path 업데이트 전담
+- `layoutTreeNormalize.ts`: visible prune, duplicate panel dedupe 전담
 - `layoutVisibility.ts`: panel state map에서 visible panel id 목록 산출 전담
 - `layoutReconcile.ts`: visible panel id/현재 layout을 기준으로 prune+dedupe+missing panel append 정합화 전담
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
@@ -692,6 +698,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutModel.ts`
 - `src/features/panel/workspace/layoutTypes.ts`
 - `src/features/panel/workspace/layoutTreeOps.ts`
+- `src/features/panel/workspace/layoutTreeCollect.ts`
+- `src/features/panel/workspace/layoutTreeTransform.ts`
+- `src/features/panel/workspace/layoutTreeNormalize.ts`
 - `src/features/panel/workspace/layoutVisibility.ts`
 - `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
