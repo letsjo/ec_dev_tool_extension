@@ -51,6 +51,8 @@ function applyDomTreeResult(result: DomTreeEvalResult, options: ApplyDomTreeResu
  * 호출부는 selector/pickPoint만 전달하고, 상태 반영 규칙은 이 모듈에서 통일한다.
  */
 export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
+  let latestRequestId = 0;
+
   function applyDomTreeResultWithUi(result: DomTreeEvalResult) {
     const domTreeOutputEl = options.getDomTreeOutputEl();
     applyDomTreeResult(result, {
@@ -61,6 +63,9 @@ export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
   }
 
   function fetchDomTree(selector: string, pickPoint?: PickPoint) {
+    const requestId = latestRequestId + 1;
+    latestRequestId = requestId;
+
     options.setDomTreeStatus('DOM 트리 조회 중…');
     options.setDomTreeEmpty('DOM 트리를 불러오는 중…');
 
@@ -68,6 +73,8 @@ export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
       'getDomTree',
       { selector, pickPoint: pickPoint ?? null },
       (response, errorText) => {
+        // 빠른 연속 선택 시 늦게 도착한 이전 응답이 최신 선택 결과를 덮어쓰지 않도록 막는다.
+        if (requestId !== latestRequestId) return;
         handleDomTreeAgentResponse({
           response,
           errorText: errorText ?? undefined,
