@@ -1,23 +1,11 @@
-import { createWorkspaceLayoutManager } from './workspace/manager';
-import { initWheelScrollFallback } from './workspace/wheelScrollFallback';
-import { initPanelDomRefs, mountPanelView } from './domRefs';
-import { createPanelControllerBootstrap } from './controllerBootstrap';
-import {
-  createElementSelectionFetchOptions,
-  createRuntimeRefreshFetchOptions,
-} from './reactInspector/fetchOptions';
+import { initPanelDomRefs } from './domRefs';
 import { createControllerWiringReactInspector } from './controllerWiringReactInspector';
 import { createControllerWiringDataFlows } from './controllerWiringDataFlows';
+import { createControllerWiringLifecycle } from './controllerWiringLifecycle';
 import { createReactInspectorControllerState } from './reactInspector/controllerState';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelPaneSetters } from './paneSetters';
 import { createPanelControllerContext } from './controllerContext';
-import {
-  addInspectedPageNavigatedListener,
-  getInspectedTabId,
-  removeInspectedPageNavigatedListener,
-} from './devtoolsNetworkBridge';
-import { createPanelControllerRuntime } from './controllerRuntime';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 
@@ -92,51 +80,20 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     detailFetchRetryCooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
   });
 
-  const {
-    runtimeRefreshScheduler,
-    onInspectedPageNavigated,
-    onSelectElement,
-    onPanelBeforeUnload,
-  } = createPanelControllerRuntime({
+  const { bootstrapPanel } = createControllerWiringLifecycle({
     panelControllerContext,
     getStoredLookup: reactInspectorState.getStoredLookup,
     setStoredLookup: reactInspectorState.setStoredLookup,
-    fetchReactInfoForRuntimeRefresh: (lookup, background, onDone) => {
-      fetchReactInfo(
-        lookup.selector,
-        lookup.pickPoint,
-        createRuntimeRefreshFetchOptions(background, onDone),
-      );
-    },
-    fetchReactInfoForElementSelection: (selector, pickPoint) => {
-      fetchReactInfo(selector, pickPoint, createElementSelectionFetchOptions());
-    },
+    fetchReactInfo,
     clearPageHoverPreview,
     fetchDomTree,
     setElementOutput,
     setReactStatus,
     setDomTreeStatus,
     setDomTreeEmpty,
-    getInspectedTabId,
-    removeNavigatedListener: removeInspectedPageNavigatedListener,
-  });
-
-  const { bootstrapPanel } = createPanelControllerBootstrap({
-    panelControllerContext,
-    mountPanelView,
-    createWorkspaceLayoutManager,
-    initWheelScrollFallback,
     populateTargetSelect,
-    setElementOutput,
-    setDomTreeStatus,
-    setDomTreeEmpty,
     onFetch,
-    onSelectElement,
     onComponentSearchInput,
-    clearPageHoverPreview,
-    addNavigatedListener: addInspectedPageNavigatedListener.bind(null, onInspectedPageNavigated),
-    onPanelBeforeUnload,
-    runInitialRefresh: runtimeRefreshScheduler.refresh.bind(runtimeRefreshScheduler, false),
   });
 
   return {
