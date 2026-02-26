@@ -30,6 +30,7 @@ import {
 } from './splitResizeSession';
 import { createWorkspaceResizeFlow } from './resizeFlow';
 import { createWorkspaceManagerLayoutState } from './managerLayoutState';
+import { createWorkspaceManagerLifecycle } from './managerLifecycle';
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -53,7 +54,6 @@ export function createWorkspaceLayoutManager({
   workspaceDockPreviewEl,
   workspacePanelElements,
 }: WorkspaceLayoutManagerElements): WorkspaceLayoutManager {
-  let unbindWorkspaceInteractions: (() => void) | null = null;
   const workspaceLayoutState = createWorkspaceManagerLayoutState({
     workspacePanelElements,
   });
@@ -117,45 +117,42 @@ export function createWorkspaceLayoutManager({
     workspaceResizeFlow,
     workspaceActionHandlers,
   });
+  const workspaceManagerLifecycle = createWorkspaceManagerLifecycle({
+    restoreWorkspaceState() {
+      workspaceLayoutState.restoreWorkspaceState();
+    },
+    bindWorkspaceInteractions() {
+      return bindWorkspaceInteractionBindings({
+        panelContentEl,
+        workspacePanelToggleBarEl,
+        workspacePanelElements,
+        panelHandlers,
+        containerHandlers,
+      });
+    },
+    startWorkspacePanelBodySizeObserver() {
+      workspacePanelBodySizeObserver.start();
+    },
+    stopWorkspacePanelBodySizeObserver() {
+      workspacePanelBodySizeObserver.stop();
+    },
+    renderWorkspaceLayout() {
+      renderWorkspaceLayout();
+    },
+    stopWorkspaceSplitResize(persist) {
+      workspaceResizeFlow.stopWorkspaceSplitResize(persist);
+    },
+    hideWorkspaceDockPreview() {
+      hideWorkspaceDockPreview(workspaceDockPreviewEl);
+    },
+    onWorkspacePanelDragEnd() {
+      workspaceDragDropFlow.onWorkspacePanelDragEnd();
+    },
+  });
 
-  /**
-   * 워크스페이스 상호작용(드래그/리사이즈/토글/옵저버) 초기화 진입점.
-   * 순서가 중요한 이유:
-   * 1) restore로 상태 모델을 먼저 만든다.
-   * 2) 패널별 이벤트를 바인딩한다.
-   * 3) 컨테이너 레벨 이벤트를 바인딩한다.
-   * 4) 마지막에 1회 렌더를 수행한다.
-   */
-  function initWorkspaceLayoutManager() {
-    workspaceLayoutState.restoreWorkspaceState();
-
-    unbindWorkspaceInteractions?.();
-    unbindWorkspaceInteractions = bindWorkspaceInteractionBindings({
-      panelContentEl,
-      workspacePanelToggleBarEl,
-      workspacePanelElements,
-      panelHandlers,
-      containerHandlers,
-    });
-    workspacePanelBodySizeObserver.start();
-    renderWorkspaceLayout();
-  }
-
-  /** 워크스페이스 관련 이벤트/옵저버를 해제한다. */
-  function destroy() {
-    unbindWorkspaceInteractions?.();
-    unbindWorkspaceInteractions = null;
-
-    workspacePanelBodySizeObserver.stop();
-
-    workspaceResizeFlow.stopWorkspaceSplitResize(false);
-    hideWorkspaceDockPreview(workspaceDockPreviewEl);
-    workspaceDragDropFlow.onWorkspacePanelDragEnd();
-  }
-
-  initWorkspaceLayoutManager();
+  workspaceManagerLifecycle.init();
 
   return {
-    destroy,
+    destroy: workspaceManagerLifecycle.destroy,
   };
 }
