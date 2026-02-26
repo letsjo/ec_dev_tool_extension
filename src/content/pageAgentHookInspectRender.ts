@@ -1,18 +1,12 @@
-// @ts-nocheck
 import { resolveDefaultPropsForHookInspect } from './pageAgentHookRuntime';
 import { runHookInspectRender } from './pageAgentHookRenderExecution';
 
-interface RunHookInspectPassOptions {
-  dispatcherRef: Record<string, unknown>;
-  previousDispatcher: unknown;
-  dispatcherProxy: unknown;
-  fiber: unknown;
-  renderFn: (...args: unknown[]) => unknown;
-  getSuspendedToken: () => unknown;
-}
+type HookInspectRenderArgs = Parameters<typeof runHookInspectRender>[0];
+
+type RunHookInspectPassOptions = Omit<HookInspectRenderArgs, 'resolveDefaultProps'>;
 
 /** hook inspect dispatcher를 적용해 component render를 1회 실행한다. */
-function runHookInspectPass(options: RunHookInspectPassOptions) {
+function runHookInspectPass(options: RunHookInspectPassOptions): Error | null {
   return runHookInspectRender({
     dispatcherRef: options.dispatcherRef,
     previousDispatcher: options.previousDispatcher,

@@ -202,7 +202,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentHookDispatcher.ts`: state/method helper 조립과 Proxy 기반 generic hook fallback 결선 전담
 - `pageAgentHookPrimitiveStack.ts`: dispatcher warmup 로그를 primitive별 stack frame 캐시로 구성하는 단계 전담
 - `pageAgentHookInspectContext.ts`: hook inspect dispatcher/state(`currentHook`/`suspendedToken`/`hookLog`) 생성과 primitive warmup cache 조립 전담
-- `pageAgentHookInspectRender.ts`: dispatcher 적용 render 실행 단계(runHookInspectRender 옵션 조립) 전담
+- `pageAgentHookInspectRender.ts`: dispatcher 적용 render 실행 단계(runHookInspectRender args 계약 재사용 + resolveDefaultProps 결선) 전담
 - `pageAgentHookRenderExecution.ts`: dispatcher 교체, console mute, hook inspect render 실행, suspended(use) 예외 완화, dispatcher/console 복구 전담
 - `pageAgentHookGroups.ts`: stack/grouping/runtime/result/metadata-build/dispatcher/primitive-stack/render-execution 유틸을 조합해 custom metadata(group/path/primitive) 오케스트레이션 전담
 - `pageAgentInspectSelection.ts`: reactInspect 결과 목록에서 selectedIndex 결정 규칙(선호 fiber, target match, dom selector fallback, non-host fallback) 전담
