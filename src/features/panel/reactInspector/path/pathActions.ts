@@ -2,7 +2,7 @@ import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector';
+} from '../../../../shared/inspector';
 import {
   resolveInspectFunctionPathCompletion as resolveInspectFunctionPathCompletionValue,
   resolveSerializedPathValueFromCompletion as resolveSerializedPathValueFromCompletionValue,

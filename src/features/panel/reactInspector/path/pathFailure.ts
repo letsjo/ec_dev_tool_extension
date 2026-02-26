@@ -1,4 +1,4 @@
-import { isRecord } from '../../../shared/inspector';
+import { isRecord } from '../../../../shared/inspector';
 
 export interface ReactInspectPathRequestFailure {
   kind: 'runtimeError' | 'responseError';

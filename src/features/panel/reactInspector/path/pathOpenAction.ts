@@ -3,7 +3,7 @@ import {
   buildOpenFunctionInSourcesFailureStatusText as buildOpenFunctionInSourcesFailureStatusTextValue,
   buildOpenFunctionInSourcesSuccessStatusText as buildOpenFunctionInSourcesSuccessStatusTextValue,
   resolveOpenFunctionInSourcesFailureReason as resolveOpenFunctionInSourcesFailureReasonValue,
-} from './openInSources';
+} from '../openInSources';
 
 const DEFAULT_PAGE_FUNCTION_INSPECT_REGISTRY_KEY = '__EC_DEV_TOOL_FUNCTION_INSPECT_REGISTRY__';
 

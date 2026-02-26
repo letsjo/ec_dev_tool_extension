@@ -1,5 +1,5 @@
-import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
-import type { RuntimeRefreshLookup } from './lookup';
+import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
+import type { RuntimeRefreshLookup } from '../lookup';
 import { createReactInspectPathActions as createReactInspectPathActionsValue } from './pathActions';
 import { createFunctionSourceOpener as createFunctionSourceOpenerValue } from './pathOpenAction';
 import { createReactInspectPathRequester as createReactInspectPathRequesterValue } from './pathRequestRunner';

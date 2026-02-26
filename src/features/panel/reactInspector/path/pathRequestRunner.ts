@@ -2,9 +2,9 @@ import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector';
-import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
-import type { RuntimeRefreshLookup } from './lookup';
+} from '../../../../shared/inspector';
+import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
+import type { RuntimeRefreshLookup } from '../lookup';
 import {
   buildReactInspectPathRequestArgs as buildReactInspectPathRequestArgsValue,
   type ReactInspectPathMode,

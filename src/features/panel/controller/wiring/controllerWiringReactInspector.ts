@@ -1,4 +1,4 @@
-import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from '../../reactInspector/pathBindings';
+import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from '../../reactInspector/path/pathBindings';
 import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from '../../reactInspector/controllerFlows';
 import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 import type { ReactInspectorControllerState } from '../../reactInspector/controllerState';

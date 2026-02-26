@@ -2,11 +2,11 @@ import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector';
+} from '../../../../shared/inspector';
 import {
   resolveInspectPathLookup as resolveInspectPathLookupValue,
   type RuntimeRefreshLookup,
-} from './lookup';
+} from '../lookup';
 
 export type ReactInspectPathMode = 'inspectFunction' | 'serializeValue';
 
