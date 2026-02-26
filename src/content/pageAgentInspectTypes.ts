@@ -1,4 +1,3 @@
-import type { PickPoint } from '../shared/inspector/types';
 import type { FiberLike } from './pageAgentFiberSearchTypes';
 
 type Serializer = (value: unknown, depth?: number) => unknown;
@@ -13,7 +12,7 @@ interface CreatePageAgentInspectHandlersOptions {
   maxComponents: number;
   buildCssSelector: (el: Element | null) => string;
   getElementPath: (el: Element | null) => string;
-  resolveTargetElement: (selector: string, pickPoint: PickPoint | null | undefined) => Element | null;
+  resolveTargetElement: (selector: string, pickPoint: unknown) => Element | null;
   findNearestFiber: (startEl: Element | null) => NearestFiberMatch | null;
   findAnyFiberInDocument: () => NearestFiberMatch | null;
   findRootFiber: (fiber: FiberLike) => FiberLike | null;
