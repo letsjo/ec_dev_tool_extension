@@ -79,6 +79,7 @@
   - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
   - `workspace/managerLifecycle.ts` 유틸로 workspace init/destroy 순서(restore→bind→observer→render, teardown) 위임
+  - `workspace/managerInteractionFlowWiring.ts` 유틸로 drag/drop+resize+action flow 결선과 lifecycle delegate 조립 위임
   - `workspace/wheelScrollFallback.ts`의 `initWheelScrollFallback(...)`로 스크롤 보정 리스너 설치
   - 이벤트 바인딩 후 runtime scheduler로 최초 React 런타임 조회 실행
 
@@ -249,6 +250,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLifecycle.ts`
+- `src/features/panel/workspace/managerInteractionFlowWiring.ts`
 - `src/features/panel/workspace/managerLayoutState.ts`
 - `src/features/panel/workspace/managerInteractionHandlers.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
@@ -306,12 +308,14 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `manager.ts`: 워크스페이스 드래그/드롭, 리사이즈, 상태 영속화 오케스트레이션과 렌더 파이프라인 조립 전담
   - 2026-02 리팩터링: `manager.ts` 내부 thin wrapper를 제거하고 `dockPreview/panelSizing/scrollSnapshot/...` helper를 직접 결선해 호출 경로를 단순화
   - init/destroy 순서 제약과 interaction unbind 관리는 `managerLifecycle.ts`로 위임
+  - drag/drop + resize + action flow 조립은 `managerInteractionFlowWiring.ts`로 위임
   - 상태 복원/패널 상태 변경/dock drop/split ratio persist 규칙은 `managerLayoutState.ts`로 위임
   - panel/container interaction handler 매핑은 `managerInteractionHandlers.ts`로 위임
   - DOM 렌더 단계의 empty fallback + patch 후처리(삽입/정리)는 `renderPipeline.ts`로 위임
   - panel 가시 상태 반영 + scroll/size/toggle 후처리 + panel open 토글은 `renderFlow.ts`로 위임
   - summary/toggle bar 액션 해석(toggle/close/visible 전환)은 `actionHandlers.ts`로 위임
 - `managerLifecycle.ts`: workspace 상태 restore, interaction bind/unbind, observer start/stop, drag/resize 종료 정리 순서 전담
+- `managerInteractionFlowWiring.ts`: dragDropFlow/resizeFlow/actionHandlers/interactionHandlers 결선과 manager용 lifecycle delegate(onDragEnd/stopResize) 제공 전담
 - `managerLayoutState.ts`: workspace mutable 상태(root/panel map) 보관, restore/reconcile, panel state 전이, dock drop 적용, split ratio persist 규칙 전담
 - `managerInteractionHandlers.ts`: drag-drop/resize/action handler를 panel/container interaction binding 입력 형태로 조합하는 결선 전담
 - `dockDropApply.ts`: dock drop target(`center|left|right|top|bottom`)에 따른 layout tree 변경(교체/삽입/append) 순수 계산 전담
@@ -644,6 +648,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/layoutReconcile.ts`
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLifecycle.ts`
+- `src/features/panel/workspace/managerInteractionFlowWiring.ts`
 - `src/features/panel/workspace/managerLayoutState.ts`
 - `src/features/panel/workspace/managerInteractionHandlers.ts`
 - `src/features/panel/workspace/dockDropApply.ts`
@@ -762,6 +767,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/workspace/workspaceManagerLayoutState.test.ts`: `managerLayoutState.ts`의 panel state 전이/도킹 적용/split ratio persist와 persist+render 호출 규칙 분기
   - `tests/workspace/workspaceManagerInteractionHandlers.test.ts`: `managerInteractionHandlers.ts`의 panel/container 핸들러 매핑 결선 분기
   - `tests/workspace/workspaceManagerLifecycle.test.ts`: `managerLifecycle.ts`의 init 순서(restore/bind/observer/render), 재초기화 시 unbind 교체, destroy 정리 순서 분기
+  - `tests/workspace/workspaceManagerInteractionFlowWiring.test.ts`: `managerInteractionFlowWiring.ts`의 drag/resize/action flow 결선 호출과 dock-drop/split ratio persist 콜백 전달 분기
   - `tests/pane/paneSetters.test.ts`: `paneSetters.ts`의 output/react/dom pane setter와 list/detail empty signature 결선 분기
   - `tests/reactInspector/jsonObjectPreview.test.ts`: `jsonObjectPreview.ts`의 배열 depth collapse, entry cap, object meta key 필터 preview 분기
   - `tests/reactInspector/jsonObjectArraySummary.test.ts`: `jsonObjectArraySummary.ts`의 hooks/props summary meta 계산(map/set/array/object) 분기

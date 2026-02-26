@@ -1,0 +1,136 @@
+import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
+import type {
+  WorkspaceDropTarget,
+  WorkspaceNodePath,
+  WorkspacePanelState,
+} from './layoutModel';
+import {
+  parseWorkspaceNodePath,
+  WORKSPACE_DOCK_SPLIT_RATIO,
+} from './layoutModel';
+import {
+  computeWorkspaceDockDirection,
+  findWorkspacePanelByPoint,
+  hideWorkspaceDockPreview,
+  showWorkspaceDockPreview,
+} from './dockPreview';
+import { createWorkspaceActionHandlers } from './actionHandlers';
+import { createWorkspaceManagerInteractionHandlers } from './managerInteractionHandlers';
+import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
+import { createWorkspaceDragDropFlow } from './dragDropFlow';
+import {
+  applyWorkspaceSplitRatioStyle,
+  computeWorkspaceResizeRatioFromPointer,
+  createWorkspaceResizeDragStateFromTarget,
+} from './splitResize';
+import {
+  startWorkspaceSplitResizeSession,
+  stopWorkspaceSplitResizeSession,
+} from './splitResizeSession';
+import { createWorkspaceResizeFlow } from './resizeFlow';
+import type { WorkspaceInteractionBindingsOptions } from './interactionBindings';
+
+type WorkspaceDragDropFlow = ReturnType<typeof createWorkspaceDragDropFlow>;
+type WorkspaceResizeFlow = ReturnType<typeof createWorkspaceResizeFlow>;
+type WorkspaceActionHandlers = ReturnType<typeof createWorkspaceActionHandlers>;
+type WorkspaceManagerInteractionHandlers = ReturnType<typeof createWorkspaceManagerInteractionHandlers>;
+
+export interface WorkspaceManagerInteractionFlowWiringOptions {
+  panelContentEl: HTMLElement;
+  workspaceDockPreviewEl: HTMLDivElement;
+  workspacePanelElements: Map<WorkspacePanelId, HTMLDetailsElement>;
+  applyWorkspaceDockDrop: (draggedPanelId: WorkspacePanelId, dropTarget: WorkspaceDropTarget) => void;
+  persistWorkspaceSplitRatio: (splitPath: WorkspaceNodePath, ratio: number) => void;
+  getWorkspacePanelStateById: () => Map<WorkspacePanelId, WorkspacePanelState>;
+  setWorkspacePanelState: (panelId: WorkspacePanelId, state: WorkspacePanelState) => void;
+  toggleWorkspacePanelOpenState: (panelId: WorkspacePanelId) => void;
+}
+
+export interface WorkspaceManagerInteractionFlowWiringDependencies {
+  createWorkspaceDragDropFlow: (
+    args: Parameters<typeof createWorkspaceDragDropFlow>[0],
+  ) => WorkspaceDragDropFlow;
+  createWorkspaceResizeFlow: (
+    args: Parameters<typeof createWorkspaceResizeFlow>[0],
+  ) => WorkspaceResizeFlow;
+  createWorkspaceActionHandlers: (
+    options: Parameters<typeof createWorkspaceActionHandlers>[0],
+  ) => WorkspaceActionHandlers;
+  createWorkspaceManagerInteractionHandlers: (
+    options: Parameters<typeof createWorkspaceManagerInteractionHandlers>[0],
+  ) => WorkspaceManagerInteractionHandlers;
+}
+
+export interface WorkspaceManagerInteractionFlowWiring {
+  panelHandlers: WorkspaceInteractionBindingsOptions['panelHandlers'];
+  containerHandlers: WorkspaceInteractionBindingsOptions['containerHandlers'];
+  stopWorkspaceSplitResize: WorkspaceResizeFlow['stopWorkspaceSplitResize'];
+  onWorkspacePanelDragEnd: WorkspaceDragDropFlow['onWorkspacePanelDragEnd'];
+}
+
+const DEFAULT_DEPENDENCIES: WorkspaceManagerInteractionFlowWiringDependencies = {
+  createWorkspaceDragDropFlow,
+  createWorkspaceResizeFlow,
+  createWorkspaceActionHandlers,
+  createWorkspaceManagerInteractionHandlers,
+};
+
+/** manager 내부 drag/resize/action flow 결선을 조립한다. */
+export function createWorkspaceManagerInteractionFlowWiring(
+  options: WorkspaceManagerInteractionFlowWiringOptions,
+  dependencies: WorkspaceManagerInteractionFlowWiringDependencies = DEFAULT_DEPENDENCIES,
+): WorkspaceManagerInteractionFlowWiring {
+  const workspaceDragDropFlow = dependencies.createWorkspaceDragDropFlow({
+    panelContentEl: options.panelContentEl,
+    workspacePanelElements: options.workspacePanelElements,
+    isWorkspacePanelId,
+    findWorkspacePanelByPoint: findWorkspacePanelByPoint,
+    computeWorkspaceDockDirection: computeWorkspaceDockDirection,
+    resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTarget,
+    hideWorkspaceDockPreview() {
+      hideWorkspaceDockPreview(options.workspaceDockPreviewEl);
+    },
+    showWorkspaceDockPreview(baseRect, direction) {
+      showWorkspaceDockPreview(
+        options.workspaceDockPreviewEl,
+        options.panelContentEl,
+        baseRect,
+        direction,
+      );
+    },
+    applyWorkspaceDockDrop(draggedPanelId, dropTarget) {
+      options.applyWorkspaceDockDrop(draggedPanelId, dropTarget);
+    },
+  });
+  const workspaceResizeFlow = dependencies.createWorkspaceResizeFlow({
+    createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTarget,
+    startWorkspaceSplitResizeSession: startWorkspaceSplitResizeSession,
+    stopWorkspaceSplitResizeSession: stopWorkspaceSplitResizeSession,
+    computeWorkspaceResizeRatioFromPointer: computeWorkspaceResizeRatioFromPointer,
+    applyWorkspaceSplitRatioStyle: applyWorkspaceSplitRatioStyle,
+    parseWorkspaceNodePath,
+    defaultSplitRatio: WORKSPACE_DOCK_SPLIT_RATIO,
+    onPersistSplitRatio(splitPath, ratio) {
+      options.persistWorkspaceSplitRatio(splitPath, ratio);
+    },
+  });
+  const workspaceActionHandlers = dependencies.createWorkspaceActionHandlers({
+    isWorkspacePanelId,
+    getWorkspacePanelStateById: options.getWorkspacePanelStateById,
+    toggleWorkspacePanelOpenState: options.toggleWorkspacePanelOpenState,
+    setWorkspacePanelState: options.setWorkspacePanelState,
+  });
+
+  const workspaceInteractionHandlers = dependencies.createWorkspaceManagerInteractionHandlers({
+    workspaceDragDropFlow,
+    workspaceResizeFlow,
+    workspaceActionHandlers,
+  });
+
+  return {
+    panelHandlers: workspaceInteractionHandlers.panelHandlers,
+    containerHandlers: workspaceInteractionHandlers.containerHandlers,
+    stopWorkspaceSplitResize: workspaceResizeFlow.stopWorkspaceSplitResize,
+    onWorkspacePanelDragEnd: workspaceDragDropFlow.onWorkspacePanelDragEnd,
+  };
+}

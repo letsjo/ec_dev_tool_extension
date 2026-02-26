@@ -1,36 +1,16 @@
-import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
+import type { WorkspacePanelId } from '../workspacePanels';
 import {
-  parseWorkspaceNodePath,
-  WORKSPACE_DOCK_SPLIT_RATIO,
-} from './layoutModel';
-import {
-  computeWorkspaceDockDirection,
-  findWorkspacePanelByPoint,
   hideWorkspaceDockPreview,
-  showWorkspaceDockPreview,
 } from './dockPreview';
 import {
   bindWorkspaceInteractionBindings,
 } from './interactionBindings';
-import { createWorkspaceActionHandlers } from './actionHandlers';
-import { createWorkspaceManagerInteractionHandlers } from './managerInteractionHandlers';
-import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
-import { createWorkspaceDragDropFlow } from './dragDropFlow';
 import { syncWorkspacePanelBodySizes } from './panelSizing';
 import { createWorkspacePanelBodySizeObserver } from './panelBodySizeObserver';
 import { createWorkspaceRenderFlow } from './renderFlow';
-import {
-  applyWorkspaceSplitRatioStyle,
-  computeWorkspaceResizeRatioFromPointer,
-  createWorkspaceResizeDragStateFromTarget,
-} from './splitResize';
-import {
-  startWorkspaceSplitResizeSession,
-  stopWorkspaceSplitResizeSession,
-} from './splitResizeSession';
-import { createWorkspaceResizeFlow } from './resizeFlow';
 import { createWorkspaceManagerLayoutState } from './managerLayoutState';
 import { createWorkspaceManagerLifecycle } from './managerLifecycle';
+import { createWorkspaceManagerInteractionFlowWiring } from './managerInteractionFlowWiring';
 
 export interface WorkspaceLayoutManagerElements {
   panelContentEl: HTMLElement;
@@ -76,46 +56,20 @@ export function createWorkspaceLayoutManager({
       syncWorkspacePanelBodySizes(workspacePanelElements);
     },
   });
-
-  const workspaceDragDropFlow = createWorkspaceDragDropFlow({
+  const {
+    panelHandlers,
+    containerHandlers,
+    stopWorkspaceSplitResize,
+    onWorkspacePanelDragEnd,
+  } = createWorkspaceManagerInteractionFlowWiring({
     panelContentEl,
+    workspaceDockPreviewEl,
     workspacePanelElements,
-    isWorkspacePanelId,
-    findWorkspacePanelByPoint: findWorkspacePanelByPoint,
-    computeWorkspaceDockDirection: computeWorkspaceDockDirection,
-    resolveWorkspaceDragOverTarget: resolveWorkspaceDragOverTarget,
-    hideWorkspaceDockPreview() {
-      hideWorkspaceDockPreview(workspaceDockPreviewEl);
-    },
-    showWorkspaceDockPreview(baseRect, direction) {
-      showWorkspaceDockPreview(workspaceDockPreviewEl, panelContentEl, baseRect, direction);
-    },
     applyWorkspaceDockDrop: workspaceLayoutState.applyWorkspaceDockDrop,
-  });
-  const workspaceResizeFlow = createWorkspaceResizeFlow({
-    createWorkspaceResizeDragStateFromTarget: createWorkspaceResizeDragStateFromTarget,
-    startWorkspaceSplitResizeSession: startWorkspaceSplitResizeSession,
-    stopWorkspaceSplitResizeSession: stopWorkspaceSplitResizeSession,
-    computeWorkspaceResizeRatioFromPointer: computeWorkspaceResizeRatioFromPointer,
-    applyWorkspaceSplitRatioStyle: applyWorkspaceSplitRatioStyle,
-    parseWorkspaceNodePath,
-    defaultSplitRatio: WORKSPACE_DOCK_SPLIT_RATIO,
-    onPersistSplitRatio(splitPath, ratio) {
-      workspaceLayoutState.persistWorkspaceSplitRatio(splitPath, ratio);
-    },
-  });
-
-  const workspaceActionHandlers = createWorkspaceActionHandlers({
-    isWorkspacePanelId,
+    persistWorkspaceSplitRatio: workspaceLayoutState.persistWorkspaceSplitRatio,
     getWorkspacePanelStateById: workspaceLayoutState.getWorkspacePanelStateById,
-    toggleWorkspacePanelOpenState,
     setWorkspacePanelState: workspaceLayoutState.setWorkspacePanelState,
-  });
-
-  const { panelHandlers, containerHandlers } = createWorkspaceManagerInteractionHandlers({
-    workspaceDragDropFlow,
-    workspaceResizeFlow,
-    workspaceActionHandlers,
+    toggleWorkspacePanelOpenState,
   });
   const workspaceManagerLifecycle = createWorkspaceManagerLifecycle({
     restoreWorkspaceState() {
@@ -140,13 +94,13 @@ export function createWorkspaceLayoutManager({
       renderWorkspaceLayout();
     },
     stopWorkspaceSplitResize(persist) {
-      workspaceResizeFlow.stopWorkspaceSplitResize(persist);
+      stopWorkspaceSplitResize(persist);
     },
     hideWorkspaceDockPreview() {
       hideWorkspaceDockPreview(workspaceDockPreviewEl);
     },
     onWorkspacePanelDragEnd() {
-      workspaceDragDropFlow.onWorkspacePanelDragEnd();
+      onWorkspacePanelDragEnd();
     },
   });
 
