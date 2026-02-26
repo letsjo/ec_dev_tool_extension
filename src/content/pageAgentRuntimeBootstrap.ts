@@ -1,5 +1,6 @@
 import { createPageDomHandlers } from './dom/pageAgentDom';
 import { createPageAgentMethodExecutor } from './pageAgentMethods';
+import { createPageAgentRuntimeDomMethodHandlers } from './runtime/pageAgentRuntimeDomHandlers';
 import { createPageAgentRuntimeInspectHandlers } from './runtime/pageAgentRuntimeInspectHandlers';
 import type {
   CreatePageAgentRuntimeMethodExecutorOptions,
@@ -22,23 +23,7 @@ function createPageAgentRuntimeMethodExecutor(
     createPageAgentRuntimeInspectHandlers(options);
 
   return createPageAgentMethodExecutor({
-    domHandlers: {
-      getDomTree(args) {
-        return domHandlers.getDomTree(args as Record<string, unknown> | null | undefined);
-      },
-      highlightComponent(args) {
-        return domHandlers.highlightComponent(args as Record<string, unknown> | null | undefined);
-      },
-      clearComponentHighlight() {
-        return domHandlers.clearComponentHighlight();
-      },
-      previewComponent(args) {
-        return domHandlers.previewComponent(args as Record<string, unknown> | null | undefined);
-      },
-      clearHoverPreview() {
-        return domHandlers.clearHoverPreview();
-      },
-    },
+    domHandlers: createPageAgentRuntimeDomMethodHandlers(domHandlers),
     inspectReactComponents(args) {
       return inspectReactComponents(args);
     },

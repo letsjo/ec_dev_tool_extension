@@ -83,7 +83,10 @@ npm test
 │   │   │   ├── components/               # reactInspect components 입력/루트해석/walk/결과 조립 모듈
 │   │   │   └── path/                     # reactInspectPath 입력/경로해석/모드응답 모듈
 │   │   ├── hooks/inspect/                # hook inspect dispatcher/render/warmup 보조 모듈
-│   │   ├── runtime/                      # pageAgent runtime 옵션/inspect 결선 helper
+│   │   ├── runtime/
+│   │   │   ├── pageAgentRuntimeConfig.ts # runtime 기본 옵션(storage key/budget)
+│   │   │   ├── pageAgentRuntimeDomHandlers.ts # DOM handler adapter(unknown payload 경계)
+│   │   │   └── pageAgentRuntimeInspectHandlers.ts # inspect 의존성 결선 helper
 │   │   ├── serialization/                # pageAgent serializer 전략/props/path 토큰 모듈
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
 │   │   └── pageAgent.ts                  # main world React/DOM inspector 실행기
