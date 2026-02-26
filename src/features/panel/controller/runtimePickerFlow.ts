@@ -47,10 +47,12 @@ export function createPanelRuntimePickerFlow(
     fetchDomTree: options.fetchDomTree,
     fetchReactInfoForElementSelection: options.fetchReactInfoForElementSelection,
     scheduleRuntimeRefresh: () => {
+      // pageRuntimeChanged는 background refresh 경로로 스케줄링해 foreground 선택 흐름과 충돌을 줄인다.
       options.appendDebugLog?.('runtimeRefresh.schedule', { background: true });
       options.runtimeRefreshScheduler.schedule(true);
     },
     resetRuntimeRefresh: () => {
+      // elementSelected 직후에는 pending refresh를 비워 stale 응답 역전 가능성을 줄인다.
       options.appendDebugLog?.('runtimeRefresh.reset');
       options.runtimeRefreshScheduler.reset();
     },
@@ -58,6 +60,7 @@ export function createPanelRuntimePickerFlow(
   });
 
   options.panelControllerContext.setRemoveRuntimeMessageListener(
+    // listener remove handle을 context에 보관해 teardown flow에서 일관되게 해제한다.
     deps.bindRuntimeMessageListener(onRuntimeMessage, {
       addListener(listener) {
         chrome.runtime.onMessage.addListener(listener);

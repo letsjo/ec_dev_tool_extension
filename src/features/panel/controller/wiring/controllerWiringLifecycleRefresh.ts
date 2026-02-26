@@ -45,6 +45,7 @@ export function createLifecycleReactFetchBindings({
       background: boolean,
       onDone: () => void,
     ) => {
+      // runtime refresh도 현재 payload mode를 동일 적용해 UI 모드와 응답 형태를 일치시킨다.
       fetchReactInfo(
         lookup.selector,
         lookup.pickPoint,
@@ -56,6 +57,7 @@ export function createLifecycleReactFetchBindings({
       );
     },
     fetchReactInfoForElementSelection: (selector: string, pickPoint?: PickPoint) => {
+      // 요소 선택 직후 fetch도 payload mode를 공유해 lite/full 전환 후 결과 일관성을 유지한다.
       fetchReactInfo(
         selector,
         pickPoint,

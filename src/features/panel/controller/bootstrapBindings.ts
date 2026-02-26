@@ -33,6 +33,7 @@ export function createWorkspaceInitializationBindings(
   options: CreatePanelControllerBootstrapBindingsOptions,
 ): Parameters<typeof createPanelWorkspaceInitializationValue>[0] {
   return {
+    // workspace 초기화는 DOM getter와 manager setter를 함께 받아야 결선이 단순해진다.
     getPanelWorkspaceEl: options.panelControllerContext.getPanelWorkspaceEl,
     getPanelContentEl: options.panelControllerContext.getPanelContentEl,
     getWorkspacePanelToggleBarEl: options.panelControllerContext.getWorkspacePanelToggleBarEl,
@@ -58,6 +59,7 @@ export function createBootstrapFlowBindings(
     initDomRefs: options.panelControllerContext.initDomRefs,
     initializeWorkspaceLayout: workspaceInitialization.initializeWorkspaceLayout,
     initializeWheelFallback: workspaceInitialization.initializeWheelFallback,
+    // picker/payload/search/list DOM 이벤트 바인딩은 bootstrap flow가 담당한다.
     setPickerModeActive: options.panelControllerContext.setPickerModeActive,
     populateTargetSelect: options.populateTargetSelect,
     setElementOutput: options.setElementOutput,
