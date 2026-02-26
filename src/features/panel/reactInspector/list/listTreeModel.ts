@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../../shared/inspector/types';
 
 /** visible component 인덱스를 parentId 기준 트리 맵으로 변환한다. */
 export function buildChildrenByParent(

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { renderReactTreeNodes } from '../../src/features/panel/reactInspector/listTreeNodeRenderer';
+import { renderReactTreeNodes } from '../../src/features/panel/reactInspector/list/listTreeNodeRenderer';
 
 describe('listTreeNodeRenderer', () => {
   it('renders rows and dispatches toggle/select/hover callbacks', () => {

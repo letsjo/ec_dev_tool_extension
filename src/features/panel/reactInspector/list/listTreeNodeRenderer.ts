@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../../shared/inspector/types';
 
 interface RenderReactTreeNodesOptions {
   rootIndices: number[];

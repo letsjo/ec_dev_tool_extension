@@ -9,8 +9,8 @@ import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue
 import {
   resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
 } from './lookup';
-import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './listRenderFlow';
-import { renderReactComponentListTree as renderReactComponentListTreeValue } from './listTreeRenderer';
+import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './list/listRenderFlow';
+import { renderReactComponentListTree as renderReactComponentListTreeValue } from './list/listTreeRenderer';
 import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './noResultStateFlow';
 import {
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,

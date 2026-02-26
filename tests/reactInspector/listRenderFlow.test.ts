@@ -3,7 +3,7 @@ import type {
   ComponentFilterResult,
   ReactComponentInfo,
 } from '../../src/shared/inspector/types';
-import { createReactComponentListRenderFlow } from '../../src/features/panel/reactInspector/listRenderFlow';
+import { createReactComponentListRenderFlow } from '../../src/features/panel/reactInspector/list/listRenderFlow';
 
 interface MutableListRenderState {
   reactComponents: ReactComponentInfo[];

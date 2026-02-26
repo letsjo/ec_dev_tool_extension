@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ReactComponentInfo } from '../../src/shared/inspector/types';
-import { buildChildrenByParent } from '../../src/features/panel/reactInspector/listTreeModel';
+import { buildChildrenByParent } from '../../src/features/panel/reactInspector/list/listTreeModel';
 
 function createComponent(
   id: string,

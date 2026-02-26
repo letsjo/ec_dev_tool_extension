@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   captureReactTreeScrollAnchor,
   restoreReactTreeScrollAnchor,
-} from '../../src/features/panel/reactInspector/listTreeScrollAnchor';
+} from '../../src/features/panel/reactInspector/list/listTreeScrollAnchor';
 
 function createRect(top: number): DOMRect {
   return {
