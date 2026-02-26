@@ -3,15 +3,10 @@ import { createControllerWiringReactInspector } from './controllerWiringReactIns
 import { createControllerWiringDataFlows } from './controllerWiringDataFlows';
 import { createControllerWiringLifecycle } from './controllerWiringLifecycle';
 import { createReactInspectorControllerState } from '../../reactInspector/controllerState';
-import { callInspectedPageAgent } from '../../bridge/pageAgentClient';
-import { createPanelPaneSetters } from '../../paneSetters';
 import { createPanelControllerContext } from '../context';
 import { createPanelDebugDiagnosticsFlow } from '../../debugLog/debugDiagnosticsFlow';
 import { createPanelDebugLogFlow } from '../../debugLog/debugLogFlow';
-import {
-  createDebugPageAgentCaller,
-  createDebugPaneSetters,
-} from './controllerWiringDebug';
+import { createControllerWiringPaneBindings } from './controllerWiringPane';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 
@@ -37,44 +32,18 @@ export function createPanelControllerWiring(): PanelControllerWiring {
   });
 
   const {
-    setOutput,
-    setElementOutput,
-    setReactStatus,
-    setReactListEmpty,
-    setReactDetailEmpty,
-    setDomTreeStatus,
-    setDomTreeEmpty,
-  } = createPanelPaneSetters({
-    getOutputEl: panelControllerContext.getOutputEl,
-    getElementOutputEl: panelControllerContext.getElementOutputEl,
-    getReactStatusEl: panelControllerContext.getReactStatusEl,
-    getReactComponentListEl: panelControllerContext.getReactComponentListEl,
-    getReactComponentDetailEl: panelControllerContext.getReactComponentDetailEl,
-    getDomTreeStatusEl: panelControllerContext.getDomTreeStatusEl,
-    getDomTreeOutputEl: panelControllerContext.getDomTreeOutputEl,
-    setLastReactListRenderSignature: reactInspectorState.setLastReactListRenderSignature,
-    setLastReactDetailRenderSignature: reactInspectorState.setLastReactDetailRenderSignature,
-    setLastReactDetailComponentId: reactInspectorState.setLastReactDetailComponentId,
-  });
-
-  const callInspectedPageAgentWithDebug = createDebugPageAgentCaller({
-    appendDebugLog,
-    callInspectedPageAgent,
-  });
-
-  const {
+    callInspectedPageAgentWithDebug,
     setOutputWithDebug,
     setElementOutputWithDebug,
     setReactStatusWithDebug,
     setDomTreeStatusWithDebug,
     setDomTreeEmptyWithDebug,
-  } = createDebugPaneSetters({
+    setReactListEmpty,
+    setReactDetailEmpty,
+  } = createControllerWiringPaneBindings({
+    panelControllerContext,
+    reactInspectorState,
     appendDebugLog,
-    setOutput,
-    setElementOutput,
-    setReactStatus,
-    setDomTreeStatus,
-    setDomTreeEmpty,
   });
 
   const {
