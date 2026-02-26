@@ -10,8 +10,8 @@ import {
   type ReactInspectApplyOptions,
 } from '../applyFlow';
 import { resolveReactInspectDataStage as resolveReactInspectDataStageValue } from './inspectDataStage';
-import { resolveNextSelection as resolveNextSelectionValue } from '../selectionModel';
-import type { SearchNoResultContext } from '../searchStatus';
+import { resolveNextSelection as resolveNextSelectionValue } from '../selection/selectionModel';
+import type { SearchNoResultContext } from '../search/searchStatus';
 
 interface ReactInspectApplyStateSnapshot {
   reactComponents: ReactComponentInfo[];

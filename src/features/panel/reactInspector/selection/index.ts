@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../shared/inspector';
+import type { ReactComponentInfo } from '../../../../shared/inspector';
 
 export interface SelectReactComponentOptions {
   highlightDom?: boolean;

@@ -1,4 +1,4 @@
-import type { ComponentFilterResult } from '../../../shared/inspector';
+import type { ComponentFilterResult } from '../../../../shared/inspector';
 
 export type SearchNoResultContext = 'searchInput' | 'inspectResult';
 

@@ -1,4 +1,4 @@
-import type { SearchNoResultContext } from './searchStatus';
+import type { SearchNoResultContext } from './search/searchStatus';
 import type { ReactComponentInfo } from '../../../shared/inspector';
 import { clearPaneContent as clearPaneContentValue } from '../paneState';
 import {
@@ -15,11 +15,11 @@ import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } f
 import {
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
 } from './search';
-import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './searchInputBindingFlow';
-import { createReactComponentSelectionBindingFlow as createReactComponentSelectionBindingFlowValue } from './selectionBindingFlow';
+import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './search/searchInputBindingFlow';
+import { createReactComponentSelectionBindingFlow as createReactComponentSelectionBindingFlowValue } from './selection/selectionBindingFlow';
 import {
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
-} from './searchStatus';
+} from './search/searchStatus';
 import type { ReactInspectorControllerDerivations } from './controllerDerivations';
 import type { CreateReactInspectorControllerFlowsOptions } from './controllerFlowTypes';
 import { buildReactComponentListEmptyText as buildReactComponentListEmptyTextValue } from './viewState';

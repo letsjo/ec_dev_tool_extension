@@ -5,7 +5,7 @@ import {
   getComponentFilterResult,
   restoreCollapsedById,
   snapshotCollapsedIds,
-} from '../../src/features/panel/reactInspector/searchFilter';
+} from '../../src/features/panel/reactInspector/search/searchFilter';
 
 function createComponent(overrides: Partial<ReactComponentInfo> = {}): ReactComponentInfo {
   return {

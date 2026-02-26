@@ -8,7 +8,7 @@ import {
   buildComponentSearchTexts as buildComponentSearchTextsValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
 } from '../search';
-import { resolvePreviousSelectedId as resolvePreviousSelectedIdValue } from '../selectionModel';
+import { resolvePreviousSelectedId as resolvePreviousSelectedIdValue } from '../selection/selectionModel';
 
 interface ResolveReactInspectDataStageOptions {
   result: ReactInspectResult;

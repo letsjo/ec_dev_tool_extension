@@ -1,7 +1,7 @@
 import {
   buildSearchNoResultUiText as buildSearchNoResultUiTextValue,
   type SearchNoResultContext,
-} from '../searchStatus';
+} from '../search/searchStatus';
 
 interface CreateSearchNoResultStateFlowOptions {
   getTotalComponentCount: () => number;

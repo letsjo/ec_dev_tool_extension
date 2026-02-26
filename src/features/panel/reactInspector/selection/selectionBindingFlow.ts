@@ -1,7 +1,7 @@
-import type { ReactComponentInfo } from '../../../shared/inspector';
+import type { ReactComponentInfo } from '../../../../shared/inspector';
 import {
   createReactComponentSelector as createReactComponentSelectorValue,
-} from './selection';
+} from './index';
 
 interface DetailFetchQueueLike {
   request: (component: ReactComponentInfo) => void;

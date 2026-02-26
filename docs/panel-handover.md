@@ -73,7 +73,7 @@
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts`, `paneSetters.ts` 유틸로 패널 텍스트/empty/error 클래스 토글 규칙과 pane setter 결선 위임
   - `domTree/renderer.ts`, `domTree/fetchFlow.ts` 유틸로 DOM 트리 노드 렌더링과 getDomTree 조회/응답 상태 반영 플로우 위임
-  - `reactInspector/signatures.ts`, `reactInspector/signatureHash.ts`, `reactInspector/signatureBuilders.ts`, `reactInspector/search.ts`, `reactInspector/searchTextCache.ts`, `reactInspector/searchFilter.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/flow/fetchFlow.ts`, `reactInspector/flow/inspectDataStage.ts`, `reactInspector/lookup.ts`, `reactInspector/openInSources.ts`, `reactInspector/path/pathActions.ts`, `reactInspector/path/pathBindings.ts`, `reactInspector/path/pathCompletion.ts`, `reactInspector/path/pathFailure.ts`, `reactInspector/path/pathOpenAction.ts`, `reactInspector/path/pathRequest.ts`, `reactInspector/path/pathRequestCompletion.ts`, `reactInspector/path/pathRequestRunner.ts`, `reactInspector/path/pathResponse.ts`, `reactInspector/collectionDisplay.ts`, `reactInspector/collectionDisplayMeta.ts`, `reactInspector/collectionDisplayTokenNormalize.ts`, `reactInspector/hookTreeTypes.ts`, `reactInspector/hookTreeNormalization.ts`, `reactInspector/hookTreeBuilders.ts`, `reactInspector/hookTreeModel.ts`, `reactInspector/jsonTokenNodes.ts`, `reactInspector/preview/jsonCollectionPreview.ts`, `reactInspector/preview/jsonPreviewCollection.ts`, `reactInspector/preview/jsonObjectPreview.ts`, `reactInspector/jsonObjectArraySummary.ts`, `reactInspector/jsonObjectArrayChildren.ts`, `reactInspector/preview/jsonPreviewPrimitive.ts`, `reactInspector/preview/jsonPreviewObjectMeta.ts`, `reactInspector/preview/jsonPreviewTokenStrategies.ts`, `reactInspector/preview/jsonPreviewBudget.ts`, `reactInspector/preview/jsonPreview.ts`, `reactInspector/jsonDehydratedNode.ts`, `reactInspector/jsonObjectArrayNode.ts`, `reactInspector/jsonRowUi.ts`, `reactInspector/jsonRefMap.ts`, `reactInspector/jsonHookTreeRenderer.ts`, `reactInspector/searchStatus.ts`, `reactInspector/controllerState.ts`, `reactInspector/controllerStateModel.ts`, `reactInspector/controllerDerivations.ts`, `reactInspector/controllerFlowTypes.ts`, `reactInspector/controllerFlowInteractionWiring.ts`, `reactInspector/controllerFlows.ts`, `reactInspector/searchInputFlow.ts`, `reactInspector/viewState.ts`, `reactInspector/selection.ts`, `reactInspector/selectionModel.ts`, `reactInspector/list/listTreeModel.ts`, `reactInspector/list/listTreeScrollAnchor.ts`, `reactInspector/list/listTreeRenderer.ts`, `reactInspector/detail/detailRenderer.ts`, `reactInspector/detail/detailApply.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/reactInspect fetch request-response stage 오케스트레이션/reactInspect data stage(이전 선택/접힘 스냅샷 + 결과 모델 적용) 계산/lookup 저장·refresh lookup 계산·inspectPath fallback/devtools inspect eval expression 조립·실패 판정·상태 문구 규칙/inspectFunction·serializeValue completion 후처리(action/value) 규칙/inspectFunction/serializeValue 액션 핸들러 오케스트레이션/inspectPath request-open-action bindings 조립/function inspect open action(eval 실행 + 상태 문구) 오케스트레이션/inspectPath 실패 유형 정규화·상태 문구 규칙/inspectPath 호출 args(selector/pickPoint/mode/serializeLimit) 조립/inspectPath 요청 completion을 판별 유니온(`success`/`failure`)으로 정규화하고 success/failure 타입가드 제공/inspectPath request runner 생성(브리지 호출 + completion 반환)/inspectPath 성공 payload 파싱/시그니처 value hash 계산과 detail/update/list 빌더 분리/collection token(map/set) display path/meta 정규화 + token normalize/meta/path 역매핑 책임 분리/hook row 정규화 + explicit/fallback 트리 빌드 전략 분리/function/circular token 노드 렌더 규칙/collection token + display collection meta(map/set) preview 공통 빌더 + summary/hook collection limit 프리셋 분리/object/array preview 공통 빌더 + object/array details summary meta/preview 계산 분리 + object/array children row 렌더(helper)/JSON/hook summary preview 문자열 빌더(primitive/object/collection/dehydrated) 규칙/controller state read-write snapshot 분리/controller mutable model + update writer 분리/controller 파생 계산/검색 캐시 갱신/JSON 섹션 조립 결선 분리/controller interaction 결선(list/detail/search/selection/detailQueue)과 fetch/reset/apply 결선 분리/dehydrated token lazy expand + runtime serialize refresh 렌더 규칙/object/array details summary+lazy children 렌더 규칙/JSON row toggle button/spacer/expandable key-value row UI 렌더 규칙/ref id 역참조 맵 수집 규칙/hook tree DOM row/group 재귀 렌더 규칙/검색 텍스트 캐시 생성/부분 갱신/길이 보정 분리 및 검색 필터/조상 확장 분리/검색 상태 문구/검색 입력 이벤트 후속 처리/placeholder 상태/선택 시퀀스/선택 인덱스 계산/컴포넌트 트리 모델 계산 + 스크롤 앵커 캡처/복원 분리/상세 패널 DOM 렌더 캐시/상세 응답 병합/상세(JSON/hook) 렌더 로직 위임
+  - `reactInspector/signatures.ts`, `reactInspector/signatureHash.ts`, `reactInspector/signatureBuilders.ts`, `reactInspector/search/index.ts`, `reactInspector/search/searchTextCache.ts`, `reactInspector/search/searchFilter.ts`, `reactInspector/resultModel.ts`, `reactInspector/applyFlow.ts`, `reactInspector/fetchOptions.ts`, `reactInspector/flow/fetchFlow.ts`, `reactInspector/flow/inspectDataStage.ts`, `reactInspector/lookup.ts`, `reactInspector/openInSources.ts`, `reactInspector/path/pathActions.ts`, `reactInspector/path/pathBindings.ts`, `reactInspector/path/pathCompletion.ts`, `reactInspector/path/pathFailure.ts`, `reactInspector/path/pathOpenAction.ts`, `reactInspector/path/pathRequest.ts`, `reactInspector/path/pathRequestCompletion.ts`, `reactInspector/path/pathRequestRunner.ts`, `reactInspector/path/pathResponse.ts`, `reactInspector/collectionDisplay.ts`, `reactInspector/collectionDisplayMeta.ts`, `reactInspector/collectionDisplayTokenNormalize.ts`, `reactInspector/hookTreeTypes.ts`, `reactInspector/hookTreeNormalization.ts`, `reactInspector/hookTreeBuilders.ts`, `reactInspector/hookTreeModel.ts`, `reactInspector/jsonTokenNodes.ts`, `reactInspector/preview/jsonCollectionPreview.ts`, `reactInspector/preview/jsonPreviewCollection.ts`, `reactInspector/preview/jsonObjectPreview.ts`, `reactInspector/jsonObjectArraySummary.ts`, `reactInspector/jsonObjectArrayChildren.ts`, `reactInspector/preview/jsonPreviewPrimitive.ts`, `reactInspector/preview/jsonPreviewObjectMeta.ts`, `reactInspector/preview/jsonPreviewTokenStrategies.ts`, `reactInspector/preview/jsonPreviewBudget.ts`, `reactInspector/preview/jsonPreview.ts`, `reactInspector/jsonDehydratedNode.ts`, `reactInspector/jsonObjectArrayNode.ts`, `reactInspector/jsonRowUi.ts`, `reactInspector/jsonRefMap.ts`, `reactInspector/jsonHookTreeRenderer.ts`, `reactInspector/search/searchStatus.ts`, `reactInspector/controllerState.ts`, `reactInspector/controllerStateModel.ts`, `reactInspector/controllerDerivations.ts`, `reactInspector/controllerFlowTypes.ts`, `reactInspector/controllerFlowInteractionWiring.ts`, `reactInspector/controllerFlows.ts`, `reactInspector/search/searchInputFlow.ts`, `reactInspector/viewState.ts`, `reactInspector/selection/index.ts`, `reactInspector/selection/selectionModel.ts`, `reactInspector/list/listTreeModel.ts`, `reactInspector/list/listTreeScrollAnchor.ts`, `reactInspector/list/listTreeRenderer.ts`, `reactInspector/detail/detailRenderer.ts`, `reactInspector/detail/detailApply.ts`, `reactInspector/jsonSection.ts` 유틸로 React 트리 시그니처/검색/컴포넌트 정규화·변경감지/apply 옵션 정규화·접힘복원·후속 액션 결정/fetch 옵션·프리셋 조립/reactInspect fetch request-response stage 오케스트레이션/reactInspect data stage(이전 선택/접힘 스냅샷 + 결과 모델 적용) 계산/lookup 저장·refresh lookup 계산·inspectPath fallback/devtools inspect eval expression 조립·실패 판정·상태 문구 규칙/inspectFunction·serializeValue completion 후처리(action/value) 규칙/inspectFunction/serializeValue 액션 핸들러 오케스트레이션/inspectPath request-open-action bindings 조립/function inspect open action(eval 실행 + 상태 문구) 오케스트레이션/inspectPath 실패 유형 정규화·상태 문구 규칙/inspectPath 호출 args(selector/pickPoint/mode/serializeLimit) 조립/inspectPath 요청 completion을 판별 유니온(`success`/`failure`)으로 정규화하고 success/failure 타입가드 제공/inspectPath request runner 생성(브리지 호출 + completion 반환)/inspectPath 성공 payload 파싱/시그니처 value hash 계산과 detail/update/list 빌더 분리/collection token(map/set) display path/meta 정규화 + token normalize/meta/path 역매핑 책임 분리/hook row 정규화 + explicit/fallback 트리 빌드 전략 분리/function/circular token 노드 렌더 규칙/collection token + display collection meta(map/set) preview 공통 빌더 + summary/hook collection limit 프리셋 분리/object/array preview 공통 빌더 + object/array details summary meta/preview 계산 분리 + object/array children row 렌더(helper)/JSON/hook summary preview 문자열 빌더(primitive/object/collection/dehydrated) 규칙/controller state read-write snapshot 분리/controller mutable model + update writer 분리/controller 파생 계산/검색 캐시 갱신/JSON 섹션 조립 결선 분리/controller interaction 결선(list/detail/search/selection/detailQueue)과 fetch/reset/apply 결선 분리/dehydrated token lazy expand + runtime serialize refresh 렌더 규칙/object/array details summary+lazy children 렌더 규칙/JSON row toggle button/spacer/expandable key-value row UI 렌더 규칙/ref id 역참조 맵 수집 규칙/hook tree DOM row/group 재귀 렌더 규칙/검색 텍스트 캐시 생성/부분 갱신/길이 보정 분리 및 검색 필터/조상 확장 분리/검색 상태 문구/검색 입력 이벤트 후속 처리/placeholder 상태/선택 시퀀스/선택 인덱스 계산/컴포넌트 트리 모델 계산 + 스크롤 앵커 캡처/복원 분리/상세 패널 DOM 렌더 캐시/상세 응답 병합/상세(JSON/hook) 렌더 로직 위임
 - `controllerWiring.ts`는 pane + data flow + react inspector + lifecycle 결선을 조립하고 controller에는 bootstrap 핸들만 반환
 - `controllerWiringDataFlows.ts`는 target fetch + DOM tree fetch + selection sync 결선을 조립해 `controllerWiring.ts`의 fetch/selection 책임을 축소
 - `controllerWiringReactInspector.ts`는 reactInspect path binding + controller flow 결선을 조립해 `controllerWiring.ts`의 책임을 축소
@@ -422,9 +422,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/signatureHash.ts`: props/hooks value를 제한 깊이/예산으로 해시하고 internal meta key를 제외하는 규칙 전담
 - `reactInspector/signatureBuilders.ts`: detail/update/list 시그니처 문자열 조합 규칙 전담
 - `reactInspector/signatures.ts`: signature public API 배럴 전담
-- `reactInspector/searchTextCache.ts`: 검색 텍스트 토큰 수집(props/hooks/dehydrated/function/ref), 검색 캐시 생성/부분 갱신/길이 보정 전담
-- `reactInspector/searchFilter.ts`: 검색어 terms 매칭, 가시 인덱스 + 조상 포함 계산, 조상 경로 확장, 접힘 상태 스냅샷/복원 전담
-- `reactInspector/search.ts`: searchTextCache/searchFilter public export 결선 엔트리
+- `reactInspector/search/searchTextCache.ts`: 검색 텍스트 토큰 수집(props/hooks/dehydrated/function/ref), 검색 캐시 생성/부분 갱신/길이 보정 전담
+- `reactInspector/search/searchFilter.ts`: 검색어 terms 매칭, 가시 인덱스 + 조상 포함 계산, 조상 경로 확장, 접힘 상태 스냅샷/복원 전담
+- `reactInspector/search/index.ts`: searchTextCache/searchFilter public export 결선 엔트리
 - `reactInspector/resultModel.ts`: reactInspect 응답 컴포넌트 정규화(경량 모드 재사용), fingerprint 기반 변경 id 집합 계산 전담
 - `reactInspector/applyFlow.ts`: apply 옵션 정규화, preserveCollapsed 기준 접힘 상태 복원/초기화, 상태 문구·후속 렌더 액션 결정 전담
 - `reactInspector/flow/applyResultFlow.ts`: reactInspect data/selection/render 3단계 파이프라인 오케스트레이션과 controller 상태 반영 결선 전담
@@ -473,7 +473,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/jsonRowUi.ts`: details toggle 버튼, row toggle spacer, expandable key/value row UI 이벤트/레이아웃 전담
 - `reactInspector/jsonRefMap.ts`: JSON 루트에서 `__ecRefId` 역참조 맵을 순환 안전하게 수집하고 내부 meta key 스캔 제외 규칙 전담
 - `reactInspector/jsonHookTreeRenderer.ts`: hook row/group(details) DOM 재귀 렌더와 hook state path(`sourceIndex/state`) 전달 규칙 전담
-- `reactInspector/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
+- `reactInspector/search/searchStatus.ts`: 검색 결과 없음 상태 텍스트, 검색 매치 요약 상태 문구 생성 규칙 전담
 - `reactInspector/controllerState.ts`: React Inspector mutable 상태(`reactComponents`, `collapsedComponentIds`, `componentSearchTexts`, render signature cache, lookup`)의 read/write snapshot과 apply/reset update 반영 규칙 전담
 - `reactInspector/controllerStateModel.ts`: React Inspector mutable 모델 초기화와 list/detail/reset/apply writer를 순수 helper로 분리해 상태 전이 규칙 전담
 - `reactInspector/controllerDerivations.ts`: controller flow 공용 파생 계산(build signature/index, search cache+filter, ancestor expand, JSON section renderer 조립) 전담
@@ -483,12 +483,12 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `controllerContext.ts`: panel DOM ref, picker mode 상태, workspace/runtime listener 해제 핸들을 컨텍스트 객체로 수집해 controller 오케스트레이션과 상태 저장 책임 분리
 - `controllerRuntime.ts`: runtime refresh + element picker + runtime message listener + teardown 결선을 조합해 controller에서 런타임 이벤트 결선 책임 분리
 - `controllerBootstrap.ts`: workspace initialization + bootstrap flow 결선을 조합해 controller에서 부트스트랩 wiring 책임 분리
-- `reactInspector/searchInputFlow.ts`: 검색 입력 이벤트 시 no-result 처리, 조상 확장, 선택 보정, 상태 문구 갱신 오케스트레이션 전담
-- `reactInspector/searchInputBindingFlow.ts`: 검색 input DOM 값 읽기, query 상태 갱신, searchInputFlow 결선 전담
+- `reactInspector/search/searchInputFlow.ts`: 검색 입력 이벤트 시 no-result 처리, 조상 확장, 선택 보정, 상태 문구 갱신 오케스트레이션 전담
+- `reactInspector/search/searchInputBindingFlow.ts`: 검색 input DOM 값 읽기, query 상태 갱신, searchInputFlow 결선 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
-- `reactInspector/selection.ts`: 선택 옵션 정규화, 선택 index 적용 후 렌더/스크롤/상세 지연조회/DOM 하이라이트 시퀀스 전담
-- `reactInspector/selectionBindingFlow.ts`: selection handler 생성 시 scrollIntoView(requestAnimationFrame) 결선과 selector 의존성 주입 전담
-- `reactInspector/selectionModel.ts`: preserveSelection/selectedIndex/filterResult를 조합해 최종 선택 인덱스와 선택 변경 여부 계산 전담
+- `reactInspector/selection/index.ts`: 선택 옵션 정규화, 선택 index 적용 후 렌더/스크롤/상세 지연조회/DOM 하이라이트 시퀀스 전담
+- `reactInspector/selection/selectionBindingFlow.ts`: selection handler 생성 시 scrollIntoView(requestAnimationFrame) 결선과 selector 의존성 주입 전담
+- `reactInspector/selection/selectionModel.ts`: preserveSelection/selectedIndex/filterResult를 조합해 최종 선택 인덱스와 선택 변경 여부 계산 전담
 - `reactInspector/list/listTreeModel.ts`: visible component 목록을 parent-child 트리 맵(`Map<parentId, childrenIndices>`)으로 구성하는 규칙 전담
 - `reactInspector/list/listTreeScrollAnchor.ts`: 목록 리렌더 전후 selected item 기준 scroll 앵커 캡처/복원 규칙 전담
 - `reactInspector/list/listTreeNodeRenderer.ts`: Components Tree row 렌더(토글/hover/focus/select 이벤트 포함)와 재귀 child 렌더 전담
@@ -702,9 +702,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/reactInspector/signatures.ts`
 - `src/features/panel/reactInspector/signatureHash.ts`
 - `src/features/panel/reactInspector/signatureBuilders.ts`
-- `src/features/panel/reactInspector/search.ts`
-- `src/features/panel/reactInspector/searchTextCache.ts`
-- `src/features/panel/reactInspector/searchFilter.ts`
+- `src/features/panel/reactInspector/search/index.ts`
+- `src/features/panel/reactInspector/search/searchTextCache.ts`
+- `src/features/panel/reactInspector/search/searchFilter.ts`
 - `src/features/panel/reactInspector/resultModel.ts`
 - `src/features/panel/reactInspector/applyFlow.ts`
 - `src/features/panel/reactInspector/fetchOptions.ts`
@@ -746,17 +746,17 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/reactInspector/jsonRowUi.ts`
 - `src/features/panel/reactInspector/jsonRefMap.ts`
 - `src/features/panel/reactInspector/jsonHookTreeRenderer.ts`
-- `src/features/panel/reactInspector/searchStatus.ts`
+- `src/features/panel/reactInspector/search/searchStatus.ts`
 - `src/features/panel/reactInspector/controllerState.ts`
 - `src/features/panel/reactInspector/controllerStateModel.ts`
 - `src/features/panel/reactInspector/controllerDerivations.ts`
 - `src/features/panel/reactInspector/controllerFlowTypes.ts`
 - `src/features/panel/reactInspector/controllerFlowInteractionWiring.ts`
 - `src/features/panel/reactInspector/controllerFlows.ts`
-- `src/features/panel/reactInspector/searchInputFlow.ts`
+- `src/features/panel/reactInspector/search/searchInputFlow.ts`
 - `src/features/panel/reactInspector/viewState.ts`
-- `src/features/panel/reactInspector/selection.ts`
-- `src/features/panel/reactInspector/selectionModel.ts`
+- `src/features/panel/reactInspector/selection/index.ts`
+- `src/features/panel/reactInspector/selection/selectionModel.ts`
 - `src/features/panel/reactInspector/list/listTreeModel.ts`
 - `src/features/panel/reactInspector/list/listTreeScrollAnchor.ts`
 - `src/features/panel/reactInspector/list/listTreeNodeRenderer.ts`

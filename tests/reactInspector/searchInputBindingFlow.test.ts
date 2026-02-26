@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactComponentInfo } from '../../src/shared/inspector';
-import { createReactComponentSearchInputFlow } from '../../src/features/panel/reactInspector/searchInputBindingFlow';
+import { createReactComponentSearchInputFlow } from '../../src/features/panel/reactInspector/search/searchInputBindingFlow';
 
 function createComponent(id: string): ReactComponentInfo {
   return {

@@ -1,7 +1,7 @@
 import type {
   ComponentFilterResult,
   ReactComponentInfo,
-} from '../../../shared/inspector';
+} from '../../../../shared/inspector';
 
 /** 검색어 기준으로 매치/가시 인덱스를 계산한다. */
 export function getComponentFilterResult(

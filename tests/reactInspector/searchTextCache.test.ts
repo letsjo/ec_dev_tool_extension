@@ -4,7 +4,7 @@ import {
   buildComponentSearchText,
   ensureComponentSearchTextCache,
   patchComponentSearchTextCacheAt,
-} from '../../src/features/panel/reactInspector/searchTextCache';
+} from '../../src/features/panel/reactInspector/search/searchTextCache';
 
 function createComponent(overrides: Partial<ReactComponentInfo> = {}): ReactComponentInfo {
   return {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactComponentInfo } from '../../src/shared/inspector';
-import { createReactComponentSelectionBindingFlow } from '../../src/features/panel/reactInspector/selectionBindingFlow';
+import { createReactComponentSelectionBindingFlow } from '../../src/features/panel/reactInspector/selection/selectionBindingFlow';
 
 function createComponent(id: string): ReactComponentInfo {
   return {
