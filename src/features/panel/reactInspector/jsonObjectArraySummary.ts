@@ -1,11 +1,7 @@
 import type { JsonSectionKind } from '../../../shared/inspector/types';
 import { readDisplayCollectionMeta as readDisplayCollectionMetaValue } from './collectionDisplay';
-import {
-  buildHookInlinePreview,
-  buildJsonSummaryPreview,
-  getObjectDisplayName,
-  isJsonInternalMetaKey,
-} from './jsonPreview';
+import { buildHookInlinePreview, buildJsonSummaryPreview } from './jsonPreview';
+import { getObjectDisplayName, isJsonInternalMetaKey } from './jsonPreviewObjectMeta';
 
 export interface JsonObjectArraySummary {
   metaText: string | null;

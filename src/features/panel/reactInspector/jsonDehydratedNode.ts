@@ -4,7 +4,7 @@ import type {
   JsonInspectPathContext as JsonDehydratedRenderContext,
 } from './jsonRenderTypes';
 import { normalizeCollectionTokenForDisplay as normalizeCollectionTokenForDisplayValue } from './collectionDisplay';
-import { readDehydratedPreviewText } from './jsonPreview';
+import { readDehydratedPreviewText } from './jsonPreviewPrimitive';
 
 export interface CreateDehydratedTokenNodeOptions {
   value: unknown;
