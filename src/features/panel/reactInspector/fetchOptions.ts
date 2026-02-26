@@ -76,9 +76,9 @@ export function createRuntimeRefreshFetchOptions(
 const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<FetchReactInfoOptions> = {
   lightweight: true,
   serializeSelectedComponent: false,
-  // 요소 선택 모드에서는 clickPoint 기준 DOM Tree/Selected Element를 먼저 확정한다.
-  // 즉시 reactInspect 자동 하이라이트를 생략해 중복 selector 환경에서 오하이라이트를 막는다.
-  highlightSelection: false,
+  // 요소 선택 완료 직후에는 선택 컴포넌트 DOM 하이라이트를 다시 적용해
+  // 페이지 주황색 박스와 Selected Element/DOM Tree 동기화를 유지한다.
+  highlightSelection: true,
   refreshDetail: true,
 };
 

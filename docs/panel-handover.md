@@ -441,7 +441,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/resultModel.ts`: reactInspect 응답 컴포넌트 정규화(경량 모드 재사용), fingerprint 기반 변경 id 집합 계산 전담
 - `reactInspector/applyFlow.ts`: apply 옵션 정규화, preserveCollapsed 기준 접힘 상태 복원/초기화, 상태 문구·후속 렌더 액션 결정 전담
 - `reactInspector/flow/applyResultFlow.ts`: reactInspect data/selection/render 3단계 파이프라인 오케스트레이션과 controller 상태 반영 결선 전담
-- `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, runtime refresh/element selection 프리셋 팩토리(요소 선택 preset은 clickPoint 기반 DOM 확정 후 자동 하이라이트 비활성화) 전담
+- `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, runtime refresh/element selection 프리셋 팩토리(요소 선택 preset은 clickPoint 기반 DOM 확정 후 자동 하이라이트를 활성화해 페이지 주황색 박스와 Selected Element/DOM Tree를 함께 동기화) 전담
 - `reactInspector/flow/fetchRequestStage.ts`: `reactInspect` request stage(lookup 저장, loading pane 전환, script selected id 계산) 전담
 - `reactInspector/flow/fetchResponseStage.ts`: `reactInspect` response stage(응답 파이프라인 전달 + 완료 콜백) 전담
 - `reactInspector/flow/fetchFlow.ts`: request/response stage helper를 조합해 `reactInspect` 브리지 호출 오케스트레이션과 latest-request-only 응답 반영 규칙(stale 응답 discard, `onDone` 보장), foreground in-flight 동안 background refresh skip 규칙 전담

@@ -5,12 +5,12 @@ import {
 } from '../../src/features/panel/reactInspector/fetchOptions';
 
 describe('reactInspector fetchOptions presets', () => {
-  it('disables auto highlight for element selection preset', () => {
+  it('keeps auto highlight for element selection preset', () => {
     const options = createElementSelectionFetchOptions();
     expect(options).toMatchObject({
       lightweight: true,
       serializeSelectedComponent: false,
-      highlightSelection: false,
+      highlightSelection: true,
       refreshDetail: true,
     });
   });
