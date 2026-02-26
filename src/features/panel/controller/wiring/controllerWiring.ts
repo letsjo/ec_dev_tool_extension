@@ -3,42 +3,17 @@ import { createControllerWiringReactInspector } from './controllerWiringReactIns
 import { createControllerWiringDataFlows } from './controllerWiringDataFlows';
 import { createControllerWiringLifecycle } from './controllerWiringLifecycle';
 import { createReactInspectorControllerState } from '../../reactInspector/controllerState';
-import {
-  callInspectedPageAgent,
-  type CallInspectedPageAgent,
-} from '../../bridge/pageAgentClient';
+import { callInspectedPageAgent } from '../../bridge/pageAgentClient';
 import { createPanelPaneSetters } from '../../paneSetters';
 import { createPanelControllerContext } from '../context';
 import { createPanelDebugDiagnosticsFlow } from '../../debugLog/debugDiagnosticsFlow';
 import { createPanelDebugLogFlow } from '../../debugLog/debugLogFlow';
+import {
+  createDebugPageAgentCaller,
+  createDebugPaneSetters,
+} from './controllerWiringDebug';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
-
-function summarizeDebugPayload(value: unknown): unknown {
-  if (value === null || value === undefined) return value;
-  if (typeof value === 'string') return value.length > 260 ? `${value.slice(0, 260)}…` : value;
-  if (typeof value === 'number' || typeof value === 'boolean') return value;
-  if (typeof value === 'function') return `[Function ${(value as Function).name || 'anonymous'}]`;
-
-  if (Array.isArray(value)) {
-    return {
-      type: 'array',
-      length: value.length,
-    };
-  }
-
-  if (typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    return {
-      type: 'object',
-      keys: Object.keys(record).slice(0, 12),
-      ok: record.ok,
-      error: typeof record.error === 'string' ? record.error : undefined,
-    };
-  }
-
-  return String(value);
-}
 
 export interface PanelControllerWiring {
   bootstrapPanel: () => void;
@@ -60,7 +35,6 @@ export function createPanelControllerWiring(): PanelControllerWiring {
       debugDiagnosticsFlow.recordDebugEvent(eventName);
     },
   });
-  let pageAgentRequestIdSeq = 0;
 
   const {
     setOutput,
@@ -83,46 +57,25 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     setLastReactDetailComponentId: reactInspectorState.setLastReactDetailComponentId,
   });
 
-  const callInspectedPageAgentWithDebug: CallInspectedPageAgent = (method, args, onDone) => {
-    const requestId = pageAgentRequestIdSeq + 1;
-    pageAgentRequestIdSeq = requestId;
-    appendDebugLog('pageAgent.request', {
-      requestId,
-      method,
-      args: summarizeDebugPayload(args),
-    });
-    callInspectedPageAgent(method, args, (result, errorText) => {
-      appendDebugLog('pageAgent.response', {
-        requestId,
-        method,
-        hasError: Boolean(errorText),
-        errorText: errorText ?? null,
-        result: summarizeDebugPayload(result),
-      });
-      onDone(result, errorText);
-    });
-  };
+  const callInspectedPageAgentWithDebug = createDebugPageAgentCaller({
+    appendDebugLog,
+    callInspectedPageAgent,
+  });
 
-  const setOutputWithDebug = (text: string, isError?: boolean) => {
-    appendDebugLog('pane.rawResult.update', { isError: isError === true, text });
-    setOutput(text, isError);
-  };
-  const setElementOutputWithDebug = (text: string) => {
-    appendDebugLog('pane.selectedElement.update', { text });
-    setElementOutput(text);
-  };
-  const setReactStatusWithDebug = (text: string, isError?: boolean) => {
-    appendDebugLog('pane.reactStatus.update', { isError: isError === true, text });
-    setReactStatus(text, isError);
-  };
-  const setDomTreeStatusWithDebug = (text: string, isError?: boolean) => {
-    appendDebugLog('pane.domTreeStatus.update', { isError: isError === true, text });
-    setDomTreeStatus(text, isError);
-  };
-  const setDomTreeEmptyWithDebug = (text: string) => {
-    appendDebugLog('pane.domTreeBody.update', { text });
-    setDomTreeEmpty(text);
-  };
+  const {
+    setOutputWithDebug,
+    setElementOutputWithDebug,
+    setReactStatusWithDebug,
+    setDomTreeStatusWithDebug,
+    setDomTreeEmptyWithDebug,
+  } = createDebugPaneSetters({
+    appendDebugLog,
+    setOutput,
+    setElementOutput,
+    setReactStatus,
+    setDomTreeStatus,
+    setDomTreeEmpty,
+  });
 
   const {
     populateTargetSelect,
