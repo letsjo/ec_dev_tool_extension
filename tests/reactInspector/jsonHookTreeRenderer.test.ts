@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ReactComponentInfo } from '../../src/shared/inspector/types';
+import type { ReactComponentInfo } from '../../src/shared/inspector';
 import { appendHookTreeNodes } from '../../src/features/panel/reactInspector/jsonHookTreeRenderer';
 import type { HookTreeNode } from '../../src/features/panel/reactInspector/hookTreeModel';
 import type { JsonRenderContext } from '../../src/features/panel/reactInspector/jsonRenderTypes';

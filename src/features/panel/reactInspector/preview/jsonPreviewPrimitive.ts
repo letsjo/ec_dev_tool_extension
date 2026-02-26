@@ -1,4 +1,4 @@
-import { isDehydratedToken } from '../../../../shared/inspector/guards';
+import { isDehydratedToken } from '../../../../shared/inspector';
 
 const SELF_CLOSING_TAG_PATTERN = /^<[a-zA-Z][\w:-]*\s*\/>$/;
 

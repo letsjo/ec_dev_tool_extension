@@ -1,7 +1,7 @@
 import type {
   ComponentFilterResult,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 
 interface ResolveNextSelectionParams {
   reactComponents: ReactComponentInfo[];

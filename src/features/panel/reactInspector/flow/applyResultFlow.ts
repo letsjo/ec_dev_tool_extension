@@ -2,7 +2,7 @@ import type {
   ComponentFilterResult,
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../../../shared/inspector/types';
+} from '../../../../shared/inspector';
 import {
   buildReactInspectSuccessStatusText as buildReactInspectSuccessStatusTextValue,
   normalizeReactInspectApplyOptions as normalizeReactInspectApplyOptionsValue,

@@ -154,7 +154,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 1. 도메인에 맞는 모듈(`pageAgentRuntime.ts`, `pageAgentDom.ts`, `pageAgentDomTree.ts`, `pageAgentDomHighlight.ts`, `pageAgentInspect.ts`, `pageAgentFiberSearch.ts`, `pageAgentFiberElement.ts`, `pageAgentFiberDescribe.ts`, `pageAgentFiberRegistry.ts`, `pageAgentSerialization.ts`, `pageAgentSerializationCore.ts`, `pageAgentCollectionPath.ts`, `pageAgentSerializerSummary.ts`, `pageAgentSerializerOptions.ts`, `pageAgentHookState.ts`, `pageAgentHookMetadata.ts`, `pageAgentHooksInfo.ts`)에 구현 함수 추가
 2. `pageAgentMethods.ts`의 method 라우터에 handler 연결
 3. `controllerWiring.ts`에서 호출 및 타입 가드 연결(엔트리 파일 `controller.ts`는 bootstrap 실행만 담당)
-4. 필요하면 `src/shared/inspector/types.ts` 타입 확장
+4. 필요하면 `src/shared/inspector`(배럴) 기준으로 타입 확장
 
 ## 6.1 pageAgent DOM 모듈 분리 규칙
 
@@ -292,6 +292,14 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `pageAgentHooksInfo.ts`: fiber hook linked-list 순회(`getHooksRootValue`), includeCustomGroups 옵션 안전 파싱, custom group metadata 병합, hook 개수 집계(`getHooksCount`), panel 전달용 hook payload 직렬화(`getHooksInfo`) 전담
 - `pageAgentRuntime.ts`: hook info helper 생성과 inspect 흐름 dependency 결선만 담당
+
+## 6.11 Shared 배럴 export 규칙
+
+- shared 모듈 위치: `src/shared/**`
+- `src/shared/index.ts`: shared 하위 배럴 re-export 전담
+- `src/shared/inspector/index.ts`: inspector 타입/가드 배럴 export 전담
+- `src/shared/readers/index.ts`: reader 유틸 배럴 export 전담
+- `src/content/**`, `src/features/**`, `tests/**`에서는 `src/shared/inspector/types`/`src/shared/inspector/guards`/`src/shared/readers/string` 대신 배럴 경로(`src/shared/inspector`, `src/shared/readers`)를 우선 사용
 
 ## 7. 워크스페이스(패널 스플릿) 모델
 

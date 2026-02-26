@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ReactComponentInfo } from '../../src/shared/inspector/types';
+import type { ReactComponentInfo } from '../../src/shared/inspector';
 import {
   buildComponentSearchText,
   ensureComponentSearchTextCache,

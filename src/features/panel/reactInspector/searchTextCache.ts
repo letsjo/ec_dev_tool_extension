@@ -2,8 +2,8 @@ import {
   isCircularRefToken,
   isDehydratedToken,
   isFunctionToken,
-} from '../../../shared/inspector/guards';
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 
 /** 직렬화 메타 키는 검색 토큰 수집에서 제외한다. */
 function isJsonInternalMetaKey(key: string): boolean {

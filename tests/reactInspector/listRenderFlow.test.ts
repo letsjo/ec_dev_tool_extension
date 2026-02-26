@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   ComponentFilterResult,
   ReactComponentInfo,
-} from '../../src/shared/inspector/types';
+} from '../../src/shared/inspector';
 import { createReactComponentListRenderFlow } from '../../src/features/panel/reactInspector/list/listRenderFlow';
 
 interface MutableListRenderState {

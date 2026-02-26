@@ -4,7 +4,7 @@ import {
   getElementPath,
   resolveTargetElement as resolveTargetElementValue,
 } from './dom/pageAgentDom';
-import type { PickPoint } from '../shared/inspector/types';
+import type { PickPoint } from '../shared/inspector';
 import {
   findAnyFiberInDocument,
   findNearestFiber,

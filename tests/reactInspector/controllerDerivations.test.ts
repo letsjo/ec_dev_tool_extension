@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ReactComponentInfo } from '../../src/shared/inspector/types';
+import type { ReactComponentInfo } from '../../src/shared/inspector';
 import type { ReactInspectorControllerState } from '../../src/features/panel/reactInspector/controllerState';
 import { createReactInspectorControllerDerivations } from '../../src/features/panel/reactInspector/controllerDerivations';
 

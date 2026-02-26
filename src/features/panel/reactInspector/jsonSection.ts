@@ -2,7 +2,7 @@ import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 import { buildHookTree as buildHookTreeValue } from './hookTreeModel';
 import { appendHookTreeNodes } from './jsonHookTreeRenderer';
 import { collectJsonRefMap } from './jsonRefMap';

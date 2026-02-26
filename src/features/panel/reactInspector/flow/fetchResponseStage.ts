@@ -6,7 +6,7 @@ import {
   handleReactInspectAgentResponse,
   type ReactInspectApplyOptions,
 } from '../../pageAgent/responsePipeline';
-import type { ReactInspectResult } from '../../../../shared/inspector/types';
+import type { ReactInspectResult } from '../../../../shared/inspector';
 
 interface ApplyReactFetchResponseStageOptions {
   response: unknown | null;

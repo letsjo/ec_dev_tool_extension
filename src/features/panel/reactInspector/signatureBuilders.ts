@@ -1,7 +1,7 @@
 import type {
   ComponentFilterResult,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 import { hashValueForSignature } from './signatureHash';
 
 /** 상세 패널 렌더 최소 변경 판별용 시그니처를 만든다. */

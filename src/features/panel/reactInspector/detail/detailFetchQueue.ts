@@ -2,7 +2,7 @@ import type {
   PickPoint,
   ReactComponentDetailResult,
   ReactComponentInfo,
-} from '../../../../shared/inspector/types';
+} from '../../../../shared/inspector';
 import {
   createReactDetailQueueMutableState,
   finishDetailRequest,

@@ -1,4 +1,4 @@
-import type { PickPoint } from '../../shared/inspector/types';
+import type { PickPoint } from '../../shared/inspector';
 
 /** 필요한 값/상태를 계산해 반환 */
 function getElementPath(el: Element | null) {

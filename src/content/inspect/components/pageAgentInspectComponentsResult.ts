@@ -2,7 +2,7 @@ import { buildSourceElementSummary } from './pageAgentInspectComponentsSource';
 import { getDomInfoForFiber } from '../../pageAgentInspectDomInfo';
 import { resolveSelectedComponentIndex } from '../../pageAgentInspectSelection';
 import type { SourceElementSummary } from './pageAgentInspectComponentsSource';
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 
 type InspectFiber = {
   tag?: number;

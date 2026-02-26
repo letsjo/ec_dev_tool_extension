@@ -1,4 +1,4 @@
-import { isMapToken, isRecord, isSetToken } from '../../../shared/inspector/guards';
+import { isMapToken, isRecord, isSetToken } from '../../../shared/inspector';
 import {
   attachDisplayCollectionMeta,
   attachDisplayPathMap,

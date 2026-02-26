@@ -2,7 +2,7 @@ import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 import {
   resolveInspectPathLookup as resolveInspectPathLookupValue,
   type RuntimeRefreshLookup,

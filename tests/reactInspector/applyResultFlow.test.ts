@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../src/shared/inspector/types';
+} from '../../src/shared/inspector';
 import { createReactInspectResultApplyFlow } from '../../src/features/panel/reactInspector/flow/applyResultFlow';
 
 interface MutableInspectState {

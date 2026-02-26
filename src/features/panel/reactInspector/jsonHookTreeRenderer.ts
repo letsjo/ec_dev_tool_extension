@@ -1,4 +1,4 @@
-import type { JsonPathSegment } from '../../../shared/inspector/types';
+import type { JsonPathSegment } from '../../../shared/inspector';
 import type { HookRowItem, HookTreeNode } from './hookTreeModel';
 import type { JsonRenderContext } from './jsonRenderTypes';
 import {

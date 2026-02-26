@@ -1,4 +1,4 @@
-import type { PickPoint } from '../../../shared/inspector/types';
+import type { PickPoint } from '../../../shared/inspector';
 
 export interface RuntimeRefreshLookup {
   selector: string;

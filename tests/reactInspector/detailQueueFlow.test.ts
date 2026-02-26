@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ReactComponentInfo } from '../../src/shared/inspector/types';
+import type { ReactComponentInfo } from '../../src/shared/inspector';
 import { createReactDetailQueueFlow } from '../../src/features/panel/reactInspector/detail/detailQueueFlow';
 import { applySelectedComponentDetailResult } from '../../src/features/panel/reactInspector/detail/detailApply';
 

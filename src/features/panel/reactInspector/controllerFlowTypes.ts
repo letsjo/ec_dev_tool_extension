@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
 import type {
   FetchSerializedValueAtPathHandler,

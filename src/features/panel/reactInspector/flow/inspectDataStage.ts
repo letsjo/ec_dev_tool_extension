@@ -1,7 +1,7 @@
 import type {
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../../../shared/inspector/types';
+} from '../../../../shared/inspector';
 import { resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue } from '../applyFlow';
 import { buildReactInspectResultModel as buildReactInspectResultModelValue } from '../resultModel';
 import {

@@ -86,10 +86,13 @@ npm test
 │   │   ├── relay/                        # content -> panel runtime 이벤트 중계
 │   │   └── errors/                       # background 메시지 오류 판별 유틸
 │   ├── shared/
+│   │   ├── index.ts                      # shared 배럴 export
 │   │   ├── inspector/
+│   │   │   ├── index.ts                  # inspector 타입/가드 배럴 export
 │   │   │   ├── types.ts                  # Inspector 공용 타입
 │   │   │   ├── guards.ts                 # Inspector 응답/토큰 타입가드
 │   │   └── readers/
+│   │       ├── index.ts                  # reader 배럴 export
 │   │       └── string.ts                 # 안전한 문자열 리더
 │   ├── ui/
 │   │   ├── components/                   # 작은 단위 UI 컴포넌트(버튼/라벨/텍스트)

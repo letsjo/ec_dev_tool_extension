@@ -1,4 +1,4 @@
-import { isRecord } from '../../../shared/inspector/guards';
+import { isRecord } from '../../../shared/inspector';
 import type { HookBadgeType, HookRowItem } from './hookTreeTypes';
 
 const EFFECT_HOOK_NAME_SET = new Set([

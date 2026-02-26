@@ -1,4 +1,4 @@
-import type { JsonSectionKind } from '../../../shared/inspector/types';
+import type { JsonSectionKind } from '../../../shared/inspector';
 import { readDisplayCollectionMeta as readDisplayCollectionMetaValue } from './collectionDisplay';
 import { buildHookInlinePreview, buildJsonSummaryPreview } from './preview/jsonPreview';
 import { getObjectDisplayName, isJsonInternalMetaKey } from './preview/jsonPreviewObjectMeta';

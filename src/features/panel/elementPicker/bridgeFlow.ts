@@ -1,11 +1,11 @@
-import { isPickPoint } from '../../../shared/inspector/guards';
-import { readString } from '../../../shared/readers/string';
+import { isPickPoint } from '../../../shared/inspector';
+import { readString } from '../../../shared/readers';
 import type {
   ElementInfo,
   ElementSelectedMessage,
   PickPoint,
   PickerStartResponse,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 
 interface CreateElementPickerBridgeFlowOptions {
   getInspectedTabId: () => number;

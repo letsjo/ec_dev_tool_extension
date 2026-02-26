@@ -1,5 +1,5 @@
-import { isPageHighlightResult } from '../../../shared/inspector/guards';
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import { isPageHighlightResult } from '../../../shared/inspector';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 
 type CallInspectedPageAgent = (
   method: string,

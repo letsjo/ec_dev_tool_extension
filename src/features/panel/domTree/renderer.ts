@@ -1,4 +1,4 @@
-import type { DomTreeNode } from '../../../shared/inspector/types';
+import type { DomTreeNode } from '../../../shared/inspector';
 
 /** DOM 시작 태그 라벨(`<tag ...>`)을 생성한다. */
 function createDomTagLabel(node: DomTreeNode): HTMLElement {

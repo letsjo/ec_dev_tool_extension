@@ -1,4 +1,4 @@
-import type { PickPoint, ReactComponentInfo } from '../../../../shared/inspector/types';
+import type { PickPoint, ReactComponentInfo } from '../../../../shared/inspector';
 import {
   resolveSelectedComponentIdForScript,
   type FetchReactInfoOptions,

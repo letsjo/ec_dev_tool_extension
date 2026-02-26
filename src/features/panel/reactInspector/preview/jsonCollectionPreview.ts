@@ -1,4 +1,4 @@
-import { isMapToken, isSetToken } from '../../../../shared/inspector/guards';
+import { isMapToken, isSetToken } from '../../../../shared/inspector';
 import {
   readDisplayCollectionMeta as readDisplayCollectionMetaValue,
   readMapTokenEntryPair as readMapTokenEntryPairValue,

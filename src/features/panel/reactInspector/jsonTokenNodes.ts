@@ -1,4 +1,4 @@
-import { isCircularRefToken, isFunctionToken } from '../../../shared/inspector/guards';
+import { isCircularRefToken, isFunctionToken } from '../../../shared/inspector';
 import type {
   InspectFunctionAtPathHandler,
   JsonRenderContext as JsonTokenRenderContext,

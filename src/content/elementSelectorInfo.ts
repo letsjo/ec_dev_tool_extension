@@ -1,4 +1,4 @@
-import type { ElementInfo } from "../shared/inspector/types";
+import type { ElementInfo } from "../shared/inspector";
 
 /** DOM 경로 문자열(tag/id/class)을 부모 방향으로 조립한다. */
 function getElementPath(el: Element): string {

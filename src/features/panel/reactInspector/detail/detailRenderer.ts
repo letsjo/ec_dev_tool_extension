@@ -1,7 +1,7 @@
 import type {
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../../shared/inspector/types';
+} from '../../../../shared/inspector';
 
 export interface ReactComponentDetailRenderCache {
   componentId: string | null;

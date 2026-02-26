@@ -2,11 +2,11 @@ import {
   isDomTreeEvalResult,
   isReactInspectResult,
   isRecord,
-} from '../../../shared/inspector/guards';
+} from '../../../shared/inspector';
 import type {
   DomTreeEvalResult,
   ReactInspectResult,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 
 export interface ReactInspectApplyOptions {
   preserveSelection?: boolean;

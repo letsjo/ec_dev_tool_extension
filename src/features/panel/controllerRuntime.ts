@@ -1,4 +1,4 @@
-import type { PickPoint } from '../../shared/inspector/types';
+import type { PickPoint } from '../../shared/inspector';
 import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
 import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from './lifecycle/runtimeMessageBinding';
 import { createPanelTeardownFlow as createPanelTeardownFlowValue } from './lifecycle/panelTeardownFlow';

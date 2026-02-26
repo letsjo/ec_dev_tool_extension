@@ -1,6 +1,6 @@
 import { walkInspectableComponents } from '../../pageAgentInspectComponentWalk';
 import { getDomInfoForFiber } from '../../pageAgentInspectDomInfo';
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 
 type InspectFiber = {
   tag?: number;

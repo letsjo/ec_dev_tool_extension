@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 import { buildReactComponentUpdateFingerprint } from './signatures';
 
 interface BuildReactInspectResultModelParams {

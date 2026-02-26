@@ -2,7 +2,7 @@ import type {
   PickPoint,
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../../../shared/inspector/types';
+} from '../../../../shared/inspector';
 import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 import type { ReactInspectApplyOptions } from '../../pageAgent/responsePipeline';
 import type { FetchReactInfoOptions } from '../fetchOptions';

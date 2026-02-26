@@ -1,4 +1,4 @@
-import type { PickPoint } from '../../shared/inspector/types';
+import type { PickPoint } from '../../shared/inspector';
 import { createPanelControllerBootstrap as createPanelControllerBootstrapValue } from './controllerBootstrap';
 import type { PanelControllerContext } from './controllerContext';
 import { mountPanelView as mountPanelViewValue } from './domRefs';

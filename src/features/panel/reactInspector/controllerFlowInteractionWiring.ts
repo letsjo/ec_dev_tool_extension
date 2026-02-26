@@ -1,5 +1,5 @@
 import type { SearchNoResultContext } from './searchStatus';
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 import { clearPaneContent as clearPaneContentValue } from '../paneState';
 import {
   createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue,

@@ -1,5 +1,5 @@
-import { isRecord } from '../../../shared/inspector/guards';
-import type { DomTreeEvalResult, PickPoint } from '../../../shared/inspector/types';
+import { isRecord } from '../../../shared/inspector';
+import type { DomTreeEvalResult, PickPoint } from '../../../shared/inspector';
 import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
 import { handleDomTreeAgentResponse } from '../pageAgent/responsePipeline';
 import { renderDomTreeNode } from './renderer';

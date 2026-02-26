@@ -2,7 +2,7 @@ import type {
   JsonPathSegment,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
 import type { RuntimeRefreshLookup } from './lookup';
 import {

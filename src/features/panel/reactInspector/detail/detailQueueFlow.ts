@@ -2,7 +2,7 @@ import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 import type {
   ReactComponentDetailResult,
   ReactComponentInfo,
-} from '../../../../shared/inspector/types';
+} from '../../../../shared/inspector';
 import type { RuntimeRefreshLookup } from '../lookup';
 import {
   applySelectedComponentDetailResult as applySelectedComponentDetailResultValue,

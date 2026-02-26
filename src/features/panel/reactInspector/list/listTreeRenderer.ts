@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../../shared/inspector';
 import { buildChildrenByParent as buildChildrenByParentValue } from './listTreeModel';
 import { renderReactTreeNodes } from './listTreeNodeRenderer';
 import {

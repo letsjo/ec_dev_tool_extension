@@ -1,4 +1,4 @@
-import { isDehydratedToken } from '../../../shared/inspector/guards';
+import { isDehydratedToken } from '../../../shared/inspector';
 import type {
   FetchSerializedValueAtPathHandler,
   JsonInspectPathContext as JsonDehydratedRenderContext,

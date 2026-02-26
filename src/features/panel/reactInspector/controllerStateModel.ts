@@ -1,4 +1,4 @@
-import type { ReactComponentInfo } from '../../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../../shared/inspector';
 import type { RuntimeRefreshLookup } from './lookup';
 
 export interface ReactComponentDetailRenderStateUpdate {

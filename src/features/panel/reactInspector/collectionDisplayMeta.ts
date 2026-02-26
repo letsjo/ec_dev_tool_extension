@@ -1,5 +1,5 @@
-import { isRecord } from '../../../shared/inspector/guards';
-import type { JsonPathSegment } from '../../../shared/inspector/types';
+import { isRecord } from '../../../shared/inspector';
+import type { JsonPathSegment } from '../../../shared/inspector';
 
 const MAP_ENTRY_PATH_SEGMENT_PREFIX = '__ec_map_entry__';
 const SET_ENTRY_PATH_SEGMENT_PREFIX = '__ec_set_entry__';

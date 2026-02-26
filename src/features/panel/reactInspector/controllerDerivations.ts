@@ -2,7 +2,7 @@ import type {
   ComponentFilterResult,
   JsonSectionKind,
   ReactComponentInfo,
-} from '../../../shared/inspector/types';
+} from '../../../shared/inspector';
 import {
   buildComponentIndexById as buildComponentIndexByIdValue,
   ensureComponentSearchTextCache as ensureComponentSearchTextCacheValue,

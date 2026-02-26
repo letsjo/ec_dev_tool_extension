@@ -1,4 +1,4 @@
-import type { ComponentFilterResult, ReactComponentInfo } from '../../../../shared/inspector/types';
+import type { ComponentFilterResult, ReactComponentInfo } from '../../../../shared/inspector';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './listTreeRenderer';
 
 interface ReactComponentListRenderStateSnapshot {

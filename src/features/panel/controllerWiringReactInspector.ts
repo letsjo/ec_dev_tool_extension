@@ -2,7 +2,7 @@ import { createReactInspectPathBindings as createReactInspectPathBindingsValue }
 import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from './reactInspector/controllerFlows';
 import type { CallInspectedPageAgent } from './bridge/pageAgentClient';
 import type { ReactInspectorControllerState } from './reactInspector/controllerState';
-import type { ReactComponentInfo } from '../../shared/inspector/types';
+import type { ReactComponentInfo } from '../../shared/inspector';
 
 interface CreateControllerWiringReactInspectorOptions {
   state: ReactInspectorControllerState;
