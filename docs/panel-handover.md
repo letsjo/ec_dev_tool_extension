@@ -383,7 +383,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/applyFlow.ts`: apply 옵션 정규화, preserveCollapsed 기준 접힘 상태 복원/초기화, 상태 문구·후속 렌더 액션 결정 전담
 - `reactInspector/applyResultFlow.ts`: reactInspect data/selection/render 3단계 파이프라인 오케스트레이션과 controller 상태 반영 결선 전담
 - `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, runtime refresh/element selection 프리셋 팩토리 전담
-- `reactInspector/fetchFlow.ts`: `reactInspect` fetch request/response stage(lookup 저장, loading pane 전환, 브리지 호출, 응답 파이프라인 연결) 오케스트레이션 전담
+- `reactInspector/fetchRequestStage.ts`: `reactInspect` request stage(lookup 저장, loading pane 전환, script selected id 계산) 전담
+- `reactInspector/fetchResponseStage.ts`: `reactInspect` response stage(응답 파이프라인 전달 + 완료 콜백) 전담
+- `reactInspector/fetchFlow.ts`: request/response stage helper를 조합해 `reactInspect` 브리지 호출 오케스트레이션 전담
 - `reactInspector/inspectDataStage.ts`: reactInspect data stage(이전 선택 id/접힘 스냅샷, 결과 모델 적용, 검색 캐시 재생성, 접힘 상태 복원) 순수 계산 전담
 - `reactInspector/lookup.ts`: `lastReactLookup` 저장 갱신(keepLookup 규칙), runtime refresh 기본 lookup 계산, inspectPath selector/pickPoint fallback 계산 전담
 - `reactInspector/openInSources.ts`: DevTools `inspect(fn)` 실행에 필요한 expression/실패 판정/상태 문구 생성 규칙(순수 함수) 전담
@@ -439,7 +441,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/selectionModel.ts`: preserveSelection/selectedIndex/filterResult를 조합해 최종 선택 인덱스와 선택 변경 여부 계산 전담
 - `reactInspector/listTreeModel.ts`: visible component 목록을 parent-child 트리 맵(`Map<parentId, childrenIndices>`)으로 구성하는 규칙 전담
 - `reactInspector/listTreeScrollAnchor.ts`: 목록 리렌더 전후 selected item 기준 scroll 앵커 캡처/복원 규칙 전담
-- `reactInspector/listTreeRenderer.ts`: tree model/scroll anchor helper를 조합해 Components Tree DOM 렌더와 접힘 토글 이벤트를 오케스트레이션 전담
+- `reactInspector/listTreeNodeRenderer.ts`: Components Tree row 렌더(토글/hover/focus/select 이벤트 포함)와 재귀 child 렌더 전담
+- `reactInspector/listTreeRenderer.ts`: tree model/scroll anchor/listTreeNodeRenderer helper를 조합해 Components Tree DOM 렌더 오케스트레이션 전담
 - `reactInspector/detailRenderer.ts`: 선택 컴포넌트 상세 패널 DOM 렌더와 render signature 캐시 판정 전담
 - `reactInspector/detailRenderFlow.ts`: detail render cache 읽기/쓰기와 detailRenderer 호출 결선 전담
 - `reactInspector/detailApply.ts`: 선택 컴포넌트 상세 응답 병합, 검색 캐시 패치, 선택 상세 재렌더 조건 처리 전담
@@ -645,6 +648,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/reactInspector/applyFlow.ts`
 - `src/features/panel/reactInspector/fetchOptions.ts`
 - `src/features/panel/reactInspector/fetchFlow.ts`
+- `src/features/panel/reactInspector/fetchRequestStage.ts`
+- `src/features/panel/reactInspector/fetchResponseStage.ts`
 - `src/features/panel/reactInspector/inspectDataStage.ts`
 - `src/features/panel/reactInspector/lookup.ts`
 - `src/features/panel/reactInspector/openInSources.ts`
@@ -689,6 +694,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/reactInspector/selectionModel.ts`
 - `src/features/panel/reactInspector/listTreeModel.ts`
 - `src/features/panel/reactInspector/listTreeScrollAnchor.ts`
+- `src/features/panel/reactInspector/listTreeNodeRenderer.ts`
 - `src/features/panel/reactInspector/listTreeRenderer.ts`
 - `src/features/panel/reactInspector/detailRenderer.ts`
 - `src/features/panel/reactInspector/detailApply.ts`
