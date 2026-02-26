@@ -1,28 +1,28 @@
-import type { SearchNoResultContext } from './search/searchStatus';
-import type { ReactComponentInfo } from '../../../shared/inspector';
-import { clearPaneContent as clearPaneContentValue } from '../paneState';
+import type { SearchNoResultContext } from '../search/searchStatus';
+import type { ReactComponentInfo } from '../../../../shared/inspector';
+import { clearPaneContent as clearPaneContentValue } from '../../paneState';
 import {
   createReactComponentDetailRenderFlow as createReactComponentDetailRenderFlowValue,
-} from './detail/detailRenderFlow';
-import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from './detail/detailQueueFlow';
-import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from './detail/detailRenderer';
+} from '../detail/detailRenderFlow';
+import { createReactDetailQueueFlow as createReactDetailQueueFlowValue } from '../detail/detailQueueFlow';
+import { renderReactComponentDetailPanel as renderReactComponentDetailPanelValue } from '../detail/detailRenderer';
 import {
   resolveRuntimeRefreshLookup as resolveRuntimeRefreshLookupValue,
-} from './lookup';
-import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './list/listRenderFlow';
-import { renderReactComponentListTree as renderReactComponentListTreeValue } from './list/listTreeRenderer';
-import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './flow/noResultStateFlow';
+} from '../lookup';
+import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from '../list/listRenderFlow';
+import { renderReactComponentListTree as renderReactComponentListTreeValue } from '../list/listTreeRenderer';
+import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './noResultStateFlow';
 import {
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
-} from './search';
-import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from './search/searchInputBindingFlow';
-import { createReactComponentSelectionBindingFlow as createReactComponentSelectionBindingFlowValue } from './selection/selectionBindingFlow';
+} from '../search';
+import { createReactComponentSearchInputFlow as createReactComponentSearchInputFlowValue } from '../search/searchInputBindingFlow';
+import { createReactComponentSelectionBindingFlow as createReactComponentSelectionBindingFlowValue } from '../selection/selectionBindingFlow';
 import {
   buildSearchSummaryStatusText as buildSearchSummaryStatusTextValue,
-} from './search/searchStatus';
-import type { ReactInspectorControllerDerivations } from './controllerDerivations';
+} from '../search/searchStatus';
+import type { ReactInspectorControllerDerivations } from '../controllerDerivations';
 import type { CreateReactInspectorControllerFlowsOptions } from './controllerFlowTypes';
-import { buildReactComponentListEmptyText as buildReactComponentListEmptyTextValue } from './viewState';
+import { buildReactComponentListEmptyText as buildReactComponentListEmptyTextValue } from '../viewState';
 
 interface CreateReactInspectorInteractionFlowWiringOptions {
   options: CreateReactInspectorControllerFlowsOptions;

@@ -2,7 +2,7 @@ import type {
   ReactComponentInfo,
   ReactInspectResult,
 } from '../../../../shared/inspector';
-import { resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue } from '../applyFlow';
+import { resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue } from './applyFlow';
 import { buildReactInspectResultModel as buildReactInspectResultModelValue } from '../resultModel';
 import {
   buildComponentSearchTexts as buildComponentSearchTextsValue,

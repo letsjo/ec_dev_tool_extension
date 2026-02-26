@@ -8,7 +8,7 @@ import {
   normalizeReactInspectApplyOptions as normalizeReactInspectApplyOptionsValue,
   shouldRenderListOnlyAfterApply as shouldRenderListOnlyAfterApplyValue,
   type ReactInspectApplyOptions,
-} from '../applyFlow';
+} from './applyFlow';
 import { resolveReactInspectDataStage as resolveReactInspectDataStageValue } from './inspectDataStage';
 import { resolveNextSelection as resolveNextSelectionValue } from '../selection/selectionModel';
 import type { SearchNoResultContext } from '../search/searchStatus';

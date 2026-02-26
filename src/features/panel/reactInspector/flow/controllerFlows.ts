@@ -1,8 +1,8 @@
 import {
   createReactInspectResultApplyFlow as createReactInspectResultApplyFlowValue,
-} from './flow/applyResultFlow';
-import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './flow/fetchFlow';
-import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './flow/resetStateFlow';
+} from './applyResultFlow';
+import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './fetchFlow';
+import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './resetStateFlow';
 import type {
   CreateReactInspectorControllerFlowsOptions,
   ReactInspectorPaneSetters,
@@ -11,8 +11,8 @@ import {
   applyReactInspectorPaneState as applyReactInspectorPaneStateValue,
   buildReactInspectorLoadingPaneState as buildReactInspectorLoadingPaneStateValue,
   buildReactInspectorResetPaneState as buildReactInspectorResetPaneStateValue,
-} from './viewState';
-import { createReactInspectorControllerDerivations as createReactInspectorControllerDerivationsValue } from './controllerDerivations';
+} from '../viewState';
+import { createReactInspectorControllerDerivations as createReactInspectorControllerDerivationsValue } from '../controllerDerivations';
 import { createReactInspectorInteractionFlowWiring as createReactInspectorInteractionFlowWiringValue } from './controllerFlowInteractionWiring';
 
 /** controller의 react inspector 조립 로직을 결선 전용으로 묶는다. */

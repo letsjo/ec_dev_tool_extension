@@ -1,5 +1,5 @@
-import type { ReactComponentInfo } from '../../../shared/inspector';
-import { restoreCollapsedById } from './search';
+import type { ReactComponentInfo } from '../../../../shared/inspector';
+import { restoreCollapsedById } from '../search';
 
 export interface ReactInspectApplyOptions {
   preserveSelection?: boolean;

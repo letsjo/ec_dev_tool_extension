@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ReactComponentInfo } from '../../src/shared/inspector';
 import { createReactInspectorControllerState } from '../../src/features/panel/reactInspector/controllerState';
 import { createReactInspectorControllerDerivations } from '../../src/features/panel/reactInspector/controllerDerivations';
-import { createReactInspectorInteractionFlowWiring } from '../../src/features/panel/reactInspector/controllerFlowInteractionWiring';
+import { createReactInspectorInteractionFlowWiring } from '../../src/features/panel/reactInspector/flow/controllerFlowInteractionWiring';
 
 function createComponent(id: string, name: string): ReactComponentInfo {
   return {

@@ -1,10 +1,10 @@
-import type { ReactComponentInfo } from '../../../shared/inspector';
-import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
+import type { ReactComponentInfo } from '../../../../shared/inspector';
+import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 import type {
   FetchSerializedValueAtPathHandler,
   InspectFunctionAtPathHandler,
-} from './jsonRenderTypes';
-import type { ReactInspectorControllerState } from './controllerState';
+} from '../jsonRenderTypes';
+import type { ReactInspectorControllerState } from '../controllerState';
 
 export interface CreateReactInspectorControllerFlowsOptions {
   state: ReactInspectorControllerState;

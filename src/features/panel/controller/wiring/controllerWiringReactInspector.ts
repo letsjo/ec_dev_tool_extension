@@ -1,5 +1,5 @@
 import { createReactInspectPathBindings as createReactInspectPathBindingsValue } from '../../reactInspector/path/pathBindings';
-import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from '../../reactInspector/controllerFlows';
+import { createReactInspectorControllerFlows as createReactInspectorControllerFlowsValue } from '../../reactInspector/flow/controllerFlows';
 import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 import type { ReactInspectorControllerState } from '../../reactInspector/controllerState';
 import type { ReactComponentInfo } from '../../../../shared/inspector';
