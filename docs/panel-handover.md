@@ -930,6 +930,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/jsonObjectArraySummary.test.ts`: `jsonObjectArraySummary.ts`의 hooks/props summary meta 계산(map/set/array/object) 분기
   - `tests/reactInspector/jsonObjectArrayChildren.test.ts`: `jsonObjectArrayChildren.ts`의 primitive row fallback, internal meta key 제외, expandable child row/path 전달 분기
   - `tests/reactInspector/jsonPreviewCollection.test.ts`: `jsonPreviewCollection.ts`의 summary/hook collection limit preset(set array 3 vs 4)과 non-collection null 반환 분기
+  - `tests/reactInspector/jsonPreviewPrimitive.test.ts`: `jsonPreviewPrimitive.ts`의 primitive/hook inline/dehydrated fallback 포맷 분기
+  - `tests/reactInspector/jsonPreviewTokenStrategies.test.ts`: `jsonPreviewTokenStrategies.ts`의 summary/hook token(function/circular/dehydrated) 분기
+  - `tests/reactInspector/jsonPreviewBudget.test.ts`: `jsonPreviewBudget.ts`의 budget 생성 정규화, consume, exhausted 판정 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링
   - `tests/reactInspector/jsonRefMap.test.ts`: `jsonRefMap.ts`의 nested ref id 수집, 내부 meta key 제외, 순환 참조 안전 스캔 분기
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기
