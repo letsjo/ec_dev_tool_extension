@@ -1,6 +1,7 @@
-export { ComponentsTreePanel } from "./ComponentsTreePanel";
-export { ComponentsInspectorPanel } from "./ComponentsInspectorPanel";
-export { SelectedElementPanel } from "./SelectedElementPanel";
-export { SelectedElementPathPanel } from "./SelectedElementPathPanel";
-export { SelectedElementDomPanel } from "./SelectedElementDomPanel";
-export { RawResultPanel } from "./RawResultPanel";
+export { ComponentsInspectorPanel, ComponentsTreePanel } from "./react";
+export {
+  SelectedElementDomPanel,
+  SelectedElementPanel,
+  SelectedElementPathPanel,
+} from "./element";
+export { RawResultPanel } from "./common";

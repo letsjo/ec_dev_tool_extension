@@ -578,6 +578,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `src/ui/panels/**`
   - 단독으로 렌더 가능한 완성 패널 컴포넌트
+  - `panels/react/**`: React 트리/인스펙터 패널
+  - `panels/element/**`: 선택 요소/경로/DOM 패널
+  - `panels/common/**`: 공통 패널(raw result)
   - 각 파일이 하나의 패널(예: `ComponentsInspectorPanel`)을 완성하며, 고유 panel id/본문 DOM id를 포함
 
 - `src/ui/sections/**`

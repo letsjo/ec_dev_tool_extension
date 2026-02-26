@@ -103,7 +103,10 @@ npm test
 │   │   ├── components/
 │   │   │   ├── actions/                 # 버튼/아이콘 액션 primitive
 │   │   │   └── text/                    # 상태/서브타이틀 텍스트 primitive
-│   │   ├── panels/                       # 단독 사용 가능한 완성 패널 컴포넌트
+│   │   ├── panels/
+│   │   │   ├── react/                   # React 트리/인스펙터 패널
+│   │   │   ├── element/                 # 선택 요소/경로/DOM 패널
+│   │   │   └── common/                  # 공통 패널(raw result 등)
 │   │   └── sections/                     # 화면 조립 섹션(헤더/푸터/워크스페이스)
 └── dist/               # 빌드 결과 (devtools.global.js, panel.global.js)
 ```
@@ -114,7 +117,9 @@ npm test
 
 - `src/ui/components/actions`: 버튼/아이콘 액션 primitive
 - `src/ui/components/text`: 상태/서브타이틀 텍스트 primitive
-- `src/ui/panels`: 단독으로 렌더 가능한 "완성 패널" 컴포넌트
+- `src/ui/panels/react`: React 트리/인스펙터 패널
+- `src/ui/panels/element`: 선택 요소/경로/DOM 패널
+- `src/ui/panels/common`: 공통 패널(raw result 등)
 - `src/ui/sections/shell`: 헤더/뷰 골격 같은 상위 레이아웃 섹션
 - `src/ui/sections/workspace`: 워크스페이스 본문/패널 집합 섹션
 

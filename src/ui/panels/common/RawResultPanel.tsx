@@ -1,5 +1,5 @@
 import React from "react";
-import { WorkspacePanelShell } from "./WorkspacePanelShell";
+import { WorkspacePanelShell } from "../WorkspacePanelShell";
 
 /** Raw Result 패널 */
 export function RawResultPanel() {
