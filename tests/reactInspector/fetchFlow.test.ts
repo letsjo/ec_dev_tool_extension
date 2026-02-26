@@ -71,4 +71,45 @@ describe('createReactInspectFetchFlow', () => {
     expect(clearPageComponentHighlight).toHaveBeenCalledTimes(2);
     expect(applyLoadingPaneState).toHaveBeenCalledTimes(2);
   });
+
+  it('skips background refresh while foreground inspect is in-flight', () => {
+    const callbacks: PageAgentDoneHandler[] = [];
+    const callInspectedPageAgent = vi.fn(
+      (_method: string, _args: unknown, onDone: PageAgentDoneHandler) => {
+        callbacks.push(onDone);
+      },
+    );
+
+    const applyReactInspectResult = vi.fn();
+    const onDoneForeground = vi.fn();
+    const onDoneBackground = vi.fn();
+
+    const flow = createReactInspectFetchFlow({
+      callInspectedPageAgent,
+      getStoredLookup: () => null,
+      setStoredLookup: vi.fn(),
+      getReactComponents: () => [],
+      getSelectedReactComponentIndex: () => -1,
+      clearPageHoverPreview: vi.fn(),
+      clearPageComponentHighlight: vi.fn(),
+      applyLoadingPaneState: vi.fn(),
+      resetReactInspector: vi.fn(),
+      applyReactInspectResult,
+    });
+
+    flow.fetchReactInfo('#foreground', { x: 1, y: 2 }, { onDone: onDoneForeground });
+    flow.fetchReactInfo('#background', { x: 3, y: 4 }, { background: true, onDone: onDoneBackground });
+
+    expect(callInspectedPageAgent).toHaveBeenCalledTimes(1);
+    expect(onDoneBackground).toHaveBeenCalledTimes(1);
+    expect(callbacks).toHaveLength(1);
+
+    callbacks[0]({
+      components: [createComponent('foreground')],
+      selectedIndex: 0,
+    });
+
+    expect(onDoneForeground).toHaveBeenCalledTimes(1);
+    expect(applyReactInspectResult).toHaveBeenCalledTimes(1);
+  });
 });

@@ -32,16 +32,31 @@ interface CreateReactInspectFetchFlowOptions {
  */
 export function createReactInspectFetchFlow(options: CreateReactInspectFetchFlowOptions) {
   let latestRequestId = 0;
+  let foregroundInFlightCount = 0;
 
   function fetchReactInfo(
     selector: string,
     pickPoint?: PickPoint,
     fetchOptions: FetchReactInfoOptions = {},
   ) {
+    const isBackground = fetchOptions.background === true;
+    // 사용자 선택/수동 조회가 진행 중이면 background refresh는 건너뛰어
+    // 최신 foreground 선택 결과를 runtime refresh가 덮어쓰지 않도록 한다.
+    if (isBackground && foregroundInFlightCount > 0) {
+      fetchOptions.onDone?.();
+      return;
+    }
+
     const requestId = latestRequestId + 1;
     latestRequestId = requestId;
+    if (!isBackground) {
+      foregroundInFlightCount += 1;
+    }
 
     const finish = () => {
+      if (!isBackground && foregroundInFlightCount > 0) {
+        foregroundInFlightCount -= 1;
+      }
       fetchOptions.onDone?.();
     };
 
