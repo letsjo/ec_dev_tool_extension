@@ -28,7 +28,7 @@ Last Updated: 2026-02-26
 
 ## Phase 86 (Planned): DOM 계열 타입 안정화
 
-- [ ] 86.1 `pageAgentDom.ts` helper 분리
+- [x] 86.1 `pageAgentDom.ts` helper 분리
 - [ ] 86.2 `pageAgentDomTree.ts` 타입 정리
 - [ ] 86.3 `pageAgentDomHighlight.ts` 상태 처리 분리
 
