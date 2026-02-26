@@ -1,4 +1,5 @@
 import type { CollectionPreviewBudget } from './jsonCollectionPreview';
+import { isPreviewBudgetExhausted } from './jsonPreviewBudget';
 
 interface BuildArrayPreviewOptions {
   value: unknown[];
@@ -29,7 +30,7 @@ export function buildArrayPreview(options: BuildArrayPreviewOptions): string {
   const previewItems: string[] = [];
   for (let i = 0; i < maxLen; i += 1) {
     previewItems.push(options.renderValue(options.value[i], options.depth + 1, options.budget));
-    if (options.budget.remaining <= 0) break;
+    if (isPreviewBudgetExhausted(options.budget)) break;
   }
   const suffix = options.value.length > maxLen ? ', …' : '';
   return `[${previewItems.join(', ')}${suffix}]`;
@@ -47,7 +48,7 @@ export function buildObjectPreview(options: BuildObjectPreviewOptions): string {
   for (let i = 0; i < maxLen; i += 1) {
     const [key, child] = entries[i];
     parts.push(`${key}: ${options.renderValue(child, options.depth + 1, options.budget)}`);
-    if (options.budget.remaining <= 0) break;
+    if (isPreviewBudgetExhausted(options.budget)) break;
   }
   const suffix = entries.length > maxLen ? ', …' : '';
   const objectBody = `{${parts.join(', ')}${suffix}}`;

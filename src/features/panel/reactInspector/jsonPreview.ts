@@ -1,5 +1,6 @@
 import type { CollectionPreviewBudget } from './jsonCollectionPreview';
 import { buildArrayPreview, buildObjectPreview } from './jsonObjectPreview';
+import { consumePreviewBudget, createPreviewBudget } from './jsonPreviewBudget';
 import {
   getObjectDisplayName,
   isJsonInternalMetaKey,
@@ -22,10 +23,9 @@ import {
 export function buildJsonSummaryPreview(
   value: unknown,
   depth = 0,
-  budget = { remaining: 18 },
+  budget: CollectionPreviewBudget = createPreviewBudget(18),
 ): string {
-  if (budget.remaining <= 0) return '…';
-  budget.remaining -= 1;
+  if (!consumePreviewBudget(budget)) return '…';
 
   const tokenPreview = buildJsonSummaryTokenPreview(value);
   if (tokenPreview) return tokenPreview;
@@ -68,10 +68,9 @@ export function buildJsonSummaryPreview(
 export function buildHookInlinePreview(
   value: unknown,
   depth = 0,
-  budget = { remaining: 32 },
+  budget: CollectionPreviewBudget = createPreviewBudget(32),
 ): string {
-  if (budget.remaining <= 0) return '…';
-  budget.remaining -= 1;
+  if (!consumePreviewBudget(budget)) return '…';
 
   const tokenPreview = buildHookInlineTokenPreview(value);
   if (tokenPreview) return tokenPreview;

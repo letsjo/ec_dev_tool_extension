@@ -3,6 +3,7 @@ import {
   readDisplayCollectionMeta as readDisplayCollectionMetaValue,
   readMapTokenEntryPair as readMapTokenEntryPairValue,
 } from './collectionDisplay';
+import { isPreviewBudgetExhausted } from './jsonPreviewBudget';
 
 export interface CollectionPreviewBudget {
   remaining: number;
@@ -48,7 +49,7 @@ function buildMapCollectionPreview({
     parts.push(
       `${renderValue(pair.key, depth + 1, budget)} => ${renderValue(pair.value, depth + 1, budget)}`,
     );
-    if (budget.remaining <= 0) break;
+    if (isPreviewBudgetExhausted(budget)) break;
   }
   const suffix = size > boundedLen ? ', …' : '';
   return `Map(${size}) {${parts.join(', ')}${suffix}}`;
@@ -77,7 +78,7 @@ function buildSetCollectionPreview({
   const parts: string[] = [];
   for (let i = 0; i < boundedLen; i += 1) {
     parts.push(renderValue(entries[i], depth + 1, budget));
-    if (budget.remaining <= 0) break;
+    if (isPreviewBudgetExhausted(budget)) break;
   }
   const suffix = size > boundedLen ? ', …' : '';
   return `Set(${size}) {${parts.join(', ')}${suffix}}`;
