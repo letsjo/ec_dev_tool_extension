@@ -9,6 +9,7 @@ interface CreateDomTreeFetchFlowOptions {
   getDomTreeOutputEl: () => HTMLDivElement;
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface ApplyDomTreeResultUiOptions {
@@ -65,6 +66,12 @@ export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
   function fetchDomTree(selector: string, pickPoint?: PickPoint, domPath?: string) {
     const requestId = latestRequestId + 1;
     latestRequestId = requestId;
+    options.appendDebugLog?.('domTree.fetch.request', {
+      requestId,
+      selector,
+      domPath: domPath ?? '',
+      pickPoint: pickPoint ?? null,
+    });
 
     options.setDomTreeStatus('DOM 트리 조회 중…');
     options.setDomTreeEmpty('DOM 트리를 불러오는 중…');
@@ -74,7 +81,15 @@ export function createDomTreeFetchFlow(options: CreateDomTreeFetchFlowOptions) {
       { selector, pickPoint: pickPoint ?? null, domPath: domPath ?? '' },
       (response, errorText) => {
         // 빠른 연속 선택 시 늦게 도착한 이전 응답이 최신 선택 결과를 덮어쓰지 않도록 막는다.
-        if (requestId !== latestRequestId) return;
+        if (requestId !== latestRequestId) {
+          options.appendDebugLog?.('domTree.fetch.staleDrop', { requestId, latestRequestId });
+          return;
+        }
+        options.appendDebugLog?.('domTree.fetch.response', {
+          requestId,
+          hasError: Boolean(errorText),
+          responseOk: isRecord(response) && response.ok === true,
+        });
         handleDomTreeAgentResponse({
           response,
           errorText: errorText ?? undefined,

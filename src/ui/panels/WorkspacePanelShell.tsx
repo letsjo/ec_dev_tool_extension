@@ -8,10 +8,15 @@ import { PanelActionButton } from "../components";
 interface WorkspacePanelShellProps {
   panelId: WorkspacePanelId;
   children: React.ReactNode;
+  summaryActions?: React.ReactNode;
 }
 
 /** 공통 패널 래퍼(details/summary/actions) */
-export function WorkspacePanelShell({ panelId, children }: WorkspacePanelShellProps) {
+export function WorkspacePanelShell({
+  panelId,
+  children,
+  summaryActions,
+}: WorkspacePanelShellProps) {
   const panelConfig = WORKSPACE_PANEL_CONFIG[panelId];
 
   return (
@@ -19,6 +24,7 @@ export function WorkspacePanelShell({ panelId, children }: WorkspacePanelShellPr
       <summary draggable className="workspace-panel-summary">
         <span className="workspace-panel-title">{panelConfig.title}</span>
         <span className="workspace-panel-actions">
+          {summaryActions}
           <PanelActionButton
             className="workspace-panel-action"
             data-panel-action="toggle"

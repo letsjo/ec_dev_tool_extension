@@ -2,6 +2,7 @@ import React from "react";
 import {
   ComponentsInspectorPanel,
   ComponentsTreePanel,
+  DebugLogPanel,
   RawResultPanel,
   SelectedElementDomPanel,
   SelectedElementPanel,
@@ -18,6 +19,7 @@ export function WorkspacePanelsSection() {
       <SelectedElementPathPanel />
       <SelectedElementDomPanel />
       <RawResultPanel />
+      <DebugLogPanel />
     </>
   );
 }

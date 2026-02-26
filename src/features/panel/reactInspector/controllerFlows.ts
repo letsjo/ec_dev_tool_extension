@@ -78,6 +78,7 @@ export function createReactInspectorControllerFlows(
     },
     resetReactInspector,
     applyReactInspectResult,
+    appendDebugLog: options.appendDebugLog,
   });
 
   return {

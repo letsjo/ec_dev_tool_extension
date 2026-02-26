@@ -17,6 +17,7 @@ interface CreatePanelRuntimeRefreshFlowOptions {
   setDomTreeEmpty: (text: string) => void;
   minIntervalMs?: number;
   debounceMs?: number;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface PanelRuntimeRefreshFlowDependencies {
@@ -48,6 +49,7 @@ export function createPanelRuntimeRefreshFlow(
   });
 
   function onInspectedPageNavigated(url: string) {
+    options.appendDebugLog?.('runtimeRefresh.navigated', { url });
     options.setStoredLookup(null);
     runtimeRefreshScheduler.reset();
     options.setElementOutput(`페이지 이동 감지: ${url}`);

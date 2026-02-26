@@ -19,6 +19,7 @@ interface CreateElementPickerBridgeFlowOptions {
   fetchReactInfoForElementSelection: (selector: string, pickPoint?: PickPoint) => void;
   resetRuntimeRefresh: () => void;
   scheduleRuntimeRefresh: () => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface SelectedElementSnapshot {
@@ -62,12 +63,16 @@ function buildSelectedElementSnapshot(elementInfo: ElementInfo): SelectedElement
  */
 export function createElementPickerBridgeFlow(options: CreateElementPickerBridgeFlowOptions) {
   function onSelectElement() {
+    options.appendDebugLog?.('picker.select.start');
     options.clearPageHoverPreview();
     const tabId = options.getInspectedTabId();
     chrome.runtime.sendMessage(
       { action: 'startElementPicker', tabId },
       (response?: PickerStartResponse) => {
         if (chrome.runtime.lastError) {
+          options.appendDebugLog?.('picker.select.error.runtime', {
+            message: chrome.runtime.lastError.message ?? 'unknown',
+          });
           options.setPickerModeActive(false);
           options.setElementOutput(
             '오류: ' +
@@ -78,6 +83,9 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
           return;
         }
         if (!response?.ok) {
+          options.appendDebugLog?.('picker.select.error.response', {
+            message: response?.error ?? '요소 선택 시작에 실패했습니다.',
+          });
           options.setPickerModeActive(false);
           options.setElementOutput(
             '오류: ' + (response?.error ?? '요소 선택 시작에 실패했습니다.'),
@@ -86,6 +94,7 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
           return;
         }
 
+        options.appendDebugLog?.('picker.select.ready');
         options.setPickerModeActive(true);
         options.setElementOutput('페이지에서 요소를 클릭하세요. (취소: Esc)');
         options.setReactStatus('요소 선택 대기 중… 선택 후 컴포넌트 트리를 조회합니다.');
@@ -97,6 +106,11 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
 
   function onRuntimeMessage(message: ElementSelectedMessage) {
     const inspectedTabId = options.getInspectedTabId();
+    options.appendDebugLog?.('picker.runtime.message', {
+      action: message.action,
+      tabId: message.tabId ?? null,
+      currentTabId: inspectedTabId,
+    });
     if (message.action === 'elementPickerStopped' && message.tabId === inspectedTabId) {
       options.clearPageHoverPreview();
       options.setPickerModeActive(false);
@@ -122,6 +136,11 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
       options.resetRuntimeRefresh();
 
       const selectedElement = buildSelectedElementSnapshot(message.elementInfo);
+      options.appendDebugLog?.('picker.element.selected', {
+        querySelector: selectedElement.querySelector,
+        domPath: selectedElement.domPath,
+        clickPoint: selectedElement.clickPoint ?? null,
+      });
       options.setElementOutput(selectedElement.outputText);
       options.fetchDomTree(
         selectedElement.querySelector,

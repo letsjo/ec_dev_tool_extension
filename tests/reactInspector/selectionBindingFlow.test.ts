@@ -74,4 +74,47 @@ describe('createReactComponentSelectionBindingFlow', () => {
     capturedSelectorOptions.scheduleScrollSelectedComponentIntoView();
     expect(scrollIntoView).toHaveBeenCalledTimes(1);
   });
+
+  it('skips scroll when active item does not expose scrollIntoView', () => {
+    const listEl = document.createElement('div');
+    const item = document.createElement('button');
+    item.className = 'react-component-item';
+    item.dataset.componentIndex = '0';
+    listEl.append(item);
+
+    let capturedSelectorOptions: any = null;
+    createReactComponentSelectionBindingFlow(
+      {
+        getReactComponents: () => [createComponent('a')],
+        setSelectedComponentIndex: vi.fn(),
+        clearPageHoverPreview: vi.fn(),
+        expandAncestorPaths: vi.fn(),
+        renderReactComponentList: vi.fn(),
+        getReactComponentListEl: () => listEl,
+        getSelectedReactComponentIndex: () => 0,
+        renderReactComponentDetail: vi.fn(),
+        setReactDetailEmpty: vi.fn(),
+        highlightPageDomForComponent: vi.fn(),
+        detailFetchQueue: {
+          request: vi.fn(),
+          getLastFailedAt: vi.fn(),
+        },
+        detailFetchRetryCooldownMs: 2500,
+      },
+      {
+        requestAnimationFrameFn: (callback) => {
+          callback(0);
+          return 1;
+        },
+        createReactComponentSelector: (selectorOptions) => {
+          capturedSelectorOptions = selectorOptions;
+          return vi.fn();
+        },
+      },
+    );
+
+    expect(() => {
+      capturedSelectorOptions.scheduleScrollSelectedComponentIntoView();
+    }).not.toThrow();
+  });
 });

@@ -87,8 +87,13 @@ export function createDefaultWorkspaceLayout(): WorkspaceLayoutNode {
           createWorkspaceSplitNode(
             'column',
             createWorkspacePanelNode('selectedElementDomPanel'),
-            createWorkspacePanelNode('rawResultPanel'),
-            0.62,
+            createWorkspaceSplitNode(
+              'column',
+              createWorkspacePanelNode('rawResultPanel'),
+              createWorkspacePanelNode('debugLogPanel'),
+              0.5,
+            ),
+            0.58,
           ),
           0.24,
         ),

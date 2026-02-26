@@ -21,6 +21,7 @@ interface CreateControllerWiringReactInspectorOptions {
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
   detailFetchRetryCooldownMs: number;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface ControllerWiringReactInspectorDependencies {
@@ -64,6 +65,7 @@ function createControllerWiringReactInspector(
     inspectFunctionAtPath,
     fetchSerializedValueAtPath,
     detailFetchRetryCooldownMs: options.detailFetchRetryCooldownMs,
+    appendDebugLog: options.appendDebugLog,
   });
 }
 

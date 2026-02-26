@@ -5,6 +5,7 @@ export const WORKSPACE_PANEL_ID_LIST = [
   'selectedElementPathPanel',
   'selectedElementDomPanel',
   'rawResultPanel',
+  'debugLogPanel',
 ] as const;
 
 export type WorkspacePanelId = (typeof WORKSPACE_PANEL_ID_LIST)[number];
@@ -40,6 +41,10 @@ export const WORKSPACE_PANEL_CONFIG: Readonly<Record<WorkspacePanelId, Workspace
   rawResultPanel: {
     title: 'Raw Result',
     toggleLabel: 'Raw Result',
+  },
+  debugLogPanel: {
+    title: 'Debug Log',
+    toggleLabel: 'Debug Log',
   },
 };
 

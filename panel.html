@@ -498,6 +498,11 @@
       min-width: 320px;
     }
 
+    #debugLogPanel[open] > #debugLogPane {
+      min-height: 180px;
+      min-width: 320px;
+    }
+
     #selectedElementPane {
       min-height: 40px;
     }
@@ -522,7 +527,24 @@
       line-height: 1.4;
     }
 
+    #debugLogPane {
+      white-space: pre;
+      word-break: normal;
+      padding: 10px;
+      background: #1b2230;
+      color: #cfe0ff;
+      min-height: 0;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.42;
+    }
+
     #output.empty {
+      color: var(--muted);
+    }
+
+    #debugLogPane.empty {
       color: var(--muted);
     }
 
@@ -536,7 +558,8 @@
     #selectedElementPane,
     #selectedElementPathPane,
     #selectedElementDomPane,
-    #output {
+    #output,
+    #debugLogPane {
       scrollbar-width: auto;
       scrollbar-color: var(--scroll-thumb) var(--scroll-track);
     }
@@ -546,7 +569,8 @@
     #selectedElementPane::-webkit-scrollbar,
     #selectedElementPathPane::-webkit-scrollbar,
     #selectedElementDomPane::-webkit-scrollbar,
-    #output::-webkit-scrollbar {
+    #output::-webkit-scrollbar,
+    #debugLogPane::-webkit-scrollbar {
       width: 10px;
       height: 10px;
     }
@@ -556,7 +580,8 @@
     #selectedElementPane::-webkit-scrollbar-track,
     #selectedElementPathPane::-webkit-scrollbar-track,
     #selectedElementDomPane::-webkit-scrollbar-track,
-    #output::-webkit-scrollbar-track {
+    #output::-webkit-scrollbar-track,
+    #debugLogPane::-webkit-scrollbar-track {
       background: var(--scroll-track);
     }
 
@@ -565,7 +590,8 @@
     #selectedElementPane::-webkit-scrollbar-thumb,
     #selectedElementPathPane::-webkit-scrollbar-thumb,
     #selectedElementDomPane::-webkit-scrollbar-thumb,
-    #output::-webkit-scrollbar-thumb {
+    #output::-webkit-scrollbar-thumb,
+    #debugLogPane::-webkit-scrollbar-thumb {
       background: var(--scroll-thumb);
       border-radius: 999px;
       border: 2px solid var(--scroll-track);
@@ -576,7 +602,8 @@
     #selectedElementPane::-webkit-scrollbar-thumb:hover,
     #selectedElementPathPane::-webkit-scrollbar-thumb:hover,
     #selectedElementDomPane::-webkit-scrollbar-thumb:hover,
-    #output::-webkit-scrollbar-thumb:hover {
+    #output::-webkit-scrollbar-thumb:hover,
+    #debugLogPane::-webkit-scrollbar-thumb:hover {
       background: var(--scroll-thumb-hover);
     }
 

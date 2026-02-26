@@ -25,6 +25,7 @@ interface CreatePanelControllerRuntimeOptions {
   setDomTreeEmpty: (text: string) => void;
   getInspectedTabId: () => number;
   removeNavigatedListener: (listener: (url: string) => void) => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface PanelControllerRuntimeDependencies {
@@ -65,6 +66,7 @@ export function createPanelControllerRuntime(
       setElementOutput: options.setElementOutput,
       setDomTreeStatus: options.setDomTreeStatus,
       setDomTreeEmpty: options.setDomTreeEmpty,
+      appendDebugLog: options.appendDebugLog,
     });
 
   const { onSelectElement, onRuntimeMessage } = deps.createElementPickerBridgeFlow({
@@ -78,11 +80,14 @@ export function createPanelControllerRuntime(
     fetchDomTree: options.fetchDomTree,
     fetchReactInfoForElementSelection: options.fetchReactInfoForElementSelection,
     scheduleRuntimeRefresh: () => {
+      options.appendDebugLog?.('runtimeRefresh.schedule', { background: true });
       runtimeRefreshScheduler.schedule(true);
     },
     resetRuntimeRefresh: () => {
+      options.appendDebugLog?.('runtimeRefresh.reset');
       runtimeRefreshScheduler.reset();
     },
+    appendDebugLog: options.appendDebugLog,
   });
 
   options.panelControllerContext.setRemoveRuntimeMessageListener(

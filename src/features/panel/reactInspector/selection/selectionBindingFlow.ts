@@ -42,6 +42,7 @@ function scrollSelectedComponentIntoView(
   const selector = `.react-component-item[data-component-index="${selectedReactComponentIndex}"]`;
   const activeItem = reactComponentListEl.querySelector<HTMLElement>(selector);
   if (!activeItem) return;
+  if (typeof activeItem.scrollIntoView !== 'function') return;
   activeItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }
 

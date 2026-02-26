@@ -35,6 +35,7 @@ interface CreateControllerWiringLifecycleOptions {
   onFetch: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface ControllerWiringLifecycleDependencies {
@@ -98,6 +99,7 @@ function createControllerWiringLifecycle(
     setDomTreeEmpty: options.setDomTreeEmpty,
     getInspectedTabId: deps.getInspectedTabId,
     removeNavigatedListener: deps.removeInspectedPageNavigatedListener,
+    appendDebugLog: options.appendDebugLog,
   });
 
   return deps.createPanelControllerBootstrap({

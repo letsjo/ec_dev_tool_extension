@@ -4,4 +4,4 @@ export {
   SelectedElementPanel,
   SelectedElementPathPanel,
 } from "./element";
-export { RawResultPanel } from "./common";
+export { DebugLogPanel, RawResultPanel } from "./common";

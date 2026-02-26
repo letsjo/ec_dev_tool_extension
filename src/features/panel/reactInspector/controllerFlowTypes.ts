@@ -25,6 +25,7 @@ export interface CreateReactInspectorControllerFlowsOptions {
   inspectFunctionAtPath: InspectFunctionAtPathHandler;
   fetchSerializedValueAtPath: FetchSerializedValueAtPathHandler;
   detailFetchRetryCooldownMs: number;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 export interface ReactInspectorPaneSetters {

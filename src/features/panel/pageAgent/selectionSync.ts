@@ -14,6 +14,7 @@ interface CreatePanelSelectionSyncHandlersOptions {
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
   fetchDomTree: (selector: string, pickPoint?: PickPoint, domPath?: string) => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 /** component 선택 시 pageAgent 기반 DOM 동기화 핸들러를 구성한다. */
@@ -38,6 +39,9 @@ export function createPanelSelectionSyncHandlers(
 
   /** 기존 상태를 정리 */
   function clearPageComponentHighlight() {
+    options.appendDebugLog?.('selection.highlight.clear', {
+      nextEpoch: highlightRequestEpoch + 1,
+    });
     invalidateHighlightRequests();
     callInspectedPageAgent('clearComponentHighlight', null, () => {
       /** 동작 없음. */
@@ -54,6 +58,11 @@ export function createPanelSelectionSyncHandlers(
   /** 해당 기능 흐름을 처리 */
   function previewPageDomForComponent(component: ReactComponentInfo) {
     if (!component.domSelector) return;
+    options.appendDebugLog?.('selection.preview.request', {
+      componentId: component.id,
+      selector: component.domSelector,
+      domPath: component.domPath ?? '',
+    });
     callInspectedPageAgent(
       'previewComponent',
       { selector: component.domSelector, domPath: component.domPath ?? '' },
@@ -88,6 +97,12 @@ export function createPanelSelectionSyncHandlers(
    */
   function highlightPageDomForComponent(component: ReactComponentInfo) {
     const requestEpoch = invalidateHighlightRequests();
+    options.appendDebugLog?.('selection.highlight.request', {
+      requestEpoch,
+      componentId: component.id,
+      selector: component.domSelector ?? '',
+      domPath: component.domPath ?? '',
+    });
     if (!component.domSelector) {
       clearPageComponentHighlight();
       setReactStatus(`선택한 컴포넌트(${component.name})는 연결된 DOM 요소가 없습니다.`);
@@ -102,19 +117,42 @@ export function createPanelSelectionSyncHandlers(
       { selector: component.domSelector, domPath: component.domPath ?? '' },
       (res, errorText) => {
         // 이전 highlight 응답이 늦게 돌아오면 최신 선택 결과를 덮어쓰지 않도록 차단한다.
-        if (requestEpoch !== highlightRequestEpoch) return;
+        if (requestEpoch !== highlightRequestEpoch) {
+          options.appendDebugLog?.('selection.highlight.staleDrop', {
+            requestEpoch,
+            latestEpoch: highlightRequestEpoch,
+            componentId: component.id,
+          });
+          return;
+        }
         if (errorText) {
+          options.appendDebugLog?.('selection.highlight.response.error', {
+            requestEpoch,
+            componentId: component.id,
+            errorText,
+          });
           setReactStatus(`DOM 하이라이트 실행 오류: ${errorText}`, true);
           return;
         }
         if (!isPageHighlightResult(res) || !res.ok) {
           const reason = isPageHighlightResult(res) ? res.error : '알 수 없는 오류';
+          options.appendDebugLog?.('selection.highlight.response.fail', {
+            requestEpoch,
+            componentId: component.id,
+            reason: reason ?? '알 수 없는 오류',
+          });
           setReactStatus(`DOM 하이라이트 실패: ${reason ?? '알 수 없는 오류'}`, true);
           setDomTreeStatus(`DOM 하이라이트 실패: ${reason ?? '알 수 없는 오류'}`, true);
           setDomTreeEmpty('표시할 DOM이 없습니다.');
           return;
         }
 
+        options.appendDebugLog?.('selection.highlight.response.ok', {
+          requestEpoch,
+          componentId: component.id,
+          selector: res.selector ?? component.domSelector ?? '',
+          domPath: res.domPath ?? component.domPath ?? '',
+        });
         setReactStatus(`컴포넌트 ${component.name} DOM 하이라이트 완료`);
         setElementOutputFromHighlightResult(res, component);
         // 중복 selector(id/name 중복) 환경에서는 domPath를 함께 전달해

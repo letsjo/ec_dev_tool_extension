@@ -13,6 +13,7 @@ interface CreateControllerWiringDataFlowsOptions {
   setElementOutput: (text: string) => void;
   setDomTreeStatus: (text: string, isError?: boolean) => void;
   setDomTreeEmpty: (text: string) => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
 }
 
 interface ControllerWiringDataFlowsDependencies {
@@ -44,6 +45,7 @@ function createControllerWiringDataFlows(
     getDomTreeOutputEl: options.getDomTreeOutputEl,
     setDomTreeStatus: options.setDomTreeStatus,
     setDomTreeEmpty: options.setDomTreeEmpty,
+    appendDebugLog: options.appendDebugLog,
   });
 
   return {
@@ -57,6 +59,7 @@ function createControllerWiringDataFlows(
       setDomTreeStatus: options.setDomTreeStatus,
       setDomTreeEmpty: options.setDomTreeEmpty,
       fetchDomTree,
+      appendDebugLog: options.appendDebugLog,
     }),
   };
 }
