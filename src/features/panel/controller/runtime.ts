@@ -80,6 +80,9 @@ export function createPanelControllerRuntime(
     scheduleRuntimeRefresh: () => {
       runtimeRefreshScheduler.schedule(true);
     },
+    resetRuntimeRefresh: () => {
+      runtimeRefreshScheduler.reset();
+    },
   });
 
   options.panelControllerContext.setRemoveRuntimeMessageListener(

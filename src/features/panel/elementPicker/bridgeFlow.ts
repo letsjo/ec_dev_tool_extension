@@ -17,6 +17,7 @@ interface CreateElementPickerBridgeFlowOptions {
   setDomTreeEmpty: (text: string) => void;
   fetchDomTree: (selector: string, pickPoint?: PickPoint) => void;
   fetchReactInfoForElementSelection: (selector: string, pickPoint?: PickPoint) => void;
+  resetRuntimeRefresh: () => void;
   scheduleRuntimeRefresh: () => void;
 }
 
@@ -116,6 +117,7 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
     ) {
       options.clearPageHoverPreview();
       options.setPickerModeActive(false);
+      options.resetRuntimeRefresh();
 
       const selectedElement = buildSelectedElementSnapshot(message.elementInfo);
       options.setElementOutput(selectedElement.outputText);

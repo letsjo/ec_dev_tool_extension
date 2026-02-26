@@ -62,7 +62,7 @@
   - `bridge/pageAgentClient.ts` 유틸로 panel → background pageAgent 호출 브리지 위임
   - `pageAgent/responsePipeline.ts` 유틸로 pageAgent 응답 오류/형식 검증과 상태 반영 파이프라인 위임
   - `pageAgent/selectionSync.ts` 유틸로 선택 컴포넌트 DOM 하이라이트/Selected Element·DOM Tree 동기화 위임
-  - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected) 위임
+  - `elementPicker/bridgeFlow.ts` 유틸로 요소 선택 시작 액션과 runtime 메시지 분기(elementPickerStopped/pageRuntimeChanged/elementSelected), elementSelected 수신 시 pending runtime refresh reset 위임
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `controllerWiring.ts` 유틸로 pane/target/dom/react/runtime/bootstrap 결선 조립 책임 위임
   - `devtoolsNetworkBridge.ts` 유틸로 inspected tab id 조회와 network.onNavigated listener add/remove 결선 책임 위임
@@ -110,6 +110,7 @@
 3. 클릭 시 `elementSelected` 메시지 송신
 4. panel `chrome.runtime.onMessage`에서 수신 후:
   - Selected Element/DOM Path UI 업데이트
+  - pending runtime refresh scheduler를 reset해 선택 직후 stale background refresh 개입을 최소화
   - `fetchDomTree(...)` 실행
   - `fetchReactInfo(..., { lightweight: true })` 실행
   - `fetchDomTree`/`fetchReactInfo`는 latest request id 비교로 늦게 도착한 이전 응답을 폐기해 트리/선택 상태 역전을 방지
@@ -552,7 +553,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 7.9 Panel Element Picker Bridge 모듈 분리 규칙
 
-- `elementPicker/bridgeFlow.ts`: 요소 선택 시작 요청(`startElementPicker`)과 runtime 메시지 분기(`elementPickerStopped`/`pageRuntimeChanged`/`elementSelected`) 규칙, Selected Element 출력 텍스트 조립 전담
+- `elementPicker/bridgeFlow.ts`: 요소 선택 시작 요청(`startElementPicker`)과 runtime 메시지 분기(`elementPickerStopped`/`pageRuntimeChanged`/`elementSelected`) 규칙, elementSelected 시 runtime refresh reset + Selected Element 출력 텍스트 조립 전담
 - `controller/runtime.ts`: picker 상태 setter, DOM/React fetch 액션, runtime refresh scheduler를 주입하고 runtime listener 결선까지 조립
 - `controllerWiring.ts`: `controller/runtime.ts`를 bootstrap flow와 결합하는 결선 오케스트레이션 전담
 
@@ -947,6 +948,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/runtimeRefresh/scheduler.test.ts`: `scheduler.ts`의 debounce 병합, min interval 보장, in-flight queued 실행, `reset`/`dispose` 상태 정리 분기
   - `tests/panel/controllerRuntime.test.ts`: `controller/runtime.ts`의 runtime refresh/picker/teardown 결선과 runtime listener remove handle 저장 분기
+  - `tests/panel/elementPickerBridgeFlow.test.ts`: `bridgeFlow.ts`의 elementSelected 처리(runtime refresh reset + dom/react fetch)와 pageRuntimeChanged schedule 분기
   - `tests/panel/controllerBootstrap.test.ts`: `controller/bootstrap.ts`의 workspace initialization + bootstrap flow 결선(컨텍스트 getter 주입) 분기
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기

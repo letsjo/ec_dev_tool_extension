@@ -102,6 +102,8 @@ describe('createPanelControllerRuntime', () => {
 
     capturedElementPickerOptions.scheduleRuntimeRefresh();
     expect(runtimeRefreshScheduler.schedule).toHaveBeenCalledWith(true);
+    capturedElementPickerOptions.resetRuntimeRefresh();
+    expect(runtimeRefreshScheduler.reset).toHaveBeenCalledTimes(1);
     capturedElementPickerOptions.fetchReactInfoForElementSelection('#a');
     expect(fetchReactInfoForElementSelection).toHaveBeenCalledWith('#a');
 
