@@ -1,52 +1,10 @@
-import {
-  buildCssSelector,
-  createPageDomHandlers,
-  getElementPath,
-  resolveTargetElement as resolveTargetElementValue,
-} from './dom/pageAgentDom';
-import type { PickPoint } from '../shared/inspector';
-import {
-  findAnyFiberInDocument,
-  findNearestFiber,
-  getReactFiberFromElement,
-} from './pageAgentFiberElement';
-import {
-  findPreferredSelectedFiber,
-  findRootFiber,
-  getFiberKind,
-  getFiberName,
-  isInspectableTag,
-} from './pageAgentFiberDescribe';
-import {
-  getFiberIdMap as getFiberIdMapValue,
-  getStableFiberId as getStableFiberIdValue,
-  registerFunctionForInspect as registerFunctionForInspectValue,
-} from './pageAgentFiberRegistry';
-import { createPageAgentHooksInfoHelpers } from './pageAgentHooksInfo';
-import { createPageAgentInspectHandlers } from './pageAgentInspect';
+import { createPageDomHandlers } from './dom/pageAgentDom';
 import { createPageAgentMethodExecutor } from './pageAgentMethods';
-import {
-  makeSerializer,
-  resolveSpecialCollectionPathSegment,
-  serializePropsForFiber,
-} from './serialization/pageAgentSerialization';
-import type { FiberLike } from './pageAgentFiberSearchTypes';
-
-type MethodExecutor = (method: string, args: unknown) => unknown;
-
-interface CreatePageAgentRuntimeMethodExecutorOptions {
-  runtimeWindow: Window;
-  componentHighlightStorageKey: string;
-  hoverPreviewStorageKey: string;
-  fiberIdMapKey: string;
-  fiberIdSeqKey: string;
-  functionInspectRegistryKey: string;
-  functionInspectRegistryOrderKey: string;
-  functionInspectSeqKey: string;
-  maxTraversal: number;
-  maxComponents: number;
-  maxFunctionInspectRefs: number;
-}
+import { createPageAgentRuntimeInspectHandlers } from './runtime/pageAgentRuntimeInspectHandlers';
+import type {
+  CreatePageAgentRuntimeMethodExecutorOptions,
+  MethodExecutor,
+} from './runtime/pageAgentRuntimeTypes';
 
 /**
  * pageAgent runtime 초기화 단계(도메인 핸들러 + inspect + method executor)를 조립한다.
@@ -60,53 +18,8 @@ function createPageAgentRuntimeMethodExecutor(
     hoverPreviewStorageKey: options.hoverPreviewStorageKey,
   });
 
-  const getFiberIdMap = () => getFiberIdMapValue(options.runtimeWindow, options.fiberIdMapKey);
-
-  const getStableFiberId = (
-    fiber: FiberLike | null | undefined,
-    map: WeakMap<object, string>,
-  ) => getStableFiberIdValue(options.runtimeWindow, options.fiberIdSeqKey, fiber, map);
-
-  const registerFunctionForInspect = (value: Function) =>
-    registerFunctionForInspectValue(options.runtimeWindow, value, {
-      registryKey: options.functionInspectRegistryKey,
-      orderKey: options.functionInspectRegistryOrderKey,
-      seqKey: options.functionInspectSeqKey,
-      maxFunctionInspectRefs: options.maxFunctionInspectRefs,
-    });
-
-  const { getHooksRootValue, getHooksCount, getHooksInfo } = createPageAgentHooksInfoHelpers({
-    getFiberName(fiber) {
-      return fiber ? getFiberName(fiber as FiberLike) : 'Unknown';
-    },
-  });
-
-  const { inspectReactComponents, inspectReactPath } = createPageAgentInspectHandlers({
-    maxTraversal: options.maxTraversal,
-    maxComponents: options.maxComponents,
-    buildCssSelector,
-    getElementPath,
-    resolveTargetElement(selector, pickPoint) {
-      return resolveTargetElementValue(selector, pickPoint as PickPoint | null | undefined);
-    },
-    findNearestFiber,
-    findAnyFiberInDocument,
-    findRootFiber,
-    findPreferredSelectedFiber,
-    isInspectableTag,
-    getFiberIdMap,
-    getStableFiberId,
-    getFiberName,
-    getFiberKind,
-    getReactFiberFromElement,
-    serializePropsForFiber,
-    getHooksInfo,
-    getHooksCount,
-    getHooksRootValue,
-    resolveSpecialCollectionPathSegment,
-    makeSerializer,
-    registerFunctionForInspect,
-  });
+  const { inspectReactComponents, inspectReactPath } =
+    createPageAgentRuntimeInspectHandlers(options);
 
   return createPageAgentMethodExecutor({
     domHandlers: {
