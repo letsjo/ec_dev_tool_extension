@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { summarizeChildrenValue } from "./pageAgentSerializerSummary";
 import { resolveSerializerLimits, type SerializerOptions } from "./pageAgentSerializerOptions";
 import {
@@ -13,45 +12,15 @@ import {
   mapSerializerInternalKey,
   readObjectClassName,
 } from "./pageAgentSerializationCore";
+import { serializePrimitiveValue, serializeSpecialObjectValue } from "./pageAgentSerializationValuePrimitives";
+import type { SerializationStrategyContext } from "./pageAgentSerializationStrategyTypes";
 
 const OBJECT_CLASS_NAME_META_KEY = "__ecObjectClassName";
 
-function serializePrimitiveValue(value: unknown) {
-  const valueType = typeof value;
-  if (value === null) return { handled: true, value: null };
-  if (valueType === "undefined") return { handled: true, value: undefined };
-  if (valueType === "string" || valueType === "number" || valueType === "boolean") {
-    return { handled: true, value };
-  }
-  if (valueType === "bigint") return { handled: true, value: String(value) + "n" };
-  if (valueType === "symbol") return { handled: true, value: String(value) };
-  if (valueType === "function") {
-    return {
-      handled: true,
-      value: {
-        __ecType: "function",
-        name: value.name || "",
-      },
-    };
-  }
-  if (valueType !== "object") return { handled: true, value: String(value) };
-  return { handled: false, value: null };
-}
-
-function serializeSpecialObjectValue(value: unknown) {
-  if (typeof Element !== "undefined" && value instanceof Element) {
-    const elementName = String(value.tagName || "").toLowerCase();
-    const suffix = value.id ? "#" + value.id : "";
-    return { handled: true, value: "[Element " + elementName + suffix + "]" };
-  }
-  if (typeof Window !== "undefined" && value instanceof Window) {
-    return { handled: true, value: "[Window]" };
-  }
-  return { handled: false, value: null };
-}
+type SerializeValue = (value: unknown, depth?: number) => unknown;
 
 /** maxDepth/maxSerializeCalls 제한을 포함하는 value serializer를 생성한다. */
-function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) {
+function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions): SerializeValue {
   const seenStore = createSeenReferenceStore();
   let nextId = 1;
 
@@ -67,7 +36,7 @@ function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) 
   let serializeCalls = 0;
   let limitReached = false;
 
-  function serializeValue(value: unknown, depth: number | undefined) {
+  function serializeValue(value: unknown, depth?: number) {
     const level = typeof depth === "number" ? depth : 0;
 
     const primitive = serializePrimitiveValue(value);
@@ -75,20 +44,22 @@ function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) 
       return primitive.value;
     }
 
+    const objectValue = value as object;
+
     if (level >= MAX_DEPTH) {
-      return buildDehydratedToken(value, "depth");
+      return buildDehydratedToken(objectValue, "depth");
     }
 
     if (limitReached) {
-      return buildDehydratedToken(value, "maxSerializeCalls");
+      return buildDehydratedToken(objectValue, "maxSerializeCalls");
     }
     serializeCalls += 1;
     if (serializeCalls > MAX_SERIALIZE_CALLS) {
       limitReached = true;
-      return buildDehydratedToken(value, "maxSerializeCalls");
+      return buildDehydratedToken(objectValue, "maxSerializeCalls");
     }
 
-    const existingId = seenStore.findSeenId(value);
+    const existingId = seenStore.findSeenId(objectValue);
     if (existingId !== null) {
       return {
         __ecType: "circularRef",
@@ -96,16 +67,16 @@ function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) 
       };
     }
 
-    const specialObject = serializeSpecialObjectValue(value);
+    const specialObject = serializeSpecialObjectValue(objectValue);
     if (specialObject.handled) {
       return specialObject.value;
     }
 
     const id = nextId++;
-    seenStore.rememberSeen(value, id);
+    seenStore.rememberSeen(objectValue, id);
 
     try {
-      const strategyContext = {
+      const strategyContext: SerializationStrategyContext = {
         serializeValue,
         isLimitReached: () => limitReached,
         mapInternalKey: mapSerializerInternalKey,
@@ -118,19 +89,19 @@ function makeSerializer(optionsOrMaxSerializeCalls: number | SerializerOptions) 
         maxSetEntries: MAX_SET_ENTRIES,
       };
 
-      if (Array.isArray(value)) {
-        return serializeArrayValue(value, id, level, strategyContext);
+      if (Array.isArray(objectValue)) {
+        return serializeArrayValue(objectValue, id, level, strategyContext);
       }
-      if (typeof Map !== "undefined" && value instanceof Map) {
-        return serializeMapValue(value, id, level, strategyContext);
+      if (typeof Map !== "undefined" && objectValue instanceof Map) {
+        return serializeMapValue(objectValue, id, level, strategyContext);
       }
-      if (typeof Set !== "undefined" && value instanceof Set) {
-        return serializeSetValue(value, id, level, strategyContext);
+      if (typeof Set !== "undefined" && objectValue instanceof Set) {
+        return serializeSetValue(objectValue, id, level, strategyContext);
       }
 
-      return serializeObjectValue(value, id, level, strategyContext);
-    } catch (error) {
-      return String(value);
+      return serializeObjectValue(objectValue as Record<string, unknown>, id, level, strategyContext);
+    } catch (_) {
+      return String(objectValue);
     }
   }
 
