@@ -6,9 +6,8 @@ import {
   createElementSelectionFetchOptions,
   createRuntimeRefreshFetchOptions,
 } from './reactInspector/fetchOptions';
-import { createReactInspectPathBindings } from './reactInspector/pathBindings';
+import { createControllerWiringReactInspector } from './controllerWiringReactInspector';
 import { createReactInspectorControllerState } from './reactInspector/controllerState';
-import { createReactInspectorControllerFlows } from './reactInspector/controllerFlows';
 import { createDomTreeFetchFlow } from './domTree/fetchFlow';
 import { createTargetFetchFlow } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
@@ -84,13 +83,7 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     fetchDomTree,
   });
 
-  const { inspectFunctionAtPath, fetchSerializedValueAtPath } = createReactInspectPathBindings({
-    callInspectedPageAgent,
-    getStoredLookup: reactInspectorState.getStoredLookup,
-    setReactStatus,
-  });
-
-  const { onComponentSearchInput, fetchReactInfo } = createReactInspectorControllerFlows({
+  const { onComponentSearchInput, fetchReactInfo } = createControllerWiringReactInspector({
     state: reactInspectorState,
     callInspectedPageAgent,
     getReactComponentListEl: panelControllerContext.getReactComponentListEl,
@@ -106,8 +99,6 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     highlightPageDomForComponent,
     setDomTreeStatus,
     setDomTreeEmpty,
-    inspectFunctionAtPath,
-    fetchSerializedValueAtPath,
     detailFetchRetryCooldownMs: DETAIL_FETCH_RETRY_COOLDOWN_MS,
   });
 
