@@ -955,8 +955,8 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
 
 - 테스트 러너: `vitest` (`npm test`)
 - 설정 파일: `vitest.config.ts` (`jsdom` 환경, `tests/**/*.test.ts`)
-- 최신 전체 검증 스냅샷 (2026-02-26)
-  - `npm test`: `73 files`, `192 tests` 통과
+- 최신 전체 검증 스냅샷 (2026-02-27)
+  - `npm test`: `115 files`, `302 tests` 통과
   - `npx tsc --noEmit`: 통과
   - `npm run build`: 통과 (`dist/*.global.js` 재생성 성공)
 - 현재 커버하는 리팩터링 축
@@ -1060,6 +1060,7 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
   - `tests/content/pageAgentSerializationPropsHelpers.test.ts`: host/non-host props budget 계산, children summary/truncation, getter throw guard 분기
   - `tests/content/pageAgentSerializationValueProps.test.ts`: `makeSerializer`와 `serializePropsForFiber`의 depth/circular/maxSerializeCalls/host props truncation 분기
   - `tests/workspace/layoutTreeModules.test.ts`: `layoutTreeCollect`/`layoutTreeTransform`/`layoutTreeNormalize`의 append/remove/insert/prune/dedupe 분기
+  - `tests/background/contentScriptBridge.test.ts`: content script ping 복구, startElementPicker 재주입 재시도, callPageAgent 전달 분기
   - `tests/background/messageRouter.test.ts`: background message router의 start/callPageAgent/runtime relay 분기
   - `tests/panel/devtoolsNetworkBridge.test.ts`: inspected tab id 조회와 onNavigated listener add/remove 브리지 분기
   - `tests/reactInspector/fetchStages.test.ts`: `fetchRequestStage`/`fetchResponseStage`의 lookup·loading·finish 결선 분기
