@@ -1,6 +1,8 @@
 import type { ReactComponentInfo } from '../../../shared/inspector';
 import type { ReactInspectApplyOptions } from '../pageAgent/responsePipeline';
 
+export type ReactPayloadMode = 'lite' | 'full';
+
 export interface FetchReactInfoOptions extends ReactInspectApplyOptions {
   keepLookup?: boolean;
   background?: boolean;
@@ -52,11 +54,17 @@ export function resolveSelectedComponentIdForScript(
   return reactComponents[selectedReactComponentIndex].id;
 }
 
+function isLightweightPayloadMode(mode: ReactPayloadMode): boolean {
+  return mode !== 'full';
+}
+
 /** runtime refresh 경로의 fetch 옵션 프리셋을 생성한다. */
 export function createRuntimeRefreshFetchOptions(
   background: boolean,
+  payloadMode: ReactPayloadMode,
   onDone?: () => void,
 ): FetchReactInfoOptions {
+  const lightweight = isLightweightPayloadMode(payloadMode);
   return {
     keepLookup: true,
     background,
@@ -65,7 +73,7 @@ export function createRuntimeRefreshFetchOptions(
     highlightSelection: false,
     scrollSelectionIntoView: false,
     expandSelectionAncestors: false,
-    lightweight: true,
+    lightweight,
     serializeSelectedComponent: false,
     trackUpdates: true,
     refreshDetail: !background,
@@ -73,8 +81,7 @@ export function createRuntimeRefreshFetchOptions(
   };
 }
 
-const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<FetchReactInfoOptions> = {
-  lightweight: true,
+const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<Omit<FetchReactInfoOptions, 'lightweight'>> = {
   serializeSelectedComponent: false,
   // 요소 선택 완료 직후에는 선택 컴포넌트 DOM 하이라이트를 다시 적용해
   // 페이지 주황색 박스와 Selected Element/DOM Tree 동기화를 유지한다.
@@ -83,6 +90,11 @@ const ELEMENT_SELECTION_FETCH_OPTIONS: Readonly<FetchReactInfoOptions> = {
 };
 
 /** 요소 선택 완료 직후의 reactInspect 조회 옵션 프리셋을 생성한다. */
-export function createElementSelectionFetchOptions(): FetchReactInfoOptions {
-  return { ...ELEMENT_SELECTION_FETCH_OPTIONS };
+export function createElementSelectionFetchOptions(
+  payloadMode: ReactPayloadMode,
+): FetchReactInfoOptions {
+  return {
+    ...ELEMENT_SELECTION_FETCH_OPTIONS,
+    lightweight: isLightweightPayloadMode(payloadMode),
+  };
 }

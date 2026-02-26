@@ -1,6 +1,7 @@
 import type { PanelDomRefs } from '../domRefs';
 import type { WorkspaceLayoutManager } from '../workspace/manager';
 import type { WorkspacePanelId } from '../workspacePanels';
+import type { ReactPayloadMode } from '../reactInspector/fetchOptions';
 
 interface CreatePanelControllerContextOptions {
   initPanelDomRefs: () => PanelDomRefs;
@@ -15,6 +16,9 @@ export interface PanelControllerContext {
   getFetchBtnEl: () => HTMLButtonElement | null;
   getSelectElementBtnEl: () => HTMLButtonElement;
   getComponentSearchInputEl: () => HTMLInputElement;
+  getPayloadModeBtnEl: () => HTMLButtonElement;
+  getReactPayloadMode: () => ReactPayloadMode;
+  setReactPayloadMode: (mode: ReactPayloadMode) => void;
   getElementOutputEl: () => HTMLDivElement;
   getDomTreeStatusEl: () => HTMLDivElement;
   getDomTreeOutputEl: () => HTMLDivElement;
@@ -51,13 +55,26 @@ export function createPanelControllerContext(
 ): PanelControllerContext {
   let domRefs: PanelDomRefs | null = null;
   let pickerModeActive = false;
+  let reactPayloadMode: ReactPayloadMode = 'lite';
   let workspaceLayoutManager: WorkspaceLayoutManager | null = null;
   let destroyWheelScrollFallback: (() => void) | null = null;
   let removeRuntimeMessageListener: (() => void) | null = null;
 
+  function applyPayloadModeButtonState() {
+    const payloadModeBtnEl = requireDomRefs(domRefs).payloadModeBtnEl;
+    const isFull = reactPayloadMode === 'full';
+    payloadModeBtnEl.textContent = isFull ? 'Full' : 'Lite';
+    payloadModeBtnEl.classList.toggle('active', isFull);
+    payloadModeBtnEl.setAttribute('aria-pressed', isFull ? 'true' : 'false');
+    payloadModeBtnEl.title = isFull
+      ? 'Payload mode: Full (상세 데이터 우선)'
+      : 'Payload mode: Lite (빠른 조회)';
+  }
+
   return {
     initDomRefs() {
       domRefs = options.initPanelDomRefs();
+      applyPayloadModeButtonState();
     },
     isPickerModeActive: () => pickerModeActive,
     setPickerModeActive(active) {
@@ -72,6 +89,12 @@ export function createPanelControllerContext(
     getFetchBtnEl: () => requireDomRefs(domRefs).fetchBtnEl,
     getSelectElementBtnEl: () => requireDomRefs(domRefs).selectElementBtnEl,
     getComponentSearchInputEl: () => requireDomRefs(domRefs).componentSearchInputEl,
+    getPayloadModeBtnEl: () => requireDomRefs(domRefs).payloadModeBtnEl,
+    getReactPayloadMode: () => reactPayloadMode,
+    setReactPayloadMode(mode) {
+      reactPayloadMode = mode;
+      applyPayloadModeButtonState();
+    },
     getElementOutputEl: () => requireDomRefs(domRefs).elementOutputEl,
     getDomTreeStatusEl: () => requireDomRefs(domRefs).domTreeStatusEl,
     getDomTreeOutputEl: () => requireDomRefs(domRefs).domTreeOutputEl,

@@ -30,13 +30,14 @@ npm test
 6. 대상(예: EC Dev Manager)을 선택하고 **데이터 가져오기** 버튼을 누르면 메서드 호출 결과가 표시된다.
 7. **Select element**를 누른 뒤 페이지 요소를 클릭하면, React 컴포넌트 체인(선택 요소 기준)이 표시된다.
 8. 목록에서 컴포넌트를 클릭하면 해당 컴포넌트의 `props`/`state`를 트리 형태로 확인하고, 페이지의 대응 DOM 요소를 자동 하이라이트한다. React 매핑이 없으면 `DomElement` fallback 노드로 선택 요소를 계속 추적한다.
-9. 함수 값은 링크로 표시되며 클릭 시 DevTools inspect/console 대상으로 이동을 시도한다.
-10. 순환 참조(`Circular`) 값은 참조 노드 형태로 표시되어 트리에서 확장해 확인할 수 있다.
-11. 선택한 요소의 DOM 구조를 **접기/펼치기 가능한 트리**로 확인할 수 있다.
-12. React 컴포넌트 섹션 우측 검색창에서 이름/selector/path 기준으로 목록을 필터링할 수 있다.
-13. 패널 경계선(Components↔Inspector, Selected Element↔DOM Tree)을 드래그해 영역 폭을 조절할 수 있다.
-14. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, 패널 제목의 `⧉` 버튼으로 전체 로그를 복사해 이슈 재현 기록으로 공유할 수 있다.
-15. Dev-only diagnostics 뷰가 필요하면 DevTools 콘솔에서 `localStorage.setItem('ecDevTool.devDiagnostics', '1')` 실행 후 패널을 새로 열면 Debug Log 상단에 이벤트 집계가 표시된다.
+9. 검색창 옆 **Lite/Full** 버튼으로 React payload 모드를 전환할 수 있다. `Lite`는 빠른 조회, `Full`은 직렬화된 상세 payload를 우선한다.
+10. 함수 값은 링크로 표시되며 클릭 시 DevTools inspect/console 대상으로 이동을 시도한다.
+11. 순환 참조(`Circular`) 값은 참조 노드 형태로 표시되어 트리에서 확장해 확인할 수 있다.
+12. 선택한 요소의 DOM 구조를 **접기/펼치기 가능한 트리**로 확인할 수 있다.
+13. React 컴포넌트 섹션 우측 검색창에서 이름/selector/path 기준으로 목록을 필터링할 수 있다.
+14. 패널 경계선(Components↔Inspector, Selected Element↔DOM Tree)을 드래그해 영역 폭을 조절할 수 있다.
+15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, 패널 제목의 `⧉` 버튼으로 전체 로그를 복사해 이슈 재현 기록으로 공유할 수 있다.
+16. Dev-only diagnostics 뷰가 필요하면 DevTools 콘솔에서 `localStorage.setItem('ecDevTool.devDiagnostics', '1')` 실행 후 패널을 새로 열면 Debug Log 상단에 이벤트 집계가 표시된다.
 
 ## 대상 객체 설정
 

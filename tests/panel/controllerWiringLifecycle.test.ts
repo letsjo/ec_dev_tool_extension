@@ -5,7 +5,13 @@ import type { RuntimeRefreshLookup } from '../../src/features/panel/reactInspect
 
 describe('createControllerWiringLifecycle', () => {
   it('wires runtime bindings into bootstrap with refresh/listener wrappers', () => {
-    const panelControllerContext = {} as PanelControllerContext;
+    let payloadMode: 'lite' | 'full' = 'lite';
+    const panelControllerContext = {
+      getReactPayloadMode: vi.fn(() => payloadMode),
+      setReactPayloadMode: vi.fn((mode: 'lite' | 'full') => {
+        payloadMode = mode;
+      }),
+    } as unknown as PanelControllerContext;
     const runtimeRefreshScheduler = {
       schedule: vi.fn(),
       refresh: vi.fn(),
@@ -73,14 +79,14 @@ describe('createControllerWiringLifecycle', () => {
     const lookup: RuntimeRefreshLookup = { selector: '#root', pickPoint: { x: 10, y: 12 } };
     const runtimeDone = vi.fn();
     capturedRuntimeOptions.fetchReactInfoForRuntimeRefresh(lookup, true, runtimeDone);
-    expect(createRuntimeRefreshFetchOptions).toHaveBeenCalledWith(true, runtimeDone);
+    expect(createRuntimeRefreshFetchOptions).toHaveBeenCalledWith(true, 'lite', runtimeDone);
     expect(fetchReactInfo).toHaveBeenCalledWith('#root', lookup.pickPoint, {
       keepLookup: true,
       background: true,
     });
 
     capturedRuntimeOptions.fetchReactInfoForElementSelection('#app', { x: 4, y: 5 });
-    expect(createElementSelectionFetchOptions).toHaveBeenCalled();
+    expect(createElementSelectionFetchOptions).toHaveBeenCalledWith('lite');
     expect(fetchReactInfo).toHaveBeenCalledWith('#app', { x: 4, y: 5 }, {
       lightweight: true,
       refreshDetail: true,
@@ -90,6 +96,9 @@ describe('createControllerWiringLifecycle', () => {
     expect(capturedBootstrapOptions.onPanelBeforeUnload).toBe(onPanelBeforeUnload);
     capturedBootstrapOptions.addNavigatedListener();
     expect(addInspectedPageNavigatedListener).toHaveBeenCalledWith(onInspectedPageNavigated);
+    capturedBootstrapOptions.onTogglePayloadMode();
+    expect(panelControllerContext.setReactPayloadMode).toHaveBeenCalledWith('full');
+    expect(runtimeRefreshScheduler.refresh).toHaveBeenCalledWith(false);
     capturedBootstrapOptions.runInitialRefresh();
     expect(runtimeRefreshScheduler.refresh).toHaveBeenCalledWith(false);
     expect(result.bootstrapPanel).toBe(bootstrapPanel);

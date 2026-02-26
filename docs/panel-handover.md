@@ -66,7 +66,7 @@
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `controllerWiring.ts` 유틸로 pane/target/dom/react/runtime/bootstrap 결선 조립 책임 위임
   - `devtoolsNetworkBridge.ts` 유틸로 inspected tab id 조회와 network.onNavigated listener add/remove 결선 책임 위임
-  - `controller/context.ts` 유틸로 panel DOM ref/picker 상태/workspace lifecycle 핸들 저장·조회 책임 위임
+  - `controller/context.ts` 유틸로 panel DOM ref/picker 상태/payload mode(Lite/Full)/workspace lifecycle 핸들 저장·조회 책임 위임
   - `controller/runtime.ts` 유틸로 runtime refresh + element picker bridge + runtime message listener + teardown 결선 책임 위임
   - `controller/bootstrap.ts` 유틸로 workspace 초기화 결선 + bootstrap flow 결선 책임 위임
   - `lifecycle/bootstrapFlow.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
@@ -78,7 +78,7 @@
 - `controllerWiring.ts`는 pane + data flow + react inspector + lifecycle 결선을 조립하고 controller에는 bootstrap 핸들만 반환
 - `controllerWiringDataFlows.ts`는 target fetch + DOM tree fetch + selection sync 결선을 조립해 `controllerWiring.ts`의 fetch/selection 책임을 축소
 - `controllerWiringReactInspector.ts`는 reactInspect path binding + controller flow 결선을 조립해 `controllerWiring.ts`의 책임을 축소
-- `controllerWiringLifecycle.ts`는 runtime refresh + bootstrap 결선을 조립하고 fetch option preset/listener/초기 refresh 트리거를 고정한다.
+- `controllerWiringLifecycle.ts`는 runtime refresh + bootstrap 결선을 조립하고 fetch option preset/listener/초기 refresh 트리거를 고정한다. payload mode 버튼 토글 시 runtime refresh를 즉시 실행해 모드 전환 결과를 빠르게 동기화한다.
   - `reactInspector/detail/detailFetchQueue.ts`, `reactInspector/detail/detailFetchQueueState.ts`, `reactInspector/detail/detailFetchQueueResponse.ts`, `reactInspector/detail/detailFetchQueueMessages.ts` 유틸로 선택 컴포넌트 상세 지연조회 큐(in-flight/queue/cooldown), 응답 정규화, 실패 문구 규칙 helper 위임
   - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
@@ -113,7 +113,7 @@
   - Selected Element/DOM Path UI 업데이트
   - pending runtime refresh scheduler를 reset해 선택 직후 stale background refresh 개입을 최소화
   - `fetchDomTree(selector, pickPoint, domPath)` 실행(중복 selector 환경 보정)
-  - `fetchReactInfo(..., { lightweight: true })` 실행
+  - `fetchReactInfo(..., { lightweight: payloadMode==='lite' })` 실행
   - selectionSync highlight는 request epoch를 사용해, 이전 선택에서 늦게 도착한 highlight 응답이 최신 Selected Element/DOM Tree를 덮어쓰지 못하게 차단
   - 액션/브리지 요청/응답은 Debug Log 패널에 누적되며, title의 `⧉` 버튼으로 전체 복사 가능
   - `localStorage['ecDevTool.devDiagnostics']='1'`이면 Debug Log 상단 diagnostics pane에서 이벤트 총량/최근 이벤트/top event 집계를 실시간 확인 가능
@@ -124,7 +124,7 @@
 1. main world `reactRuntimeHook.ts`가 `reactRuntimeHookLifecycle.ts`를 통해 `onCommitFiberRoot` 감지 래퍼 설치
 2. content가 `pageRuntimeChanged` 메시지 송신(디바운스/스로틀 적용)
 3. panel이 `runtimeRefresh/scheduler.ts`의 `schedule(true)` 호출
-4. scheduler가 최소 간격을 보장해 경량 React 재조회를 실행
+4. scheduler가 최소 간격을 보장해 payload mode(`Lite`/`Full`)에 맞는 React 재조회를 실행
 
 ## 6. pageAgent 공개 메서드 계약
 
@@ -447,7 +447,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/resultModel.ts`: reactInspect 응답 컴포넌트 정규화(경량 모드 재사용), fingerprint 기반 변경 id 집합 계산 전담
 - `reactInspector/applyFlow.ts`: apply 옵션 정규화, preserveCollapsed 기준 접힘 상태 복원/초기화, 상태 문구·후속 렌더 액션 결정 전담
 - `reactInspector/flow/applyResultFlow.ts`: reactInspect data/selection/render 3단계 파이프라인 오케스트레이션과 controller 상태 반영 결선 전담
-- `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, runtime refresh/element selection 프리셋 팩토리(요소 선택 preset은 clickPoint 기반 DOM 확정 후 자동 하이라이트를 활성화해 페이지 주황색 박스와 Selected Element/DOM Tree를 함께 동기화) 전담
+- `reactInspector/fetchOptions.ts`: `fetchReactInfo` 전달 옵션에서 applyOptions 조립, selectedComponentId 계산, payload mode(`lite`/`full`) 기반 runtime refresh/element selection 프리셋 팩토리(요소 선택 preset은 clickPoint 기반 DOM 확정 후 자동 하이라이트를 활성화해 페이지 주황색 박스와 Selected Element/DOM Tree를 함께 동기화) 전담
 - `reactInspector/flow/fetchRequestStage.ts`: `reactInspect` request stage(lookup 저장, loading pane 전환, script selected id 계산) 전담
 - `reactInspector/flow/fetchResponseStage.ts`: `reactInspect` response stage(응답 파이프라인 전달 + 완료 콜백) 전담
 - `reactInspector/flow/fetchFlow.ts`: request/response stage helper를 조합해 `reactInspect` 브리지 호출 오케스트레이션과 latest-request-only 응답 반영 규칙(stale 응답 discard, `onDone` 보장), foreground in-flight 동안 background refresh skip 규칙 전담

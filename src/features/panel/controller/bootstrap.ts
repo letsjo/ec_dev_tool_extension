@@ -15,6 +15,7 @@ interface CreatePanelControllerBootstrapOptions {
   setDomTreeEmpty: (text: string) => void;
   onFetch: () => void;
   onSelectElement: () => void;
+  onTogglePayloadMode: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;
   addNavigatedListener: () => void;
@@ -62,10 +63,12 @@ export function createPanelControllerBootstrap(
     setDomTreeEmpty: options.setDomTreeEmpty,
     getFetchBtnEl: options.panelControllerContext.getFetchBtnEl,
     getSelectElementBtnEl: options.panelControllerContext.getSelectElementBtnEl,
+    getPayloadModeBtnEl: options.panelControllerContext.getPayloadModeBtnEl,
     getComponentSearchInputEl: options.panelControllerContext.getComponentSearchInputEl,
     getReactComponentListEl: options.panelControllerContext.getReactComponentListEl,
     onFetch: options.onFetch,
     onSelectElement: options.onSelectElement,
+    onTogglePayloadMode: options.onTogglePayloadMode,
     onComponentSearchInput: options.onComponentSearchInput,
     clearPageHoverPreview: options.clearPageHoverPreview,
     addNavigatedListener: options.addNavigatedListener,

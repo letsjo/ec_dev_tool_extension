@@ -21,6 +21,16 @@ export function PanelHeaderSection() {
             type="search"
             placeholder="Search components (name, selector, path)"
           />
+          <button
+            id="payloadModeBtn"
+            className="text-button"
+            type="button"
+            title="Payload mode: Lite"
+            aria-label="Toggle payload mode"
+            aria-pressed="false"
+          >
+            Lite
+          </button>
         </div>
       </div>
 

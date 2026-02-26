@@ -10,10 +10,12 @@ interface CreatePanelBootstrapFlowOptions {
   setDomTreeEmpty: (text: string) => void;
   getFetchBtnEl: () => HTMLButtonElement | null;
   getSelectElementBtnEl: () => HTMLButtonElement;
+  getPayloadModeBtnEl: () => HTMLButtonElement;
   getComponentSearchInputEl: () => HTMLInputElement;
   getReactComponentListEl: () => HTMLDivElement;
   onFetch: () => void;
   onSelectElement: () => void;
+  onTogglePayloadMode: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;
   addNavigatedListener: () => void;
@@ -43,6 +45,7 @@ export function createPanelBootstrapFlow(options: CreatePanelBootstrapFlowOption
       fetchBtnEl.addEventListener('click', options.onFetch);
     }
     options.getSelectElementBtnEl().addEventListener('click', options.onSelectElement);
+    options.getPayloadModeBtnEl().addEventListener('click', options.onTogglePayloadMode);
     options
       .getComponentSearchInputEl()
       .addEventListener('input', options.onComponentSearchInput);

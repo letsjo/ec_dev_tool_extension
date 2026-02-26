@@ -11,6 +11,7 @@ function createDomRefsFixture(): PanelDomRefs {
   const workspaceDockPreviewEl = document.createElement('div');
   const selectElementBtnEl = document.createElement('button');
   const componentSearchInputEl = document.createElement('input');
+  const payloadModeBtnEl = document.createElement('button');
   const elementOutputEl = document.createElement('div');
   const domTreeStatusEl = document.createElement('div');
   const domTreeOutputEl = document.createElement('div');
@@ -35,6 +36,7 @@ function createDomRefsFixture(): PanelDomRefs {
     workspaceDockPreviewEl,
     selectElementBtnEl,
     componentSearchInputEl,
+    payloadModeBtnEl,
     elementOutputEl,
     domTreeStatusEl,
     domTreeOutputEl,
@@ -75,6 +77,24 @@ describe('createPanelControllerContext', () => {
     expect(context.getSelectElementBtnEl().classList.contains('active')).toBe(false);
     expect(context.getOutputEl()).toBe(refs.outputEl);
     expect(context.getWorkspacePanelElements()).toBe(refs.workspacePanelElements);
+  });
+
+  it('stores payload mode and syncs toggle button state', () => {
+    const refs = createDomRefsFixture();
+    const context = createPanelControllerContext({
+      initPanelDomRefs: () => refs,
+    });
+    context.initDomRefs();
+
+    expect(context.getReactPayloadMode()).toBe('lite');
+    expect(context.getPayloadModeBtnEl().textContent).toBe('Lite');
+    expect(context.getPayloadModeBtnEl().classList.contains('active')).toBe(false);
+
+    context.setReactPayloadMode('full');
+    expect(context.getReactPayloadMode()).toBe('full');
+    expect(context.getPayloadModeBtnEl().textContent).toBe('Full');
+    expect(context.getPayloadModeBtnEl().classList.contains('active')).toBe(true);
+    expect(context.getPayloadModeBtnEl().getAttribute('aria-pressed')).toBe('true');
   });
 
   it('stores lifecycle handles through dedicated setters', () => {

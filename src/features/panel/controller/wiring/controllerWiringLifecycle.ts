@@ -11,6 +11,7 @@ import { createPanelControllerRuntime as createPanelControllerRuntimeValue } fro
 import {
   createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,
+  type ReactPayloadMode,
   type FetchReactInfoOptions,
 } from '../../reactInspector/fetchOptions';
 import type { RuntimeRefreshLookup } from '../../reactInspector/lookup';
@@ -85,11 +86,19 @@ function createControllerWiringLifecycle(
       options.fetchReactInfo(
         lookup.selector,
         lookup.pickPoint,
-        deps.createRuntimeRefreshFetchOptions(background, onDone),
+        deps.createRuntimeRefreshFetchOptions(
+          background,
+          options.panelControllerContext.getReactPayloadMode(),
+          onDone,
+        ),
       );
     },
     fetchReactInfoForElementSelection: (selector, pickPoint) => {
-      options.fetchReactInfo(selector, pickPoint, deps.createElementSelectionFetchOptions());
+      options.fetchReactInfo(
+        selector,
+        pickPoint,
+        deps.createElementSelectionFetchOptions(options.panelControllerContext.getReactPayloadMode()),
+      );
     },
     clearPageHoverPreview: options.clearPageHoverPreview,
     fetchDomTree: options.fetchDomTree,
@@ -102,6 +111,15 @@ function createControllerWiringLifecycle(
     appendDebugLog: options.appendDebugLog,
   });
 
+  function onTogglePayloadMode() {
+    const currentMode = options.panelControllerContext.getReactPayloadMode();
+    const nextMode: ReactPayloadMode = currentMode === 'lite' ? 'full' : 'lite';
+    options.panelControllerContext.setReactPayloadMode(nextMode);
+    options.appendDebugLog?.('reactInspect.payloadMode.toggle', { mode: nextMode });
+    // 모드 전환 직후 현재 선택/lookup 기준으로 재조회해 패널 내용을 즉시 동기화한다.
+    runtimeRefreshScheduler.refresh(false);
+  }
+
   return deps.createPanelControllerBootstrap({
     panelControllerContext: options.panelControllerContext,
     mountPanelView: deps.mountPanelView,
@@ -113,6 +131,7 @@ function createControllerWiringLifecycle(
     setDomTreeEmpty: options.setDomTreeEmpty,
     onFetch: options.onFetch,
     onSelectElement,
+    onTogglePayloadMode,
     onComponentSearchInput: options.onComponentSearchInput,
     clearPageHoverPreview: options.clearPageHoverPreview,
     addNavigatedListener: () => {

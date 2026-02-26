@@ -14,6 +14,7 @@ export interface PanelDomRefs {
   workspaceDockPreviewEl: HTMLDivElement;
   selectElementBtnEl: HTMLButtonElement;
   componentSearchInputEl: HTMLInputElement;
+  payloadModeBtnEl: HTMLButtonElement;
   elementOutputEl: HTMLDivElement;
   domTreeStatusEl: HTMLDivElement;
   domTreeOutputEl: HTMLDivElement;
@@ -75,6 +76,7 @@ export function initPanelDomRefs(): PanelDomRefs {
     workspaceDockPreviewEl: getRequiredElement<HTMLDivElement>('workspaceDockPreview'),
     selectElementBtnEl: getRequiredElement<HTMLButtonElement>('selectElementBtn'),
     componentSearchInputEl: getRequiredElement<HTMLInputElement>('componentSearchInput'),
+    payloadModeBtnEl: getRequiredElement<HTMLButtonElement>('payloadModeBtn'),
     elementOutputEl: getRequiredElement<HTMLDivElement>('selectedElementPane'),
     domTreeStatusEl: getRequiredElement<HTMLDivElement>('selectedElementPathPane'),
     domTreeOutputEl: getRequiredElement<HTMLDivElement>('selectedElementDomPane'),

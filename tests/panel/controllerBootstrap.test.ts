@@ -11,7 +11,10 @@ function createContextStub(): PanelControllerContext {
     getTargetSelectEl: vi.fn(),
     getFetchBtnEl: vi.fn(),
     getSelectElementBtnEl: vi.fn(),
+    getPayloadModeBtnEl: vi.fn(),
     getComponentSearchInputEl: vi.fn(),
+    getReactPayloadMode: vi.fn(),
+    setReactPayloadMode: vi.fn(),
     getElementOutputEl: vi.fn(),
     getDomTreeStatusEl: vi.fn(),
     getDomTreeOutputEl: vi.fn(),
@@ -59,6 +62,7 @@ describe('createPanelControllerBootstrap', () => {
         setDomTreeEmpty: vi.fn(),
         onFetch: vi.fn(),
         onSelectElement: vi.fn(),
+        onTogglePayloadMode: vi.fn(),
         onComponentSearchInput: vi.fn(),
         clearPageHoverPreview: vi.fn(),
         addNavigatedListener: vi.fn(),
@@ -84,6 +88,7 @@ describe('createPanelControllerBootstrap', () => {
         initializeWorkspaceLayout,
         initializeWheelFallback,
         setPickerModeActive: panelControllerContext.setPickerModeActive,
+        getPayloadModeBtnEl: panelControllerContext.getPayloadModeBtnEl,
       }),
     );
     expect(result.bootstrapPanel).toBe(bootstrapPanel);
