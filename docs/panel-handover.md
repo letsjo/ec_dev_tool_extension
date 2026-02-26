@@ -911,6 +911,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentHookDispatcher.test.ts`: `pageAgentHookDispatcher.ts`의 useState cursor 전진, `use` promise unresolved/resolved 처리, context snapshot, generic hook fallback 분기
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
   - `tests/content/pageAgentInspectComponentsFlow.test.ts`: `reactInspect` 입력 파싱/nearest source summary/기본 selectedIndex/nearest 미해석 에러 분기
+  - `tests/content/pageAgentInspect.test.ts`: `createPageAgentInspectHandlers` 결선 후 `reactInspect`/`reactInspectPath` 기본 가드 에러 응답 분기
   - `tests/content/pageAgentInspectTarget.test.ts`: `resolveInspectRootContext`/`resolveInspectPathTargetFiber`의 nearest fallback 및 문서 전역 componentId fallback 분기
   - `tests/content/pageAgentFiberSearch.test.ts`: componentId 기반 root/fiber 탐색(root match, legacy index, 문서 전역 탐색) 분기
   - `tests/content/pageAgentHookGrouping.test.ts`: 공통 조상 frame 탐색, primitive frame index 보정, group path 추론, primitive 이름 정규화 분기

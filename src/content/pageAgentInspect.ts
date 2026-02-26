@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
 import { createPageAgentInspectFlowWiring } from "./pageAgentInspectFlowWiring";
 import type { CreatePageAgentInspectHandlersOptions } from "./pageAgentInspectTypes";

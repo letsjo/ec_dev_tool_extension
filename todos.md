@@ -18,7 +18,7 @@ Last Updated: 2026-02-26
 
 - [x] 84.1 inspect 의존성 타입 모듈 분리
 - [x] 84.2 `reactInspect`/`reactInspectPath` 결선 블록 분리
-- [ ] 84.3 `@ts-nocheck` 제거 + 테스트/문서 동기화
+- [x] 84.3 `@ts-nocheck` 제거 + 테스트/문서 동기화
 
 ## Phase 85 (Planned): page agent runtime/bridge/method 결선 재정리
 
