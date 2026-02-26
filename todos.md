@@ -23,7 +23,7 @@ Last Updated: 2026-02-26
 ## Phase 85 (Planned): page agent runtime/bridge/method 결선 재정리
 
 - [x] 85.1 `pageAgentRuntime.ts` runtime bootstrap 단계 분리
-- [ ] 85.2 `pageAgentBridge.ts` 메시지 파이프라인 분리
+- [x] 85.2 `pageAgentBridge.ts` 메시지 파이프라인 분리
 - [ ] 85.3 `pageAgentMethods.ts` 메서드 라우팅/target fetch 분리
 
 ## Phase 86 (Planned): DOM 계열 타입 안정화

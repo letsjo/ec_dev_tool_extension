@@ -1,5 +1,8 @@
 // @ts-nocheck
-type AnyRecord = Record<string, any>;
+import {
+  postBridgeResponse,
+  readBridgeRequestMessage,
+} from './pageAgentBridgeMessages';
 
 type ExecuteMethodHandler = (method: string, args: unknown) => unknown;
 
@@ -8,26 +11,6 @@ interface InstallPageAgentBridgeOptions {
   requestAction: string;
   responseAction: string;
   executeMethod: ExecuteMethodHandler;
-}
-
-/** 브리지 응답/메시지를 전송 */
-function postBridgeResponse(
-  bridgeSource: string,
-  responseAction: string,
-  requestId: string,
-  ok: boolean,
-  payload: AnyRecord,
-) {
-  window.postMessage(
-    {
-      source: bridgeSource,
-      action: responseAction,
-      requestId,
-      ok,
-      ...payload,
-    },
-    "*",
-  );
 }
 
 /** pageAgent 브리지 request 리스너를 설치한다. */
@@ -40,23 +23,24 @@ export function installPageAgentBridge(options: InstallPageAgentBridgeOptions) {
   /** 이벤트를 처리 */
   const onBridgeMessage = (event: MessageEvent) => {
     if (event.source !== window) return;
-    const data = event.data;
-    if (!data || typeof data !== "object") return;
-    if (data.source !== bridgeSource || data.action !== requestAction) return;
-    if (typeof data.requestId !== "string" || !data.requestId) return;
+    const requestMessage = readBridgeRequestMessage(event.data, {
+      bridgeSource,
+      requestAction,
+    });
+    if (!requestMessage) return;
 
     try {
-      const result = executeMethod(data.method, data.args);
-      postBridgeResponse(bridgeSource, responseAction, data.requestId, true, { result });
+      const result = executeMethod(requestMessage.method as string, requestMessage.args);
+      postBridgeResponse(bridgeSource, responseAction, requestMessage.requestId, true, { result });
     } catch (error) {
-      postBridgeResponse(bridgeSource, responseAction, data.requestId, false, {
+      postBridgeResponse(bridgeSource, responseAction, requestMessage.requestId, false, {
         error: String(error && error.message ? error.message : error),
       });
     }
   };
 
-  window.addEventListener("message", onBridgeMessage);
+  window.addEventListener('message', onBridgeMessage);
   return () => {
-    window.removeEventListener("message", onBridgeMessage);
+    window.removeEventListener('message', onBridgeMessage);
   };
 }
