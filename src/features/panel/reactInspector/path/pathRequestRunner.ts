@@ -40,9 +40,11 @@ export function createReactInspectPathRequester(options: CreateReactInspectPathR
       path: requestOptions.path,
       mode: requestOptions.mode,
       serializeLimit: requestOptions.serializeLimit,
+      // 요소 선택 후 selector가 바뀌는 경우를 대비해 최근 lookup(selector/pickPoint)을 같이 전달한다.
       storedLookup: options.getStoredLookup(),
     });
     options.callInspectedPageAgent('reactInspectPath', args, (response, errorText) => {
+      // 브리지/runtime 오류와 응답 형식 오류를 completion 유니온으로 정규화해 호출부 분기를 단순화한다.
       const completion = resolveReactInspectPathRequestCompletionValue(response, errorText);
       requestOptions.onDone(completion);
     });

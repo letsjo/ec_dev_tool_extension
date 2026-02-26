@@ -75,6 +75,7 @@ function createInspectReactPathFlow(options: CreateInspectReactPathFlowOptions) 
         findRootFiber,
       });
       if (!resolvedRoot.ok) {
+        // selector/pickPoint 기준 nearest fiber가 없으면 root를 찾기 전에 즉시 실패를 반환한다.
         if (resolvedRoot.reason === 'missingNearest') {
           return { ok: false, error: 'React fiber를 찾지 못했습니다.' };
         }
@@ -89,6 +90,7 @@ function createInspectReactPathFlow(options: CreateInspectReactPathFlowOptions) 
         findFiberByComponentId,
         findFiberByComponentIdAcrossDocument,
       });
+      // root subtree에서 못 찾으면 document 전역 fallback을 시도하지만, 여전히 없으면 명시적으로 실패한다.
       if (!targetFiber) {
         return { ok: false, error: '대상 컴포넌트를 찾지 못했습니다.' };
       }
