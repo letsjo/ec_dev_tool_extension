@@ -1,11 +1,10 @@
 import type { PickPoint } from '../../../shared/inspector';
-import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from '../elementPicker/bridgeFlow';
-import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from '../lifecycle/runtimeMessageBinding';
 import { createPanelTeardownFlow as createPanelTeardownFlowValue } from '../lifecycle/panelTeardownFlow';
 import type { PanelControllerContext } from './context';
 import type { RuntimeRefreshLookup } from '../reactInspector/lookup';
 import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from '../runtimeRefresh/panelRuntimeRefreshFlow';
 import type { RuntimeRefreshScheduler } from '../runtimeRefresh/scheduler';
+import { createPanelRuntimePickerFlow as createPanelRuntimePickerFlowValue } from './runtimePickerFlow';
 
 interface CreatePanelControllerRuntimeOptions {
   panelControllerContext: PanelControllerContext;
@@ -30,8 +29,7 @@ interface CreatePanelControllerRuntimeOptions {
 
 interface PanelControllerRuntimeDependencies {
   createPanelRuntimeRefreshFlow: typeof createPanelRuntimeRefreshFlowValue;
-  createElementPickerBridgeFlow: typeof createElementPickerBridgeFlowValue;
-  bindRuntimeMessageListener: typeof bindRuntimeMessageListenerValue;
+  createPanelRuntimePickerFlow: typeof createPanelRuntimePickerFlowValue;
   createPanelTeardownFlow: typeof createPanelTeardownFlowValue;
 }
 
@@ -44,8 +42,7 @@ export interface PanelControllerRuntimeBindings {
 
 const PANEL_CONTROLLER_RUNTIME_DEFAULT_DEPS: PanelControllerRuntimeDependencies = {
   createPanelRuntimeRefreshFlow: createPanelRuntimeRefreshFlowValue,
-  createElementPickerBridgeFlow: createElementPickerBridgeFlowValue,
-  bindRuntimeMessageListener: bindRuntimeMessageListenerValue,
+  createPanelRuntimePickerFlow: createPanelRuntimePickerFlowValue,
   createPanelTeardownFlow: createPanelTeardownFlowValue,
 };
 
@@ -69,37 +66,19 @@ export function createPanelControllerRuntime(
       appendDebugLog: options.appendDebugLog,
     });
 
-  const { onSelectElement, onRuntimeMessage } = deps.createElementPickerBridgeFlow({
+  const { onSelectElement } = deps.createPanelRuntimePickerFlow({
+    panelControllerContext: options.panelControllerContext,
+    runtimeRefreshScheduler,
     getInspectedTabId: options.getInspectedTabId,
     clearPageHoverPreview: options.clearPageHoverPreview,
-    setPickerModeActive: options.panelControllerContext.setPickerModeActive,
+    fetchReactInfoForElementSelection: options.fetchReactInfoForElementSelection,
+    fetchDomTree: options.fetchDomTree,
     setElementOutput: options.setElementOutput,
     setReactStatus: options.setReactStatus,
     setDomTreeStatus: options.setDomTreeStatus,
     setDomTreeEmpty: options.setDomTreeEmpty,
-    fetchDomTree: options.fetchDomTree,
-    fetchReactInfoForElementSelection: options.fetchReactInfoForElementSelection,
-    scheduleRuntimeRefresh: () => {
-      options.appendDebugLog?.('runtimeRefresh.schedule', { background: true });
-      runtimeRefreshScheduler.schedule(true);
-    },
-    resetRuntimeRefresh: () => {
-      options.appendDebugLog?.('runtimeRefresh.reset');
-      runtimeRefreshScheduler.reset();
-    },
     appendDebugLog: options.appendDebugLog,
   });
-
-  options.panelControllerContext.setRemoveRuntimeMessageListener(
-    deps.bindRuntimeMessageListener(onRuntimeMessage, {
-      addListener(listener) {
-        chrome.runtime.onMessage.addListener(listener);
-      },
-      removeListener(listener) {
-        chrome.runtime.onMessage.removeListener(listener);
-      },
-    }),
-  );
 
   const onPanelBeforeUnload = deps.createPanelTeardownFlow({
     getWorkspaceLayoutManager: options.panelControllerContext.getWorkspaceLayoutManager,

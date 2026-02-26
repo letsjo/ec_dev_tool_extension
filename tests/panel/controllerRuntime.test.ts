@@ -3,6 +3,7 @@ import type { RuntimeRefreshLookup } from '../../src/features/panel/reactInspect
 import { createPanelControllerRuntime } from '../../src/features/panel/controller/runtime';
 import type { PanelControllerContext } from '../../src/features/panel/controller/context';
 import type { RuntimeRefreshScheduler } from '../../src/features/panel/runtimeRefresh/scheduler';
+import type { CreatePanelRuntimePickerFlowOptions } from '../../src/features/panel/controller/runtimePickerFlow';
 
 function createContextStub() {
   let removeRuntimeMessageListener: (() => void) | null = null;
@@ -13,7 +14,10 @@ function createContextStub() {
     getTargetSelectEl: vi.fn(),
     getFetchBtnEl: vi.fn(),
     getSelectElementBtnEl: vi.fn(),
+    getPayloadModeBtnEl: vi.fn(),
     getComponentSearchInputEl: vi.fn(),
+    getReactPayloadMode: vi.fn(() => 'lite'),
+    setReactPayloadMode: vi.fn(),
     getElementOutputEl: vi.fn(),
     getDomTreeStatusEl: vi.fn(),
     getDomTreeOutputEl: vi.fn(),
@@ -52,8 +56,8 @@ describe('createPanelControllerRuntime', () => {
     const runtimeRefreshScheduler = createSchedulerStub();
     const onInspectedPageNavigated = vi.fn();
     let capturedRuntimeRefreshOptions: any = null;
-    let capturedElementPickerOptions: any = null;
-    const removeRuntimeMessageListener = vi.fn();
+    let capturedPickerFlowOptions: CreatePanelRuntimePickerFlowOptions | null = null;
+    const onSelectElement = vi.fn();
     let capturedTeardownOptions: any = null;
     const fetchReactInfoForRuntimeRefresh = vi.fn();
     const fetchReactInfoForElementSelection = vi.fn();
@@ -81,14 +85,12 @@ describe('createPanelControllerRuntime', () => {
           capturedRuntimeRefreshOptions = runtimeRefreshOptions;
           return { runtimeRefreshScheduler, onInspectedPageNavigated };
         }),
-        createElementPickerBridgeFlow: vi.fn((elementPickerOptions: any) => {
-          capturedElementPickerOptions = elementPickerOptions;
-          return {
-            onSelectElement: vi.fn(),
-            onRuntimeMessage: vi.fn(),
-          };
-        }),
-        bindRuntimeMessageListener: vi.fn(() => removeRuntimeMessageListener),
+        createPanelRuntimePickerFlow: vi.fn(
+          (pickerFlowOptions: CreatePanelRuntimePickerFlowOptions) => {
+            capturedPickerFlowOptions = pickerFlowOptions;
+            return { onSelectElement };
+          },
+        ),
         createPanelTeardownFlow: vi.fn((teardownOptions: any) => {
           capturedTeardownOptions = teardownOptions;
           return vi.fn();
@@ -98,17 +100,11 @@ describe('createPanelControllerRuntime', () => {
 
     expect(bindings.runtimeRefreshScheduler).toBe(runtimeRefreshScheduler);
     expect(bindings.onInspectedPageNavigated).toBe(onInspectedPageNavigated);
+    expect(bindings.onSelectElement).toBe(onSelectElement);
     expect(capturedRuntimeRefreshOptions.runRefresh).toBe(fetchReactInfoForRuntimeRefresh);
-
-    capturedElementPickerOptions.scheduleRuntimeRefresh();
-    expect(runtimeRefreshScheduler.schedule).toHaveBeenCalledWith(true);
-    capturedElementPickerOptions.resetRuntimeRefresh();
-    expect(runtimeRefreshScheduler.reset).toHaveBeenCalledTimes(1);
-    capturedElementPickerOptions.fetchReactInfoForElementSelection('#a');
-    expect(fetchReactInfoForElementSelection).toHaveBeenCalledWith('#a');
-
-    expect(panelControllerContext.setRemoveRuntimeMessageListener).toHaveBeenCalledWith(
-      removeRuntimeMessageListener,
+    expect(capturedPickerFlowOptions?.runtimeRefreshScheduler).toBe(runtimeRefreshScheduler);
+    expect(capturedPickerFlowOptions?.fetchReactInfoForElementSelection).toBe(
+      fetchReactInfoForElementSelection,
     );
 
     capturedTeardownOptions.removeNavigatedListener();

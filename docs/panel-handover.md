@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/controller/wiring/controllerWiring.ts`, `src/features/panel/controller/wiring/controllerWiringDebug.ts`, `src/features/panel/controller/wiring/controllerWiringDataFlows.ts`, `src/features/panel/controller/wiring/controllerWiringReactInspector.ts`, `src/features/panel/controller/wiring/controllerWiringLifecycle.ts`, `src/features/panel/controller/context.ts`, `src/features/panel/controller/runtime.ts`, `src/features/panel/controller/bootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/controller/wiring/controllerWiring.ts`, `src/features/panel/controller/wiring/controllerWiringDebug.ts`, `src/features/panel/controller/wiring/controllerWiringDataFlows.ts`, `src/features/panel/controller/wiring/controllerWiringReactInspector.ts`, `src/features/panel/controller/wiring/controllerWiringLifecycle.ts`, `src/features/panel/controller/context.ts`, `src/features/panel/controller/runtime.ts`, `src/features/panel/controller/runtimePickerFlow.ts`, `src/features/panel/controller/bootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -80,6 +80,7 @@
 - `controllerWiringDataFlows.ts`는 target fetch + DOM tree fetch + selection sync 결선을 조립해 `controllerWiring.ts`의 fetch/selection 책임을 축소
 - `controllerWiringReactInspector.ts`는 reactInspect path binding + controller flow 결선을 조립해 `controllerWiring.ts`의 책임을 축소
 - `controllerWiringLifecycle.ts`는 runtime refresh + bootstrap 결선을 조립하고 fetch option preset/listener/초기 refresh 트리거를 고정한다. payload mode 버튼 토글 시 runtime refresh를 즉시 실행해 모드 전환 결과를 빠르게 동기화한다.
+- `controller/runtimePickerFlow.ts`는 element picker bridge + runtime message listener 결선(스케줄러 schedule/reset 위임 포함)을 조립해 `controller/runtime.ts`의 책임을 축소한다.
   - `reactInspector/detail/detailFetchQueue.ts`, `reactInspector/detail/detailFetchQueueState.ts`, `reactInspector/detail/detailFetchQueueResponse.ts`, `reactInspector/detail/detailFetchQueueMessages.ts` 유틸로 선택 컴포넌트 상세 지연조회 큐(in-flight/queue/cooldown), 응답 정규화, 실패 문구 규칙 helper 위임
   - `runtimeRefresh/scheduler.ts` 유틸로 runtime 변경 debounce/최소 간격/in-flight 큐 병합 스케줄링 위임
   - `workspace/manager.ts`의 `createWorkspaceLayoutManager(...)`로 스플릿/드래그/토글 상태머신 초기화
@@ -434,7 +435,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `wheelScrollFallback.ts`: 패널 wheel capture 보정 리스너 설치/해제
 - `controller.ts`: panel 실행 엔트리(`runPanel`)와 fatal error fallback 렌더만 담당
 - `controllerWiring.ts`: panel 도메인 결선(pane/target/dom/react/runtime/bootstrap) 조립과 `bootstrapPanel` 핸들 생성 전담
-- `controller/runtime.ts`: runtime refresh 스케줄러, element picker 브리지, runtime message listener, unload teardown 결선 전담
+- `controller/runtime.ts`: runtime refresh 스케줄러, picker/runtime 결선 조립 호출, unload teardown 결선 전담
+- `controller/runtimePickerFlow.ts`: element picker 브리지 + runtime message listener 결선과 runtime refresh schedule/reset 연결 전담
 - `controller/bootstrap.ts`: workspace 초기화(createWorkspaceLayoutManager/initWheelScrollFallback)와 bootstrap flow 결선 전담
 
 ## 7.2 React Inspector 모듈 분리 규칙

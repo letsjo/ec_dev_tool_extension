@@ -1,0 +1,74 @@
+import type { PickPoint } from '../../../shared/inspector';
+import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from '../elementPicker/bridgeFlow';
+import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from '../lifecycle/runtimeMessageBinding';
+import type { PanelControllerContext } from './context';
+import type { RuntimeRefreshScheduler } from '../runtimeRefresh/scheduler';
+
+interface CreatePanelRuntimePickerFlowOptions {
+  panelControllerContext: PanelControllerContext;
+  runtimeRefreshScheduler: RuntimeRefreshScheduler;
+  getInspectedTabId: () => number;
+  clearPageHoverPreview: () => void;
+  fetchReactInfoForElementSelection: (selector: string, pickPoint?: PickPoint) => void;
+  fetchDomTree: (selector: string, pickPoint?: PickPoint, domPath?: string) => void;
+  setElementOutput: (text: string) => void;
+  setReactStatus: (text: string, isError?: boolean) => void;
+  setDomTreeStatus: (text: string, isError?: boolean) => void;
+  setDomTreeEmpty: (text: string) => void;
+  appendDebugLog?: (eventName: string, payload?: unknown) => void;
+}
+
+interface PanelRuntimePickerFlowDependencies {
+  createElementPickerBridgeFlow: typeof createElementPickerBridgeFlowValue;
+  bindRuntimeMessageListener: typeof bindRuntimeMessageListenerValue;
+}
+
+const PANEL_RUNTIME_PICKER_FLOW_DEFAULT_DEPS: PanelRuntimePickerFlowDependencies = {
+  createElementPickerBridgeFlow: createElementPickerBridgeFlowValue,
+  bindRuntimeMessageListener: bindRuntimeMessageListenerValue,
+};
+
+/**
+ * picker bridge/runtime-message 결선을 구성하고 제거 핸들을 context에 저장한다.
+ * runtime controller는 refresh/teardown 조립에 집중하고 picker 이벤트 결선은 분리한다.
+ */
+export function createPanelRuntimePickerFlow(
+  options: CreatePanelRuntimePickerFlowOptions,
+  deps: PanelRuntimePickerFlowDependencies = PANEL_RUNTIME_PICKER_FLOW_DEFAULT_DEPS,
+): { onSelectElement: () => void } {
+  const { onSelectElement, onRuntimeMessage } = deps.createElementPickerBridgeFlow({
+    getInspectedTabId: options.getInspectedTabId,
+    clearPageHoverPreview: options.clearPageHoverPreview,
+    setPickerModeActive: options.panelControllerContext.setPickerModeActive,
+    setElementOutput: options.setElementOutput,
+    setReactStatus: options.setReactStatus,
+    setDomTreeStatus: options.setDomTreeStatus,
+    setDomTreeEmpty: options.setDomTreeEmpty,
+    fetchDomTree: options.fetchDomTree,
+    fetchReactInfoForElementSelection: options.fetchReactInfoForElementSelection,
+    scheduleRuntimeRefresh: () => {
+      options.appendDebugLog?.('runtimeRefresh.schedule', { background: true });
+      options.runtimeRefreshScheduler.schedule(true);
+    },
+    resetRuntimeRefresh: () => {
+      options.appendDebugLog?.('runtimeRefresh.reset');
+      options.runtimeRefreshScheduler.reset();
+    },
+    appendDebugLog: options.appendDebugLog,
+  });
+
+  options.panelControllerContext.setRemoveRuntimeMessageListener(
+    deps.bindRuntimeMessageListener(onRuntimeMessage, {
+      addListener(listener) {
+        chrome.runtime.onMessage.addListener(listener);
+      },
+      removeListener(listener) {
+        chrome.runtime.onMessage.removeListener(listener);
+      },
+    }),
+  );
+
+  return { onSelectElement };
+}
+
+export type { CreatePanelRuntimePickerFlowOptions, PanelRuntimePickerFlowDependencies };
