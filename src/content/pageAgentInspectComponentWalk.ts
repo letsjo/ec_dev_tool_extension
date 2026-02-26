@@ -13,6 +13,7 @@ interface WalkInspectableComponentsArgs {
     domPath: string | null;
     domTagName: string | null;
     containsTarget: boolean;
+    targetContainDistance: number | null;
   };
   getStableFiberId: (fiber: AnyRecord | null | undefined, map: WeakMap<object, string>) => string | null;
   fiberIdMap: WeakMap<object, string>;
@@ -47,6 +48,7 @@ function walkInspectableComponents(args: WalkInspectableComponentsArgs) {
   const components: AnyRecord[] = [];
   const idByFiber = new Map<object, string>();
   let targetMatchedIndex = -1;
+  let targetMatchedContainDistance = Number.POSITIVE_INFINITY;
   let targetMatchedDepth = -1;
 
   const stack = [{ fiber: rootFiber, depth: -1, parentId: null as string | null }];
@@ -91,9 +93,22 @@ function walkInspectableComponents(args: WalkInspectableComponentsArgs) {
         hookCount = getHooksCount(node);
       }
 
-      if (domInfo.containsTarget && node.tag !== 5 && componentDepth >= targetMatchedDepth) {
-        targetMatchedDepth = componentDepth;
-        targetMatchedIndex = components.length;
+      if (domInfo.containsTarget && node.tag !== 5) {
+        const containDistance =
+          typeof domInfo.targetContainDistance === 'number'
+            ? domInfo.targetContainDistance
+            : Number.POSITIVE_INFINITY;
+        // 유사 컴포넌트가 중첩된 경우 target에 더 가까운 host를 우선한다.
+        // 거리 동률이면 기존처럼 더 깊은 컴포넌트를 선택한다.
+        const hasCloserDomTarget = containDistance < targetMatchedContainDistance;
+        const hasSameDomDistanceAndDeeper =
+          containDistance === targetMatchedContainDistance &&
+          componentDepth >= targetMatchedDepth;
+        if (hasCloserDomTarget || hasSameDomDistanceAndDeeper) {
+          targetMatchedContainDistance = containDistance;
+          targetMatchedDepth = componentDepth;
+          targetMatchedIndex = components.length;
+        }
       }
 
       components.push({

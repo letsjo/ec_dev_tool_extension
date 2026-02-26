@@ -57,15 +57,35 @@ function getDomInfoForFiber(args: GetDomInfoForFiberArgs) {
   } = args;
   const element = getHostElementFromFiber(fiber, hostCache, visiting);
   if (!element) {
-    return { domSelector: null, domPath: null, domTagName: null, containsTarget: false };
+    return {
+      domSelector: null,
+      domPath: null,
+      domTagName: null,
+      containsTarget: false,
+      targetContainDistance: null,
+    };
   }
   const selectorText = buildCssSelector(element);
   let containsTarget = false;
+  let targetContainDistance: number | null = null;
   if (selectedEl && selectedEl.nodeType === 1) {
     try {
-      containsTarget = element === selectedEl || element.contains(selectedEl);
+      if (element === selectedEl) {
+        containsTarget = true;
+        targetContainDistance = 0;
+      } else if (element.contains(selectedEl)) {
+        containsTarget = true;
+        let cursor: Element | null = selectedEl;
+        let distance = 0;
+        while (cursor && cursor !== element && distance < 512) {
+          cursor = cursor.parentElement;
+          distance += 1;
+        }
+        targetContainDistance = cursor === element ? distance : null;
+      }
     } catch (_) {
       containsTarget = false;
+      targetContainDistance = null;
     }
   }
   return {
@@ -73,6 +93,7 @@ function getDomInfoForFiber(args: GetDomInfoForFiberArgs) {
     domPath: getElementPath(element),
     domTagName: String(element.tagName || "").toLowerCase(),
     containsTarget,
+    targetContainDistance,
   };
 }
 

@@ -219,11 +219,11 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectFlowWiring.ts`: fiber-search helper + inspect path/components flow 결선을 한 곳에서 조립 전담
 - `pageAgentInspectPathValue.ts`: inspectPath path 순회와 special collection segment 해석 전담
 - `pageAgentInspectPathMode.ts`: inspectPath mode(`serializeValue`/`inspectFunction`) 분기별 응답 구성 전담
-- `pageAgentInspectDomInfo.ts`: fiber -> host element 탐색 및 DOM selector/path/containsTarget 계산 전담
+- `pageAgentInspectDomInfo.ts`: fiber -> host element 탐색 및 DOM selector/path/containsTarget/targetContainDistance 계산 전담
 - `pageAgentInspectTarget.ts`: selector/pickPoint 기준 target element/nearest/root 해석과 inspectPath 대상 fiber fallback 탐색 전담
 - `pageAgentInspectComponentsArgs.ts`: `reactInspect` 요청 입력(selector/pickPoint/selectedComponentId/lightweight)을 안전하게 파싱해 정규화 전담
 - `pageAgentInspectComponentsSource.ts`: nearest source element를 selector/path/tag 요약 payload로 직렬화 전담
-- `pageAgentInspectComponentWalk.ts`: root fiber DFS 순회와 component row payload 구성, target match 후보 인덱스 계산 전담
+- `pageAgentInspectComponentWalk.ts`: root fiber DFS 순회와 component row payload 구성, targetContainDistance 우선 규칙 기반 target match 후보 인덱스 계산 전담
 - `pageAgentInspect.ts`: inspect flow factory 결선(`components/path`)과 dependency 주입 전담
 
 ## 6.5 pageAgent Inspect 모듈 분리 규칙
@@ -243,9 +243,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectComponentsWalkContext.ts`: `walkInspectableComponents` 호출 결선(getDomInfo/getHooks/getStableId/serializer)과 typed 결과 정규화 전담
 - `pageAgentInspectComponentsResult.ts`: walked components에서 selectedIndex/source summary 계산 전담
 - `pageAgentInspectComponentsFlow.ts`: `reactInspect` root helper + walk helper + result helper를 조합해 응답 payload를 조립하는 오케스트레이션 전담
-- `pageAgentInspectDomInfo.ts`: host element 탐색 캐시/순환 방지와 DOM 메타데이터(selector/path/tag/containsTarget) 계산 전담
+- `pageAgentInspectDomInfo.ts`: host element 탐색 캐시/순환 방지와 DOM 메타데이터(selector/path/tag/containsTarget/targetContainDistance) 계산 전담
 - `pageAgentInspectTarget.ts`: target element/nearest/root resolution과 inspectPath targetFiber 조회 fallback 전담
-- `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산 전담
+- `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산(closest DOM target distance 우선) 전담
 - `pageAgentInspect.ts`: `reactInspect`/`reactInspectPath` 오케스트레이션과 응답 조립 전담
 - `pageAgentRuntime.ts`: bridge 설치 entry와 runtime option 주입 전담
 - `runtime/pageAgentRuntimeInspectHandlers.ts`: inspect/helper 의존성 결선 전담
@@ -972,10 +972,12 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/jsonPreviewTokenStrategies.test.ts`: `jsonPreviewTokenStrategies.ts`의 summary/hook token(function/circular/dehydrated) 분기
   - `tests/reactInspector/jsonPreviewBudget.test.ts`: `jsonPreviewBudget.ts`의 budget 생성 정규화, consume, exhausted 판정 분기
   - `tests/reactInspector/jsonPreview.test.ts`: `jsonPreview.ts`의 dehydrate fallback, map/set collection preview, display collection meta(set) limit, internal meta 필터링
+  - `tests/reactInspector/fetchFlow.test.ts`: `fetchFlow.ts`의 latest-response-only 적용과 foreground in-flight 동안 background refresh skip 규칙 분기
   - `tests/reactInspector/jsonRefMap.test.ts`: `jsonRefMap.ts`의 nested ref id 수집, 내부 meta key 제외, 순환 참조 안전 스캔 분기
   - `tests/reactInspector/jsonHookTreeRenderer.test.ts`: `jsonHookTreeRenderer.ts`의 expandable hook row 렌더, group 재귀 렌더, hook state path 전달 분기
   - `tests/content/pageAgentDomTree.test.ts`: `pageAgentDomTree.ts`의 unknown payload 안전 처리, 대상 미발견 에러 처리, DOM tree 직렬화 기본 경로
   - `tests/content/pageAgentDomSelectors.test.ts`: DOM path/css selector 생성과 selector fallback target resolve 분기
+  - `tests/content/elementPickerOverlay.test.ts`: element picker overlay의 pointer/mouse/contextmenu/Escape 이벤트 consume과 선택/취소 상태 전환 분기
   - `tests/content/pageAgentDomHighlight.test.ts`: `pageAgentDomHighlight.ts`의 highlight/preview 스타일 적용, clear 복원, selector 미발견 에러 처리
   - `tests/content/pageAgentDomHighlightState.test.ts`: style snapshot restore/clear와 selector 미발견 실패 분기
   - `tests/content/elementPickerBridge.test.ts`: `elementPickerBridge.ts`의 pageAgent script load 실패 후 재주입, load 성공 후 injected 고정 분기
@@ -987,6 +989,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentInspectComponentsRoot.test.ts`: root 해석 실패 응답, lightweight fallback root 재탐색 분기, pickPoint 우선(stale selected id fallback 차단) 분기
   - `tests/content/pageAgentInspectComponentsResult.test.ts`: walked components에서 selectedIndex/source summary 계산 분기
   - `tests/content/pageAgentInspectComponentsFlow.test.ts`: `reactInspect` 입력 파싱/nearest source summary/기본 selectedIndex/nearest 미해석 에러 분기
+  - `tests/content/pageAgentInspectComponentWalk.test.ts`: targetContainDistance 우선 규칙으로 target 후보 인덱스를 선택하는 분기
+  - `tests/content/pageAgentInspectDomInfo.test.ts`: host-target 포함 거리(`targetContainDistance`) 계산(ancestor/exact) 분기
   - `tests/content/pageAgentInspect.test.ts`: `createPageAgentInspectHandlers` 결선 후 `reactInspect`/`reactInspectPath` 기본 가드 에러 + roundtrip(component 목록 id -> inspectPath serialize) 회귀 분기
   - `tests/content/pageAgentBridge.test.ts`: bridge request 유효성 통과 시 성공 응답, executeMethod 예외 시 실패 응답, unrelated/invalid request 무시, non-string method 문자열 정규화 분기
   - `tests/content/runtimeMessaging.test.ts`: `sendRuntimeMessageSafe`의 sync throw/promise-like catch 처리와 picker/runtime notify payload 분기
