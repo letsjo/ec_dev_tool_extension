@@ -102,6 +102,7 @@ npm test
   - `Validation`: 타입/테스트 검증
 - 리팩터링 대상은 `src` 전체(UI 포함)이며, 발견 즉시 TODO 항목을 추가/갱신합니다.
 - 우선순위(P0~P3) 기준으로 순차 진행하며, 작업 중에도 TODO를 계속 업데이트합니다.
+- `src/features/panel/reactInspector`는 `preview`/`list`/`detail`/`flow` 하위 폴더 기준으로 단계적 재정리를 진행합니다.
 
 ## UI 디렉터리 규칙
 

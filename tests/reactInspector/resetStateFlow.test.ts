@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createReactInspectorResetStateFlow } from '../../src/features/panel/reactInspector/resetStateFlow';
+import { createReactInspectorResetStateFlow } from '../../src/features/panel/reactInspector/flow/resetStateFlow';
 
 interface MutableResetState {
   reactComponents: unknown[];

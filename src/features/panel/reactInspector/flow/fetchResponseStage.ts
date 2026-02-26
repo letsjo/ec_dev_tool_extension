@@ -1,12 +1,12 @@
 import {
   buildReactInspectApplyOptions,
   type FetchReactInfoOptions,
-} from './fetchOptions';
+} from '../fetchOptions';
 import {
   handleReactInspectAgentResponse,
   type ReactInspectApplyOptions,
-} from '../pageAgent/responsePipeline';
-import type { ReactInspectResult } from '../../../shared/inspector/types';
+} from '../../pageAgent/responsePipeline';
+import type { ReactInspectResult } from '../../../../shared/inspector/types';
 
 interface ApplyReactFetchResponseStageOptions {
   response: unknown | null;

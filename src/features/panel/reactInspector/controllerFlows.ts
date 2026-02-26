@@ -1,8 +1,8 @@
 import {
   createReactInspectResultApplyFlow as createReactInspectResultApplyFlowValue,
-} from './applyResultFlow';
-import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './fetchFlow';
-import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './resetStateFlow';
+} from './flow/applyResultFlow';
+import { createReactInspectFetchFlow as createReactInspectFetchFlowValue } from './flow/fetchFlow';
+import { createReactInspectorResetStateFlow as createReactInspectorResetStateFlowValue } from './flow/resetStateFlow';
 import type {
   CreateReactInspectorControllerFlowsOptions,
   ReactInspectorPaneSetters,

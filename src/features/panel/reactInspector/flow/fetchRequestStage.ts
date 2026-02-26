@@ -1,9 +1,9 @@
-import type { PickPoint, ReactComponentInfo } from '../../../shared/inspector/types';
+import type { PickPoint, ReactComponentInfo } from '../../../../shared/inspector/types';
 import {
   resolveSelectedComponentIdForScript,
   type FetchReactInfoOptions,
-} from './fetchOptions';
-import { resolveStoredLookup, type RuntimeRefreshLookup } from './lookup';
+} from '../fetchOptions';
+import { resolveStoredLookup, type RuntimeRefreshLookup } from '../lookup';
 
 interface ApplyReactFetchRequestStageOptions {
   selector: string;

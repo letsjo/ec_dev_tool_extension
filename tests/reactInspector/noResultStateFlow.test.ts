@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createSearchNoResultStateFlow } from '../../src/features/panel/reactInspector/noResultStateFlow';
+import { createSearchNoResultStateFlow } from '../../src/features/panel/reactInspector/flow/noResultStateFlow';
 
 describe('createSearchNoResultStateFlow', () => {
   it('applies search-input no-result state and clears hover preview when requested', () => {

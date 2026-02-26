@@ -2,11 +2,11 @@ import type {
   PickPoint,
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../../shared/inspector/types';
-import type { CallInspectedPageAgent } from '../bridge/pageAgentClient';
-import type { ReactInspectApplyOptions } from '../pageAgent/responsePipeline';
-import type { FetchReactInfoOptions } from './fetchOptions';
-import type { RuntimeRefreshLookup } from './lookup';
+} from '../../../../shared/inspector/types';
+import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
+import type { ReactInspectApplyOptions } from '../../pageAgent/responsePipeline';
+import type { FetchReactInfoOptions } from '../fetchOptions';
+import type { RuntimeRefreshLookup } from '../lookup';
 import { applyReactFetchRequestStage } from './fetchRequestStage';
 import { applyReactFetchResponseStage } from './fetchResponseStage';
 

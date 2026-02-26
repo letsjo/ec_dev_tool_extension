@@ -2,16 +2,16 @@ import type {
   ComponentFilterResult,
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../../shared/inspector/types';
+} from '../../../../shared/inspector/types';
 import {
   buildReactInspectSuccessStatusText as buildReactInspectSuccessStatusTextValue,
   normalizeReactInspectApplyOptions as normalizeReactInspectApplyOptionsValue,
   shouldRenderListOnlyAfterApply as shouldRenderListOnlyAfterApplyValue,
   type ReactInspectApplyOptions,
-} from './applyFlow';
+} from '../applyFlow';
 import { resolveReactInspectDataStage as resolveReactInspectDataStageValue } from './inspectDataStage';
-import { resolveNextSelection as resolveNextSelectionValue } from './selectionModel';
-import type { SearchNoResultContext } from './searchStatus';
+import { resolveNextSelection as resolveNextSelectionValue } from '../selectionModel';
+import type { SearchNoResultContext } from '../searchStatus';
 
 interface ReactInspectApplyStateSnapshot {
   reactComponents: ReactComponentInfo[];

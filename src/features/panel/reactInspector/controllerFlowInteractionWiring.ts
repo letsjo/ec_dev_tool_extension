@@ -11,7 +11,7 @@ import {
 } from './lookup';
 import { createReactComponentListRenderFlow as createReactComponentListRenderFlowValue } from './list/listRenderFlow';
 import { renderReactComponentListTree as renderReactComponentListTreeValue } from './list/listTreeRenderer';
-import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './noResultStateFlow';
+import { createSearchNoResultStateFlow as createSearchNoResultStateFlowValue } from './flow/noResultStateFlow';
 import {
   patchComponentSearchTextCacheAt as patchComponentSearchTextCacheAtValue,
 } from './search';

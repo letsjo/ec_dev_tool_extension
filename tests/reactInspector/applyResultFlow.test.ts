@@ -3,7 +3,7 @@ import type {
   ReactComponentInfo,
   ReactInspectResult,
 } from '../../src/shared/inspector/types';
-import { createReactInspectResultApplyFlow } from '../../src/features/panel/reactInspector/applyResultFlow';
+import { createReactInspectResultApplyFlow } from '../../src/features/panel/reactInspector/flow/applyResultFlow';
 
 interface MutableInspectState {
   reactComponents: ReactComponentInfo[];

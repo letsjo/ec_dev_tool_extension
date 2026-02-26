@@ -1,14 +1,14 @@
 import type {
   ReactComponentInfo,
   ReactInspectResult,
-} from '../../../shared/inspector/types';
-import { resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue } from './applyFlow';
-import { buildReactInspectResultModel as buildReactInspectResultModelValue } from './resultModel';
+} from '../../../../shared/inspector/types';
+import { resolveCollapsedComponentIds as resolveCollapsedComponentIdsValue } from '../applyFlow';
+import { buildReactInspectResultModel as buildReactInspectResultModelValue } from '../resultModel';
 import {
   buildComponentSearchTexts as buildComponentSearchTextsValue,
   snapshotCollapsedIds as snapshotCollapsedIdsValue,
-} from './search';
-import { resolvePreviousSelectedId as resolvePreviousSelectedIdValue } from './selectionModel';
+} from '../search';
+import { resolvePreviousSelectedId as resolvePreviousSelectedIdValue } from '../selectionModel';
 
 interface ResolveReactInspectDataStageOptions {
   result: ReactInspectResult;

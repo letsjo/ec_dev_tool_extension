@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyReactFetchRequestStage } from '../../src/features/panel/reactInspector/fetchRequestStage';
-import { applyReactFetchResponseStage } from '../../src/features/panel/reactInspector/fetchResponseStage';
+import { applyReactFetchRequestStage } from '../../src/features/panel/reactInspector/flow/fetchRequestStage';
+import { applyReactFetchResponseStage } from '../../src/features/panel/reactInspector/flow/fetchResponseStage';
 
 describe('reactInspector fetch stages', () => {
   it('applies request stage side effects and resolves selected component id', () => {
