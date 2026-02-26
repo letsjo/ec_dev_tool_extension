@@ -1,14 +1,12 @@
 // @ts-nocheck
 import {
   getDispatcherRefFromGlobalHook,
-  resolveDefaultPropsForHookInspect,
   resolveRenderFunctionForHookInspect,
-} from "./pageAgentHookRuntime";
-import { alignHookInspectMetadataResultLength } from "./pageAgentHookResult";
-import { buildHookInspectMetadataFromLog } from "./pageAgentHookMetadataBuild";
-import { buildPrimitiveStackCacheForHookInspect } from "./pageAgentHookPrimitiveStack";
-import { runHookInspectRender } from "./pageAgentHookRenderExecution";
-import { createHookInspectDispatcher } from "./pageAgentHookDispatcher";
+} from './pageAgentHookRuntime';
+import { alignHookInspectMetadataResultLength } from './pageAgentHookResult';
+import { buildHookInspectMetadataFromLog } from './pageAgentHookMetadataBuild';
+import { createHookInspectContext } from './pageAgentHookInspectContext';
+import { runHookInspectPass } from './pageAgentHookInspectRender';
 
 type AnyRecord = Record<string, any>;
 type FiberLike = AnyRecord & {
@@ -33,39 +31,21 @@ function inspectCustomHookGroupNames(
   getFiberName: (fiber: FiberLike) => string,
 ) {
   if (!fiber || fiber.tag === 1) return null;
+
   const renderFn = resolveRenderFunctionForHookInspect(fiber);
-  if (typeof renderFn !== "function") return null;
-  const componentName = getFiberName(fiber);
+  if (typeof renderFn !== 'function') return null;
 
   const dispatcherRef = getDispatcherRefFromGlobalHook();
-  if (!dispatcherRef || typeof dispatcherRef.H === "undefined") return null;
+  if (!dispatcherRef || typeof dispatcherRef.H === 'undefined') return null;
 
+  const componentName = getFiberName(fiber);
   const previousDispatcher = dispatcherRef.H;
-  const inspectState = {
-    currentHook: fiber.memoizedState,
-    suspendedToken: null,
-    hookLog: [],
-  };
-  const { dispatcher, dispatcherProxy } = createHookInspectDispatcher(inspectState);
 
-  const primitiveStackCache = buildPrimitiveStackCacheForHookInspect({
-    hookLog: inspectState.hookLog,
-    dispatcher,
-    getCurrentHook() {
-      return inspectState.currentHook;
-    },
-    setCurrentHook(value: unknown) {
-      inspectState.currentHook = value;
-    },
-    getSuspendedToken() {
-      return inspectState.suspendedToken;
-    },
-    setSuspendedToken(value: unknown) {
-      inspectState.suspendedToken = value;
-    },
+  const { inspectState, dispatcherProxy, primitiveStackCache } = createHookInspectContext({
+    initialHookState: fiber.memoizedState,
   });
 
-  const rootStackError = runHookInspectRender({
+  const rootStackError = runHookInspectPass({
     dispatcherRef,
     previousDispatcher,
     dispatcherProxy,
@@ -74,16 +54,17 @@ function inspectCustomHookGroupNames(
     getSuspendedToken() {
       return inspectState.suspendedToken;
     },
-    resolveDefaultProps: resolveDefaultPropsForHookInspect,
   });
 
   if (inspectState.hookLog.length === 0) return null;
+
   const result = buildHookInspectMetadataFromLog(
     inspectState.hookLog,
     rootStackError,
     componentName,
     primitiveStackCache,
   );
+
   return alignHookInspectMetadataResultLength(result, expectedCount);
 }
 
