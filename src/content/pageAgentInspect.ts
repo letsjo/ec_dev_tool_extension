@@ -1,4 +1,4 @@
-import { createPageAgentFiberSearchHelpers } from "./pageAgentFiberSearch";
+import { createPageAgentFiberSearchHelpers } from "./fiber/pageAgentFiberSearch";
 import { createPageAgentInspectFlowWiring } from "./pageAgentInspectFlowWiring";
 import type { CreatePageAgentInspectHandlersOptions } from "./pageAgentInspectTypes";
 

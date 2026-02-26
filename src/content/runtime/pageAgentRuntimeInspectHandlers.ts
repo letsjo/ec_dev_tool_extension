@@ -8,19 +8,19 @@ import {
   findAnyFiberInDocument,
   findNearestFiber,
   getReactFiberFromElement,
-} from '../pageAgentFiberElement';
+} from '../fiber/pageAgentFiberElement';
 import {
   findPreferredSelectedFiber,
   findRootFiber,
   getFiberKind,
   getFiberName,
   isInspectableTag,
-} from '../pageAgentFiberDescribe';
+} from '../fiber/pageAgentFiberDescribe';
 import {
   getFiberIdMap as getFiberIdMapValue,
   getStableFiberId as getStableFiberIdValue,
   registerFunctionForInspect as registerFunctionForInspectValue,
-} from '../pageAgentFiberRegistry';
+} from '../fiber/pageAgentFiberRegistry';
 import { createPageAgentHooksInfoHelpers } from '../pageAgentHooksInfo';
 import { createPageAgentInspectHandlers } from '../pageAgentInspect';
 import {
@@ -28,7 +28,7 @@ import {
   resolveSpecialCollectionPathSegment,
   serializePropsForFiber,
 } from '../serialization/pageAgentSerialization';
-import type { FiberLike } from '../pageAgentFiberSearchTypes';
+import type { FiberLike } from '../fiber/pageAgentFiberSearchTypes';
 import type { CreatePageAgentRuntimeMethodExecutorOptions } from './pageAgentRuntimeTypes';
 
 type InspectHandlers = ReturnType<typeof createPageAgentInspectHandlers>;

@@ -92,6 +92,7 @@ npm test
 │   ├── content/
 │   │   ├── dom/                          # DOM selector/tree/highlight 핸들러 모듈
 │   │   ├── elementPicker.ts              # 요소 선택 + content/main world 브릿지
+│   │   ├── fiber/                        # React fiber 탐색/식별/레지스트리 모듈
 │   │   ├── inspect/
 │   │   │   ├── components/               # reactInspect components 입력/루트해석/walk + non-React DomElement fallback 모듈
 │   │   │   └── path/                     # reactInspectPath 입력/경로해석/모드응답 모듈

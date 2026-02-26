@@ -3,7 +3,7 @@ import { buildHookInspectMetadataFromLog } from './pageAgentHookMetadataBuild';
 import { createHookInspectContext } from './hooks/inspect/pageAgentHookInspectContext';
 import { runHookInspectPass } from './hooks/inspect/pageAgentHookInspectRender';
 import { resolveHookInspectRuntimeContext } from './pageAgentHookGroupRuntimeContext';
-import type { FiberLike } from './pageAgentFiberSearchTypes';
+import type { FiberLike } from './fiber/pageAgentFiberSearchTypes';
 
 /** 경로 기준 inspect 동작을 수행 */
 function inspectCustomHookGroupNames(

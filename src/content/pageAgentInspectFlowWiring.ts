@@ -1,6 +1,6 @@
 import { createInspectReactComponentsFlow } from './inspect/components/pageAgentInspectComponentsFlow';
 import { createInspectReactPathFlow } from './inspect/path/pageAgentInspectPathFlow';
-import type { createPageAgentFiberSearchHelpers } from './pageAgentFiberSearch';
+import type { createPageAgentFiberSearchHelpers } from './fiber/pageAgentFiberSearch';
 import type { CreatePageAgentInspectHandlersOptions } from './pageAgentInspectTypes';
 
 interface CreatePageAgentInspectFlowWiringOptions {

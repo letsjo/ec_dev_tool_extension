@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPageAgentFiberSearchHelpers } from '../../src/content/pageAgentFiberSearch';
+import { createPageAgentFiberSearchHelpers } from '../../src/content/fiber/pageAgentFiberSearch';
 
 type AnyRecord = Record<string, any>;
 

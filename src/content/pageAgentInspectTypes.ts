@@ -1,4 +1,4 @@
-import type { FiberLike } from './pageAgentFiberSearchTypes';
+import type { FiberLike } from './fiber/pageAgentFiberSearchTypes';
 
 type Serializer = (value: unknown, depth?: number) => unknown;
 

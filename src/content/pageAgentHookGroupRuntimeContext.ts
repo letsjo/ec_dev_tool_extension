@@ -1,5 +1,5 @@
 import { getDispatcherRefFromGlobalHook, resolveRenderFunctionForHookInspect } from './pageAgentHookRuntime';
-import type { FiberLike } from './pageAgentFiberSearchTypes';
+import type { FiberLike } from './fiber/pageAgentFiberSearchTypes';
 
 interface HookInspectDispatcherRef extends Record<string, unknown> {
   H: unknown;

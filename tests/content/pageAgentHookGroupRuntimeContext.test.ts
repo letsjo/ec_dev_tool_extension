@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { FiberLike } from '../../src/content/pageAgentFiberSearchTypes';
+import type { FiberLike } from '../../src/content/fiber/pageAgentFiberSearchTypes';
 import { resolveHookInspectRuntimeContext } from '../../src/content/pageAgentHookGroupRuntimeContext';
 
 type HookWindow = Window & {
