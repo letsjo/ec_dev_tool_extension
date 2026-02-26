@@ -1,6 +1,3 @@
-// @ts-nocheck
-type AnyRecord = Record<string, any>;
-
 type HookSummary = {
   index: number;
   name: string;
@@ -9,27 +6,32 @@ type HookSummary = {
   groupPath: string[] | null;
 };
 
+interface CustomHookMetadata {
+  groupNames?: unknown[];
+  groupPaths?: unknown[];
+  primitiveNames?: unknown[];
+  primitiveValues?: unknown[];
+  primitiveHasValue?: unknown[];
+}
+
+function asArrayOrNull(value: unknown): unknown[] | null {
+  return Array.isArray(value) ? value : null;
+}
+
 /** custom hook 메타를 hooks 배열에 병합한다. 없는 슬롯은 fallback hook으로 채운다. */
-export function applyCustomHookMetadata(hooks: HookSummary[], customMetadata: AnyRecord | null | undefined) {
+export function applyCustomHookMetadata(
+  hooks: HookSummary[],
+  customMetadata: CustomHookMetadata | null | undefined,
+): HookSummary[] {
   if (!Array.isArray(hooks) || !customMetadata || typeof customMetadata !== "object") {
     return hooks;
   }
 
-  const customGroups = Array.isArray(customMetadata.groupNames)
-    ? customMetadata.groupNames
-    : null;
-  const customGroupPaths = Array.isArray(customMetadata.groupPaths)
-    ? customMetadata.groupPaths
-    : null;
-  const primitiveNames = Array.isArray(customMetadata.primitiveNames)
-    ? customMetadata.primitiveNames
-    : null;
-  const primitiveValues = Array.isArray(customMetadata.primitiveValues)
-    ? customMetadata.primitiveValues
-    : null;
-  const primitiveHasValue = Array.isArray(customMetadata.primitiveHasValue)
-    ? customMetadata.primitiveHasValue
-    : null;
+  const customGroups = asArrayOrNull(customMetadata.groupNames);
+  const customGroupPaths = asArrayOrNull(customMetadata.groupPaths);
+  const primitiveNames = asArrayOrNull(customMetadata.primitiveNames);
+  const primitiveValues = asArrayOrNull(customMetadata.primitiveValues);
+  const primitiveHasValue = asArrayOrNull(customMetadata.primitiveHasValue);
 
   const metadataLength = Math.max(
     hooks.length,
@@ -78,7 +80,10 @@ export function applyCustomHookMetadata(hooks: HookSummary[], customMetadata: An
     if (customGroupPaths) {
       const groupPath = customGroupPaths[i];
       if (Array.isArray(groupPath) && groupPath.length > 0) {
-        hooks[i].groupPath = groupPath.filter((item) => typeof item === "string" && item);
+        const normalizedPath = groupPath.filter((item): item is string => {
+          return typeof item === "string" && Boolean(item);
+        });
+        hooks[i].groupPath = normalizedPath.length > 0 ? normalizedPath : null;
       } else {
         hooks[i].groupPath = null;
       }
@@ -87,3 +92,5 @@ export function applyCustomHookMetadata(hooks: HookSummary[], customMetadata: An
 
   return hooks;
 }
+
+export type { HookSummary, CustomHookMetadata };

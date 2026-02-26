@@ -275,7 +275,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 6.9 pageAgent Hook Metadata 모듈 분리 규칙
 
-- `pageAgentHookMetadata.ts`: custom hook metadata(`groupNames`, `groupPaths`, primitive metadata)를 hooks 배열에 병합/보강하는 규칙 전담
+- `pageAgentHookMetadata.ts`: custom hook metadata(`groupNames`, `groupPaths`, primitive metadata`)를 hooks 배열에 병합하고 fallback hook slot 보강/빈 groupPath 정규화 규칙 전담
+- 2026-02 리팩터링: main-world pageAgent 경로의 잔여 `@ts-nocheck` 제거 완료(`pageAgentBridge.ts`, `pageAgentRuntime.ts`, `pageAgentInspectPathFlow.ts`, `pageAgentHookState.ts`, `pageAgentHookInspectContext.ts`, `pageAgentHookInspectRender.ts`, `pageAgentHookMetadata.ts`)
 - `pageAgentRuntime.ts`: hook 순회 결과와 custom metadata를 결합하기 위한 호출 지점만 담당
 
 ## 6.10 pageAgent Hook Info 모듈 분리 규칙
@@ -955,6 +956,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentHookGrouping.test.ts`: 공통 조상 frame 탐색, primitive frame index 보정, group path 추론, primitive 이름 정규화 분기
   - `tests/content/pageAgentHookGroupRuntimeContext.test.ts`: hook group inspect runtime 컨텍스트 해석(null/class fiber/dispatcher 미존재/정상) 분기
   - `tests/content/pageAgentHookInspectContext.test.ts`: inspect context(dispatcher/state/warmup cache) 초기화 분기
+  - `tests/content/pageAgentHookMetadata.test.ts`: custom hook metadata 병합(fallback slot 확장/groupPath 정규화/primitive override) 분기
   - `tests/content/pageAgentHookDispatcherMethods.test.ts`: dispatcher built-in method(`useSyncExternalStore`, `useTransition`, `use`) 분기
   - `tests/content/reactRuntimeHookLifecycle.test.ts`: runtime hook 설치/세터 인터셉트/commit throttle/beforeunload 정리 분기
   - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, class component payload 직렬화, includeCustomGroups 옵션 payload 안전 fallback 분기
