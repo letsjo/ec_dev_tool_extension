@@ -3,7 +3,7 @@ import { normalizeCollectionTokenForDisplay } from '../../src/features/panel/rea
 import {
   buildHookInlineCollectionPreview,
   buildJsonSummaryCollectionPreview,
-} from '../../src/features/panel/reactInspector/jsonPreviewCollection';
+} from '../../src/features/panel/reactInspector/preview/jsonPreviewCollection';
 
 describe('jsonPreviewCollection', () => {
   it('applies different set array limits for json summary and hook inline previews', () => {

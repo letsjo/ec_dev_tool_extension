@@ -3,7 +3,7 @@ import {
   formatHookInlinePrimitive,
   formatPrimitive,
   readDehydratedPreviewText,
-} from '../../src/features/panel/reactInspector/jsonPreviewPrimitive';
+} from '../../src/features/panel/reactInspector/preview/jsonPreviewPrimitive';
 
 describe('jsonPreviewPrimitive', () => {
   it('formats primitive values for json summary previews', () => {

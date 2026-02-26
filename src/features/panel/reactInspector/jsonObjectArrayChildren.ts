@@ -3,7 +3,7 @@ import {
 } from './collectionDisplay';
 import type { JsonRenderContext } from './jsonRenderTypes';
 import { createExpandableValueRow, createRowToggleSpacer } from './jsonRowUi';
-import { isJsonInternalMetaKey } from './jsonPreview';
+import { isJsonInternalMetaKey } from './preview/jsonPreview';
 
 interface CreateObjectArrayChildrenNodeArgs {
   sourceValue: unknown;

@@ -2,7 +2,7 @@ import {
   isCircularRefToken,
   isDehydratedToken,
   isFunctionToken,
-} from '../../../shared/inspector/guards';
+} from '../../../../shared/inspector/guards';
 import { readDehydratedPreviewText } from './jsonPreviewPrimitive';
 
 /** JSON summary preview의 function/circular/dehydrated token 분기를 처리한다. */

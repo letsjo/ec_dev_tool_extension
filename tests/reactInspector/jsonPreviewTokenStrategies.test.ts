@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildHookInlineTokenPreview,
   buildJsonSummaryTokenPreview,
-} from '../../src/features/panel/reactInspector/jsonPreviewTokenStrategies';
+} from '../../src/features/panel/reactInspector/preview/jsonPreviewTokenStrategies';
 
 describe('jsonPreviewTokenStrategies', () => {
   it('builds json summary token preview for function/circular/dehydrated values', () => {

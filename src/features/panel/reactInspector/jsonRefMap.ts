@@ -1,5 +1,5 @@
 import { readObjectRefId } from '../../../shared/inspector/guards';
-import { isJsonInternalMetaKey } from './jsonPreview';
+import { isJsonInternalMetaKey } from './preview/jsonPreview';
 
 /** JSON 렌더 루트에서 __ecRefId -> 원본 값 역참조 맵을 수집한다. */
 export function collectJsonRefMap(root: unknown): Map<number, unknown> {

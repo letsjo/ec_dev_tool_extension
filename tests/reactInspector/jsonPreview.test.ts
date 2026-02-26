@@ -3,7 +3,7 @@ import {
   buildHookInlinePreview,
   buildJsonSummaryPreview,
   readDehydratedPreviewText,
-} from '../../src/features/panel/reactInspector/jsonPreview';
+} from '../../src/features/panel/reactInspector/preview/jsonPreview';
 import { normalizeCollectionTokenForDisplay } from '../../src/features/panel/reactInspector/collectionDisplay';
 
 describe('jsonPreview', () => {

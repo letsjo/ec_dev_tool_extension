@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildArrayPreview, buildObjectPreview } from '../../src/features/panel/reactInspector/jsonObjectPreview';
+import { buildArrayPreview, buildObjectPreview } from '../../src/features/panel/reactInspector/preview/jsonObjectPreview';
 
 describe('jsonObjectPreview', () => {
   it('builds array preview with depth collapse and entry cap', () => {

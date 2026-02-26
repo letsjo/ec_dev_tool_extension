@@ -3,7 +3,7 @@ import {
   consumePreviewBudget,
   createPreviewBudget,
   isPreviewBudgetExhausted,
-} from '../../src/features/panel/reactInspector/jsonPreviewBudget';
+} from '../../src/features/panel/reactInspector/preview/jsonPreviewBudget';
 
 describe('jsonPreviewBudget', () => {
   it('normalizes initial budget and tracks exhaustion', () => {

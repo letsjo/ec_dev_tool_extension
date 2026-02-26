@@ -3,7 +3,7 @@ import {
 } from './collectionDisplay';
 import { createDehydratedTokenNode as createDehydratedTokenNodeValue } from './jsonDehydratedNode';
 import { createObjectArrayJsonValueNode } from './jsonObjectArrayNode';
-import { formatPrimitive } from './jsonPreviewPrimitive';
+import { formatPrimitive } from './preview/jsonPreviewPrimitive';
 import type {
   FetchSerializedValueAtPathHandler,
   InspectFunctionAtPathHandler,

@@ -1,4 +1,4 @@
-import { isRecord } from '../../../shared/inspector/guards';
+import { isRecord } from '../../../../shared/inspector/guards';
 
 const OBJECT_CLASS_NAME_META_KEY = '__ecObjectClassName';
 

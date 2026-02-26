@@ -1,8 +1,8 @@
-import { isMapToken, isSetToken } from '../../../shared/inspector/guards';
+import { isMapToken, isSetToken } from '../../../../shared/inspector/guards';
 import {
   readDisplayCollectionMeta as readDisplayCollectionMetaValue,
   readMapTokenEntryPair as readMapTokenEntryPairValue,
-} from './collectionDisplay';
+} from '../collectionDisplay';
 import { isPreviewBudgetExhausted } from './jsonPreviewBudget';
 
 export interface CollectionPreviewBudget {
