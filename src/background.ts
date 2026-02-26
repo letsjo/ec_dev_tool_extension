@@ -3,6 +3,6 @@
  * Select element 시 content script가 찍은 요소 정보를 패널로 전달.
  */
 
-import { createBackgroundMessageListener } from './background/messageRouter';
+import { createBackgroundMessageListener } from './background/router/messageRouter';
 
 chrome.runtime.onMessage.addListener(createBackgroundMessageListener());

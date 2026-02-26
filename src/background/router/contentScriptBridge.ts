@@ -1,4 +1,4 @@
-import { isMissingReceiverError, toErrorMessage } from './messageErrors';
+import { isMissingReceiverError, toErrorMessage } from '../errors/messageErrors';
 
 /** 메시지를 전달 */
 async function sendStartElementPicker(tabId: number): Promise<void> {

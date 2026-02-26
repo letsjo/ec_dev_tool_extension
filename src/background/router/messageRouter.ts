@@ -3,8 +3,8 @@ import {
   ensureStartElementPicker,
   sendCallPageAgent,
 } from './contentScriptBridge';
-import { toErrorMessage } from './messageErrors';
-import { relayRuntimeMessage } from './runtimeRelay';
+import { toErrorMessage } from '../errors/messageErrors';
+import { relayRuntimeMessage } from '../relay/runtimeRelay';
 import type { RuntimeMessage, RuntimeSendResponse } from './runtimeMessageTypes';
 
 function hasValidTabId(tabId: number | undefined): tabId is number {

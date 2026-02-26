@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createBackgroundMessageListener } from '../../src/background/messageRouter';
+import { createBackgroundMessageListener } from '../../src/background/router/messageRouter';
 
 type AnyRecord = Record<string, any>;
 

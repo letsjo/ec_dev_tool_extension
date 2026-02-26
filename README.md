@@ -81,6 +81,10 @@ npm test
 │   │   ├── serialization/                # pageAgent serializer 전략/props/path 토큰 모듈
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
 │   │   └── pageAgent.ts                  # main world React/DOM inspector 실행기
+│   ├── background/
+│   │   ├── router/                       # panel/content 요청 라우팅 + 타입
+│   │   ├── relay/                        # content -> panel runtime 이벤트 중계
+│   │   └── errors/                       # background 메시지 오류 판별 유틸
 │   ├── shared/
 │   │   ├── inspector/
 │   │   │   ├── types.ts                  # Inspector 공용 타입

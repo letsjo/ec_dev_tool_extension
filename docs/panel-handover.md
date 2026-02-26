@@ -17,7 +17,7 @@
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
-- 파일: `src/background.ts`, `src/background/messageRouter.ts`, `src/background/contentScriptBridge.ts`, `src/background/messageErrors.ts`, `src/background/runtimeRelay.ts`, `src/background/runtimeMessageTypes.ts`
+- 파일: `src/background.ts`, `src/background/router/messageRouter.ts`, `src/background/router/contentScriptBridge.ts`, `src/background/errors/messageErrors.ts`, `src/background/relay/runtimeRelay.ts`, `src/background/router/runtimeMessageTypes.ts`
 - 역할: panel ↔ content 메시지 중계, content script 미주입 탭 복구
 
 3. Content script (isolated world)
@@ -879,11 +879,11 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/reactRuntimeHook.ts`
 - `src/content/reactRuntimeHookLifecycle.ts`
 - `src/background.ts`
-- `src/background/messageRouter.ts`
-- `src/background/contentScriptBridge.ts`
-- `src/background/messageErrors.ts`
-- `src/background/runtimeRelay.ts`
-- `src/background/runtimeMessageTypes.ts`
+- `src/background/router/messageRouter.ts`
+- `src/background/router/contentScriptBridge.ts`
+- `src/background/errors/messageErrors.ts`
+- `src/background/relay/runtimeRelay.ts`
+- `src/background/router/runtimeMessageTypes.ts`
 - `panel.html`
 
 ## 12. 단위 테스트(Phase 58+)
