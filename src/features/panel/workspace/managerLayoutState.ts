@@ -9,7 +9,7 @@ import {
   updateWorkspaceSplitRatioByPath as updateWorkspaceSplitRatioByPathValue,
 } from './layout/layoutModel';
 import type { WorkspacePanelId } from '../workspacePanels';
-import { applyWorkspaceDockDropToLayout as applyWorkspaceDockDropToLayoutValue } from './dockDropApply';
+import { applyWorkspaceDockDropToLayout as applyWorkspaceDockDropToLayoutValue } from './interaction/dockDropApply';
 import { reconcileWorkspaceLayoutState as reconcileWorkspaceLayoutStateValue } from './layout/layoutReconcile';
 import {
   persistWorkspaceStateSnapshot as persistWorkspaceStateSnapshotValue,

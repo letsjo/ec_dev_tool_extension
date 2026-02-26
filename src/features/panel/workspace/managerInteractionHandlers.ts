@@ -1,7 +1,7 @@
 import type { createWorkspaceActionHandlers as createWorkspaceActionHandlersValue } from './actionHandlers';
-import type { createWorkspaceDragDropFlow as createWorkspaceDragDropFlowValue } from './dragDropFlow';
+import type { createWorkspaceDragDropFlow as createWorkspaceDragDropFlowValue } from './interaction/dragDropFlow';
 import type { WorkspaceInteractionBindingsOptions } from './interactionBindings';
-import type { createWorkspaceResizeFlow as createWorkspaceResizeFlowValue } from './resizeFlow';
+import type { createWorkspaceResizeFlow as createWorkspaceResizeFlowValue } from './interaction/resizeFlow';
 
 type WorkspaceDragDropFlow = ReturnType<typeof createWorkspaceDragDropFlowValue>;
 type WorkspaceResizeFlow = ReturnType<typeof createWorkspaceResizeFlowValue>;

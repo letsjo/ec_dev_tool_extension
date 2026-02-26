@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyWorkspaceDockDropToLayout } from '../../src/features/panel/workspace/dockDropApply';
-import { resolveWorkspaceDragOverTarget } from '../../src/features/panel/workspace/dragOverTarget';
+import { applyWorkspaceDockDropToLayout } from '../../src/features/panel/workspace/interaction/dockDropApply';
+import { resolveWorkspaceDragOverTarget } from '../../src/features/panel/workspace/interaction/dragOverTarget';
 import {
   collectPanelIdsFromLayout,
   createWorkspacePanelNode,

@@ -1,4 +1,4 @@
-import type { WorkspaceNodePath } from "./layout/layoutModel";
+import type { WorkspaceNodePath } from "../layout/layoutModel";
 import type { WorkspaceResizeDragState } from "./splitResize";
 
 interface CreateWorkspaceResizeFlowArgs {

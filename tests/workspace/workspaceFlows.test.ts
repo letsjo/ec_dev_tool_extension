@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createWorkspaceDragDropFlow } from '../../src/features/panel/workspace/dragDropFlow';
-import { createWorkspaceResizeFlow } from '../../src/features/panel/workspace/resizeFlow';
+import { createWorkspaceDragDropFlow } from '../../src/features/panel/workspace/interaction/dragDropFlow';
+import { createWorkspaceResizeFlow } from '../../src/features/panel/workspace/interaction/resizeFlow';
 import type { WorkspaceDropTarget, WorkspaceNodePath } from '../../src/features/panel/workspace/layout/layoutModel';
-import type { WorkspaceResizeDragState } from '../../src/features/panel/workspace/splitResize';
+import type { WorkspaceResizeDragState } from '../../src/features/panel/workspace/interaction/splitResize';
 import type { WorkspacePanelId } from '../../src/features/panel/workspacePanels';
 
 describe('createWorkspaceDragDropFlow', () => {

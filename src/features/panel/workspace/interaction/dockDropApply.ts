@@ -1,4 +1,4 @@
-import type { WorkspacePanelId } from '../workspacePanels';
+import type { WorkspacePanelId } from '../../workspacePanels';
 import {
   appendPanelToWorkspaceLayout,
   createWorkspacePanelNode,
@@ -7,7 +7,7 @@ import {
   swapWorkspaceLayoutPanels,
   type WorkspaceDropTarget,
   type WorkspaceLayoutNode,
-} from './layout/layoutModel';
+} from '../layout/layoutModel';
 
 export interface WorkspaceDockDropApplyResult {
   changed: boolean;

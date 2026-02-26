@@ -1,5 +1,5 @@
-import type { WorkspacePanelId } from "../workspacePanels";
-import type { WorkspaceDockDirection, WorkspaceDropTarget } from "./layout/layoutModel";
+import type { WorkspacePanelId } from "../../workspacePanels";
+import type { WorkspaceDockDirection, WorkspaceDropTarget } from "../layout/layoutModel";
 
 interface ResolveWorkspaceDragOverTargetResult {
   dropTarget: WorkspaceDropTarget;

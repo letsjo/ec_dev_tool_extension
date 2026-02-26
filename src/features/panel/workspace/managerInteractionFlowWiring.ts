@@ -13,21 +13,21 @@ import {
   findWorkspacePanelByPoint,
   hideWorkspaceDockPreview,
   showWorkspaceDockPreview,
-} from './dockPreview';
+} from './interaction/dockPreview';
 import { createWorkspaceActionHandlers } from './actionHandlers';
 import { createWorkspaceManagerInteractionHandlers } from './managerInteractionHandlers';
-import { resolveWorkspaceDragOverTarget } from './dragOverTarget';
-import { createWorkspaceDragDropFlow } from './dragDropFlow';
+import { resolveWorkspaceDragOverTarget } from './interaction/dragOverTarget';
+import { createWorkspaceDragDropFlow } from './interaction/dragDropFlow';
 import {
   applyWorkspaceSplitRatioStyle,
   computeWorkspaceResizeRatioFromPointer,
   createWorkspaceResizeDragStateFromTarget,
-} from './splitResize';
+} from './interaction/splitResize';
 import {
   startWorkspaceSplitResizeSession,
   stopWorkspaceSplitResizeSession,
-} from './splitResizeSession';
-import { createWorkspaceResizeFlow } from './resizeFlow';
+} from './interaction/splitResizeSession';
+import { createWorkspaceResizeFlow } from './interaction/resizeFlow';
 import type { WorkspaceInteractionBindingsOptions } from './interactionBindings';
 
 type WorkspaceDragDropFlow = ReturnType<typeof createWorkspaceDragDropFlow>;

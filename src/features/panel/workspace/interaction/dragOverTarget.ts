@@ -1,8 +1,8 @@
-import { isWorkspacePanelId } from '../workspacePanels';
+import { isWorkspacePanelId } from '../../workspacePanels';
 import type {
   WorkspaceDockDirection,
   WorkspaceDropTarget,
-} from './layout/layoutModel';
+} from '../layout/layoutModel';
 
 export interface WorkspaceDragOverResolution {
   dropTarget: WorkspaceDropTarget;

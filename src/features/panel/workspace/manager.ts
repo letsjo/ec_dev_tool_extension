@@ -1,7 +1,7 @@
 import type { WorkspacePanelId } from '../workspacePanels';
 import {
   hideWorkspaceDockPreview,
-} from './dockPreview';
+} from './interaction/dockPreview';
 import {
   bindWorkspaceInteractionBindings,
 } from './interactionBindings';
