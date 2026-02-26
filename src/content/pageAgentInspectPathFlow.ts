@@ -1,4 +1,5 @@
 import { resolveInspectPathModeResponse } from './pageAgentInspectPathMode';
+import { parseInspectReactPathArgs } from './pageAgentInspectPathArgs';
 import { resolveInspectPathTargetFiber, resolveInspectRootContext } from './pageAgentInspectTarget';
 import { resolveInspectPathValue } from './pageAgentInspectPathValue';
 
@@ -9,19 +10,6 @@ type FiberLike = Record<string, unknown> & {
 interface NearestFiberMatch {
   fiber: FiberLike;
   sourceElement: Element | null;
-}
-
-type InspectPathSection = 'props' | 'hooks';
-type InspectPathMode = 'serializeValue' | 'inspectFunction';
-
-interface ParsedInspectReactPathArgs {
-  componentId: string;
-  selector: string;
-  pickPoint: unknown;
-  section: InspectPathSection;
-  path: Array<string | number>;
-  mode: InspectPathMode;
-  serializeLimit: number;
 }
 
 interface CreateInspectReactPathFlowOptions {
@@ -51,29 +39,6 @@ interface CreateInspectReactPathFlowOptions {
     options: Record<string, unknown>,
   ) => (value: unknown, depth?: number) => unknown;
   registerFunctionForInspect: (value: Function) => string;
-}
-
-function parseInspectReactPathArgs(
-  args: Record<string, unknown> | null | undefined,
-): ParsedInspectReactPathArgs {
-  const rawSerializeLimit = args?.serializeLimit;
-  const path = Array.isArray(args?.path)
-    ? args.path.filter((segment): segment is string | number => {
-      return typeof segment === 'string' || typeof segment === 'number';
-    })
-    : [];
-
-  return {
-    componentId: typeof args?.componentId === 'string' ? args.componentId : '',
-    selector: typeof args?.selector === 'string' ? args.selector : '',
-    pickPoint: args?.pickPoint,
-    section: args?.section === 'hooks' ? 'hooks' : 'props',
-    path,
-    mode: args?.mode === 'inspectFunction' ? 'inspectFunction' : 'serializeValue',
-    serializeLimit: Number.isFinite(rawSerializeLimit)
-      ? Math.max(1000, Math.floor(rawSerializeLimit as number))
-      : 45000,
-  };
 }
 
 /** reactInspectPath 흐름(대상 fiber 조회 + path resolve + mode 응답 조립)을 구성한다. */
@@ -159,4 +124,4 @@ function createInspectReactPathFlow(options: CreateInspectReactPathFlowOptions) 
 }
 
 export { createInspectReactPathFlow };
-export type { ParsedInspectReactPathArgs, CreateInspectReactPathFlowOptions };
+export type { CreateInspectReactPathFlowOptions };
