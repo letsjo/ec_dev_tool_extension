@@ -4,6 +4,17 @@ import type {
   ReactComponentDetailResult,
   ReactComponentInfo,
 } from '../../../shared/inspector/types';
+import {
+  createReactDetailQueueMutableState,
+  finishDetailRequest,
+  getDetailRequestLastFailedAt,
+  isWithinDetailFailureCooldown,
+  markDetailRequestApplied,
+  markDetailRequestFailed,
+  queueDetailRequestWhileInFlight,
+  resetDetailQueueState,
+  startDetailRequest,
+} from './detailFetchQueueState';
 
 type CallInspectedPageAgent = (
   method: string,
@@ -40,17 +51,12 @@ interface ReactDetailFetchQueue {
 export function createReactDetailFetchQueue(
   options: CreateReactDetailFetchQueueOptions,
 ): ReactDetailFetchQueue {
-  let inFlight = false;
-  let queuedComponentId: string | null = null;
-  let lastFailedAtById = new Map<string, number>();
+  const queueState = createReactDetailQueueMutableState();
 
   /** 상세조회 완료 후 큐를 이어서 소비한다. */
   function finishRequest(currentComponentId: string, request: (component: ReactComponentInfo) => void) {
-    inFlight = false;
-
-    const nextQueuedComponentId = queuedComponentId;
-    queuedComponentId = null;
-    if (!nextQueuedComponentId || nextQueuedComponentId === currentComponentId) return;
+    const nextQueuedComponentId = finishDetailRequest(queueState, currentComponentId);
+    if (!nextQueuedComponentId) return;
 
     const queuedComponent = options.findComponentById(nextQueuedComponentId);
     if (!queuedComponent || queuedComponent.hasSerializedData !== false) return;
@@ -62,20 +68,26 @@ export function createReactDetailFetchQueue(
     const componentId = component.id;
     if (!componentId) return;
 
-    if (inFlight) {
-      queuedComponentId = componentId;
+    if (queueState.inFlight) {
+      queueDetailRequestWhileInFlight(queueState, componentId);
       return;
     }
 
-    const lastFailedAt = lastFailedAtById.get(componentId);
-    if (lastFailedAt && Date.now() - lastFailedAt < options.cooldownMs) {
+    if (
+      isWithinDetailFailureCooldown(
+        queueState,
+        componentId,
+        Date.now(),
+        options.cooldownMs,
+      )
+    ) {
       return;
     }
 
     const lookup = options.getLookup();
     const selector = component.domSelector ?? lookup.selector;
     const pickPoint = component.domSelector ? undefined : lookup.pickPoint;
-    inFlight = true;
+    startDetailRequest(queueState);
 
     options.callInspectedPageAgent(
       'reactInspect',
@@ -90,7 +102,7 @@ export function createReactDetailFetchQueue(
         const isCurrentSelection = selected?.id === componentId;
 
         if (errorText) {
-          lastFailedAtById.set(componentId, Date.now());
+          markDetailRequestFailed(queueState, componentId, Date.now());
           if (isCurrentSelection) {
             options.setReactDetailEmpty(`상세 정보 조회 실패: ${errorText}`);
           }
@@ -100,7 +112,7 @@ export function createReactDetailFetchQueue(
 
         if (!isReactInspectResult(res)) {
           const reason = '응답 형식 오류';
-          lastFailedAtById.set(componentId, Date.now());
+          markDetailRequestFailed(queueState, componentId, Date.now());
           if (isCurrentSelection) {
             options.setReactDetailEmpty(`상세 정보 조회 실패: ${reason}`);
           }
@@ -110,7 +122,7 @@ export function createReactDetailFetchQueue(
 
         const detailedComponent = res.components.find((candidate) => candidate.id === componentId);
         if (!detailedComponent || detailedComponent.hasSerializedData === false) {
-          lastFailedAtById.set(componentId, Date.now());
+          markDetailRequestFailed(queueState, componentId, Date.now());
           if (isCurrentSelection) {
             options.setReactDetailEmpty('선택 컴포넌트를 갱신하지 못했습니다. 다시 선택해 주세요.');
           }
@@ -126,10 +138,8 @@ export function createReactDetailFetchQueue(
           hookCount: detailedComponent.hookCount,
         });
 
-        if (applied) {
-          lastFailedAtById.delete(componentId);
-        } else {
-          lastFailedAtById.set(componentId, Date.now());
+        markDetailRequestApplied(queueState, componentId, applied, Date.now());
+        if (!applied) {
           if (isCurrentSelection) {
             options.setReactDetailEmpty('선택 컴포넌트를 갱신하지 못했습니다. 다시 선택해 주세요.');
           }
@@ -142,14 +152,12 @@ export function createReactDetailFetchQueue(
 
   /** 최근 실패 시각을 조회한다. 상세 패널의 재시도 문구 판단에 사용한다. */
   function getLastFailedAt(componentId: string) {
-    return lastFailedAtById.get(componentId);
+    return getDetailRequestLastFailedAt(queueState, componentId);
   }
 
   /** 네비게이션/검색 상태 변경 시 상세조회 큐 상태를 초기화한다. */
   function reset() {
-    inFlight = false;
-    queuedComponentId = null;
-    lastFailedAtById = new Map<string, number>();
+    resetDetailQueueState(queueState);
   }
 
   return {
