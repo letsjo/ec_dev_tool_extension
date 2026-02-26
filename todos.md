@@ -11,7 +11,7 @@ Last Updated: 2026-02-26
 ## Phase 83 (In Progress): `pageAgentInspectComponentsFlow` 타입화/분해
 
 - [x] 83.1 입력 파싱/응답 조립 helper 분리
-- [ ] 83.2 `pageAgentInspectComponentsFlow.ts` `@ts-nocheck` 제거 및 타입 정리
+- [x] 83.2 `pageAgentInspectComponentsFlow.ts` `@ts-nocheck` 제거 및 타입 정리
 - [ ] 83.3 단위 테스트 추가 + 문서 동기화 + 검증/커밋
 
 ## Phase 84 (Planned): `pageAgentInspect.ts` 오케스트레이터 슬림화

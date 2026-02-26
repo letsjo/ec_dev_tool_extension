@@ -1,12 +1,19 @@
-// @ts-nocheck
 import { parseInspectReactComponentsArgs } from "./pageAgentInspectComponentsArgs";
 import { buildSourceElementSummary } from "./pageAgentInspectComponentsSource";
 import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
 import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
 import { resolveInspectRootContext } from "./pageAgentInspectTarget";
+import type { SourceElementSummary } from "./pageAgentInspectComponentsSource";
+import type { ReactComponentInfo } from "../shared/inspector/types";
 
-type AnyRecord = Record<string, any>;
+type InspectFiber = {
+  tag?: number;
+  alternate?: InspectFiber | null;
+  [key: string]: unknown;
+};
+
+type Serializer = (value: unknown, depth?: number) => unknown;
 
 interface CreateInspectReactComponentsFlowOptions {
   maxTraversal: number;
@@ -14,32 +21,52 @@ interface CreateInspectReactComponentsFlowOptions {
   buildCssSelector: (el: Element | null) => string;
   getElementPath: (el: Element | null) => string;
   resolveTargetElement: (selector: string, pickPoint: unknown) => Element | null;
-  findNearestFiber: (startEl: Element | null) => { fiber: AnyRecord; sourceElement: Element | null } | null;
-  findAnyFiberInDocument: () => { fiber: AnyRecord; sourceElement: Element | null } | null;
-  findRootFiber: (fiber: AnyRecord) => AnyRecord | null;
-  findPreferredSelectedFiber: (startFiber: AnyRecord) => AnyRecord | null;
+  findNearestFiber: (startEl: Element | null) => { fiber: InspectFiber; sourceElement: Element | null } | null;
+  findAnyFiberInDocument: () => { fiber: InspectFiber; sourceElement: Element | null } | null;
+  findRootFiber: (fiber: InspectFiber) => InspectFiber | null;
+  findPreferredSelectedFiber: (startFiber: InspectFiber) => InspectFiber | null;
   getFiberIdMap: () => WeakMap<object, string>;
   rootHasComponentId: (
-    rootFiber: AnyRecord | null | undefined,
+    rootFiber: InspectFiber | null | undefined,
     componentId: string | null | undefined,
     fiberIdMap: WeakMap<object, string>,
   ) => boolean;
   findRootFiberByComponentId: (
     componentId: string | null | undefined,
     fiberIdMap: WeakMap<object, string>,
-  ) => AnyRecord | null;
+  ) => InspectFiber | null;
   isInspectableTag: (tag: number) => boolean;
-  getStableFiberId: (fiber: AnyRecord | null | undefined, map: WeakMap<object, string>) => string | null;
-  getHooksInfo: (fiber: AnyRecord | null | undefined) => { value: unknown; count: number };
-  getHooksCount: (fiber: AnyRecord | null | undefined) => number;
+  getStableFiberId: (fiber: InspectFiber | null | undefined, map: WeakMap<object, string>) => string | null;
+  getHooksInfo: (fiber: InspectFiber | null | undefined) => { value: unknown; count: number };
+  getHooksCount: (fiber: InspectFiber | null | undefined) => number;
   serializePropsForFiber: (
-    fiber: AnyRecord | null | undefined,
-    serialize: (value: unknown, depth?: number) => unknown,
+    fiber: InspectFiber | null | undefined,
+    serialize: Serializer,
   ) => unknown;
-  makeSerializer: (options: AnyRecord) => (value: unknown, depth?: number) => unknown;
-  getFiberName: (fiber: AnyRecord) => string;
+  makeSerializer: (options: Record<string, unknown>) => Serializer;
+  getFiberName: (fiber: InspectFiber) => string;
   getFiberKind: (tag: number) => string;
 }
+
+interface InspectReactComponentsSuccessResult {
+  selector: string;
+  selectedIndex: number;
+  sourceElement: SourceElementSummary | null;
+  rootSummary: {
+    totalComponents: number;
+  };
+  components: ReactComponentInfo[];
+}
+
+interface InspectReactComponentsErrorResult {
+  error: string;
+  selector?: string;
+  pickPoint?: unknown;
+}
+
+type InspectReactComponentsResult =
+  | InspectReactComponentsSuccessResult
+  | InspectReactComponentsErrorResult;
 
 /** reactInspect component 목록 흐름(root resolve -> walk -> selection 계산)을 구성한다. */
 function createInspectReactComponentsFlow(options: CreateInspectReactComponentsFlowOptions) {
@@ -66,7 +93,7 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
     getFiberKind,
   } = options;
 
-  return function inspectReactComponents(args: AnyRecord | null | undefined) {
+  return function inspectReactComponents(args: unknown): InspectReactComponentsResult {
     const { selector, pickPoint, includeSerializedData, selectedComponentId } =
       parseInspectReactComponentsArgs(args);
 
@@ -88,8 +115,8 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       const { targetEl, nearest } = resolvedRoot;
       let { rootFiber } = resolvedRoot;
 
-      const hostCache = new Map();
-      const visiting = new Set();
+      const hostCache = new Map<object, Element | null>();
+      const visiting = new Set<object>();
       const fiberIdMap = getFiberIdMap();
 
       if (
@@ -105,16 +132,21 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       }
 
       const walked = walkInspectableComponents({
-        rootFiber,
+        rootFiber: rootFiber as Record<string, unknown>,
         targetEl,
         includeSerializedData,
         selectedComponentId,
         maxTraversal,
         maxComponents,
         isInspectableTag,
-        getDomInfoForFiber(fiber) {
+        getDomInfoForFiber(fiber: Record<string, unknown>) {
           return getDomInfoForFiber({
-            fiber,
+            fiber: fiber as {
+              tag?: number;
+              stateNode?: unknown;
+              child?: Record<string, unknown> | null;
+              sibling?: Record<string, unknown> | null;
+            },
             hostCache,
             visiting,
             selectedEl: targetEl,
@@ -122,16 +154,18 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
             getElementPath,
           });
         },
-        getStableFiberId,
+        getStableFiberId: (fiber, map) => getStableFiberId(fiber as InspectFiber | null, map),
         fiberIdMap,
-        getHooksInfo,
-        getHooksCount,
-        serializePropsForFiber,
+        getHooksInfo: (fiber) => getHooksInfo(fiber as InspectFiber | null),
+        getHooksCount: (fiber) => getHooksCount(fiber as InspectFiber | null),
+        serializePropsForFiber: (fiber, serialize) =>
+          serializePropsForFiber(fiber as InspectFiber | null, serialize),
         makeSerializer,
-        getFiberName,
+        getFiberName: (fiber) => getFiberName(fiber as InspectFiber),
         getFiberKind,
       });
-      const { components, idByFiber, targetMatchedIndex } = walked;
+      const components = walked.components as ReactComponentInfo[];
+      const { idByFiber, targetMatchedIndex } = walked;
 
       if (components.length === 0) {
         return { error: "분석 가능한 React 컴포넌트를 찾지 못했습니다.", selector };
@@ -170,8 +204,10 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
         },
         components,
       };
-    } catch (e) {
-      return { error: String(e && e.message) };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : String(error),
+      };
     }
   };
 }
