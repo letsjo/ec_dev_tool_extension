@@ -46,6 +46,29 @@ describe('pageAgentSerializationValue/Props', () => {
     });
   });
 
+  it('stops object key traversal when serialize-call budget is exhausted', () => {
+    const serialize = makeSerializer({
+      maxSerializeCalls: 1,
+      maxDepth: 4,
+      maxArrayLength: 20,
+      maxObjectKeys: 20,
+      maxMapEntries: 20,
+      maxSetEntries: 20,
+    });
+
+    const result = serialize({
+      first: { deep: { value: 1 } },
+      second: { deep: { value: 2 } },
+    }) as Record<string, any>;
+
+    expect(result.first).toMatchObject({
+      __ecType: 'dehydrated',
+      reason: 'maxSerializeCalls',
+    });
+    expect(result.second).toBeUndefined();
+    expect(result.__truncated__).toBe('[TruncatedBySerializeLimit]');
+  });
+
   it('serializes host fiber props with children summary and key truncation', () => {
     const props: Record<string, unknown> = {
       children: ['a', 'b', 'c'],

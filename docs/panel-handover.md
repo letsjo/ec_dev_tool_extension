@@ -947,7 +947,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentSerializationCore.test.ts`: serializer 내부키 매핑, class name 판별, dehydrated 토큰 생성, 순환참조 저장소 동작
   - `tests/content/pageAgentSerializationCoreModules.test.ts`: serializer core 분해 모듈(internal key/dehydrated/seen store) 직접 검증
   - `tests/content/pageAgentSerializationStrategies.test.ts`: array/map/set/object serializer strategy의 truncation/예외 처리/내부키 매핑
-  - `tests/content/pageAgentSerializationValueProps.test.ts`: `makeSerializer`와 `serializePropsForFiber`의 depth/circular/host props truncation 분기
+  - `tests/content/pageAgentSerializationValuePrimitives.test.ts`: primitive/function token과 Element/Window special-object probe 분기
+  - `tests/content/pageAgentSerializationPropsHelpers.test.ts`: host/non-host props budget 계산, children summary/truncation, getter throw guard 분기
+  - `tests/content/pageAgentSerializationValueProps.test.ts`: `makeSerializer`와 `serializePropsForFiber`의 depth/circular/maxSerializeCalls/host props truncation 분기
   - `tests/workspace/layoutTreeModules.test.ts`: `layoutTreeCollect`/`layoutTreeTransform`/`layoutTreeNormalize`의 append/remove/insert/prune/dedupe 분기
   - `tests/background/messageRouter.test.ts`: background message router의 start/callPageAgent/runtime relay 분기
   - `tests/panel/devtoolsNetworkBridge.test.ts`: inspected tab id 조회와 onNavigated listener add/remove 브리지 분기
