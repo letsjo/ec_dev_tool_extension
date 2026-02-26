@@ -67,8 +67,14 @@ npm test
 │   │       ├── controller/
 │   │       │   ├── bootstrap.ts          # 패널 bootstrap/workspace 초기화 결선
 │   │       │   ├── context.ts            # panel DOM ref/lifecycle mutable 컨텍스트
-│   │       │   ├── runtime.ts            # runtime refresh + picker + teardown 결선
-│   │       │   └── wiring/               # controller 결선 조립(wiring/data-flow/lifecycle/react)
+│   │       │   ├── runtime.ts            # runtime refresh + picker/teardown 결선 조립
+│   │       │   ├── runtimePickerFlow.ts  # picker bridge + runtime listener 결선
+│   │       │   └── wiring/
+│   │       │       ├── controllerWiring.ts            # panel 도메인 결선 오케스트레이션
+│   │       │       ├── controllerWiringDebug.ts       # pageAgent/pane debug 래퍼 결선
+│   │       │       ├── controllerWiringDataFlows.ts   # target/dom/selection data flow 결선
+│   │       │       ├── controllerWiringLifecycle.ts   # runtime+bootstrap lifecycle 결선
+│   │       │       └── controllerWiringReactInspector.ts # react inspector 결선
 │   │       ├── debugLog/                 # Debug Log 누적/복사 + dev-only diagnostics 플로우
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/
