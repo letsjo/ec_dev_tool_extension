@@ -1,19 +1,12 @@
 import {
   normalizeCollectionTokenForDisplay as normalizeCollectionTokenForDisplayValue,
-  resolveDisplayChildPathSegment as resolveDisplayChildPathSegmentValue,
 } from './collectionDisplay';
 import type {
   FetchSerializedValueAtPathHandler,
   JsonRenderContext as JsonObjectArrayRenderContext,
 } from './jsonRenderTypes';
-import {
-  createExpandableValueRow,
-  createRowToggleSpacer,
-} from './jsonRowUi';
-import {
-  isJsonInternalMetaKey,
-} from './jsonPreview';
 import { buildObjectArraySummary } from './jsonObjectArraySummary';
+import { createObjectArrayChildrenNode as createObjectArrayChildrenNodeValue } from './jsonObjectArrayChildren';
 
 interface CreateObjectArrayJsonValueNodeArgs {
   value: Record<string, unknown> | unknown[];
@@ -90,71 +83,14 @@ function createObjectArrayJsonValueNode({
   const renderChildren = () => {
     if (renderedChildren) return;
     renderedChildren = true;
-
-    const children = document.createElement('div');
-    children.className = 'json-children';
-    const sourceValue = currentValue;
-    if (sourceValue === null || typeof sourceValue !== 'object') {
-      const row = document.createElement('div');
-      row.className = 'json-row';
-      row.appendChild(
-        createJsonValueNode(sourceValue, depth + 1, {
-          ...context,
-          allowInspect: false,
-        }),
-      );
-      children.appendChild(row);
-      details.appendChild(children);
-      return;
-    }
-    const entries = Array.isArray(sourceValue)
-      ? sourceValue.map((item, index) => [index, item] as const)
-      : Object.entries(sourceValue as Record<string, unknown>).filter(
-          ([key]) => !isJsonInternalMetaKey(key),
-        );
-
-    if (entries.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'json-row';
-      empty.textContent = '(empty)';
-      children.appendChild(empty);
-    } else {
-      entries.forEach(([key, childValue]) => {
-        /** Map/Set 표시 변환이 있어도 실제 inspect path는 원본 경로를 사용한다. */
-        const childPathSegment = resolveDisplayChildPathSegmentValue(sourceValue, key);
-        const childNode = createJsonValueNode(childValue, depth + 1, {
-          ...context,
-          path: [...context.path, childPathSegment],
-        });
-
-        if (childNode instanceof HTMLDetailsElement) {
-          const keyEl = document.createElement('span');
-          keyEl.className = 'json-key';
-          keyEl.textContent = String(key);
-          children.appendChild(
-            createExpandableValueRow({
-              keyEl,
-              valueDetails: childNode,
-            }),
-          );
-          return;
-        }
-
-        const row = document.createElement('div');
-        row.className = 'json-row json-row-with-spacer';
-        row.appendChild(createRowToggleSpacer());
-
-        const keyEl = document.createElement('span');
-        keyEl.className = 'json-key';
-        keyEl.textContent = String(key);
-        row.appendChild(keyEl);
-        row.appendChild(document.createTextNode(': '));
-        row.appendChild(childNode);
-        children.appendChild(row);
-      });
-    }
-
-    details.appendChild(children);
+    details.appendChild(
+      createObjectArrayChildrenNodeValue({
+        sourceValue: currentValue,
+        depth,
+        context,
+        createJsonValueNode,
+      }),
+    );
   };
 
   details.addEventListener('toggle', () => {
