@@ -7,12 +7,10 @@ import {
   createRuntimeRefreshFetchOptions,
 } from './reactInspector/fetchOptions';
 import { createControllerWiringReactInspector } from './controllerWiringReactInspector';
+import { createControllerWiringDataFlows } from './controllerWiringDataFlows';
 import { createReactInspectorControllerState } from './reactInspector/controllerState';
-import { createDomTreeFetchFlow } from './domTree/fetchFlow';
-import { createTargetFetchFlow } from './targetFetch/flow';
 import { callInspectedPageAgent } from './bridge/pageAgentClient';
 import { createPanelPaneSetters } from './paneSetters';
-import { createPanelSelectionSyncHandlers } from './pageAgent/selectionSync';
 import { createPanelControllerContext } from './controllerContext';
 import {
   addInspectedPageNavigatedListener,
@@ -55,32 +53,24 @@ export function createPanelControllerWiring(): PanelControllerWiring {
     setLastReactDetailComponentId: reactInspectorState.setLastReactDetailComponentId,
   });
 
-  const { populateTargetSelect, onFetch } = createTargetFetchFlow({
-    getTargetSelectEl: panelControllerContext.getTargetSelectEl,
-    getFetchBtnEl: panelControllerContext.getFetchBtnEl,
-    setOutput,
-    callInspectedPageAgent,
-  });
-
-  const { fetchDomTree } = createDomTreeFetchFlow({
-    callInspectedPageAgent,
-    getDomTreeOutputEl: panelControllerContext.getDomTreeOutputEl,
-    setDomTreeStatus,
-    setDomTreeEmpty,
-  });
-
   const {
+    populateTargetSelect,
+    onFetch,
+    fetchDomTree,
     clearPageComponentHighlight,
     clearPageHoverPreview,
     previewPageDomForComponent,
     highlightPageDomForComponent,
-  } = createPanelSelectionSyncHandlers({
+  } = createControllerWiringDataFlows({
     callInspectedPageAgent,
+    getTargetSelectEl: panelControllerContext.getTargetSelectEl,
+    getFetchBtnEl: panelControllerContext.getFetchBtnEl,
+    getDomTreeOutputEl: panelControllerContext.getDomTreeOutputEl,
+    setOutput,
     setReactStatus,
     setElementOutput,
     setDomTreeStatus,
     setDomTreeEmpty,
-    fetchDomTree,
   });
 
   const { onComponentSearchInput, fetchReactInfo } = createControllerWiringReactInspector({
