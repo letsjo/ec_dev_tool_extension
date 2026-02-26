@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyCustomHookMetadata } from '../../src/content/pageAgentHookMetadata';
+import { applyCustomHookMetadata } from '../../src/content/hooks/pageAgentHookMetadata';
 
 describe('pageAgentHookMetadata', () => {
   it('returns hooks as-is when metadata is missing', () => {

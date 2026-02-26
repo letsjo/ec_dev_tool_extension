@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   inferHookName,
   normalizeHookStateForDisplay,
-} from '../../src/content/pageAgentHookState';
+} from '../../src/content/hooks/pageAgentHookState';
 
 describe('pageAgentHookState', () => {
   it('infers hook names from hookTypes and queue/reducer patterns', () => {

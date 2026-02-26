@@ -5,8 +5,8 @@ import {
   inferGroupPathFromAllFrames,
   inferGroupPathFromTrimmedStack,
   normalizePrimitiveHookName,
-} from '../../src/content/pageAgentHookGrouping';
-import type { StackFrame } from '../../src/content/pageAgentHookStack';
+} from '../../src/content/hooks/pageAgentHookGrouping';
+import type { StackFrame } from '../../src/content/hooks/pageAgentHookStack';
 
 function frame(functionName: string | null, source: string | null): StackFrame {
   return {

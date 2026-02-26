@@ -1,9 +1,9 @@
 import { alignHookInspectMetadataResultLength } from './pageAgentHookResult';
 import { buildHookInspectMetadataFromLog } from './pageAgentHookMetadataBuild';
-import { createHookInspectContext } from './hooks/inspect/pageAgentHookInspectContext';
-import { runHookInspectPass } from './hooks/inspect/pageAgentHookInspectRender';
+import { createHookInspectContext } from './inspect/pageAgentHookInspectContext';
+import { runHookInspectPass } from './inspect/pageAgentHookInspectRender';
 import { resolveHookInspectRuntimeContext } from './pageAgentHookGroupRuntimeContext';
-import type { FiberLike } from './fiber/pageAgentFiberSearchTypes';
+import type { FiberLike } from '../fiber/pageAgentFiberSearchTypes';
 
 /** 경로 기준 inspect 동작을 수행 */
 function inspectCustomHookGroupNames(

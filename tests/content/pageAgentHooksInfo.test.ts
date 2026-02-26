@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPageAgentHooksInfoHelpers } from '../../src/content/pageAgentHooksInfo';
+import { createPageAgentHooksInfoHelpers } from '../../src/content/hooks/pageAgentHooksInfo';
 
 type AnyRecord = Record<string, any>;
 

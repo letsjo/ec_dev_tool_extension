@@ -21,7 +21,7 @@ import {
   getStableFiberId as getStableFiberIdValue,
   registerFunctionForInspect as registerFunctionForInspectValue,
 } from '../fiber/pageAgentFiberRegistry';
-import { createPageAgentHooksInfoHelpers } from '../pageAgentHooksInfo';
+import { createPageAgentHooksInfoHelpers } from '../hooks/pageAgentHooksInfo';
 import { createPageAgentInspectHandlers } from '../pageAgentInspect';
 import {
   makeSerializer,

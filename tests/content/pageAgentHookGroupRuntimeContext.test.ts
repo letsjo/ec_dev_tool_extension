@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FiberLike } from '../../src/content/fiber/pageAgentFiberSearchTypes';
-import { resolveHookInspectRuntimeContext } from '../../src/content/pageAgentHookGroupRuntimeContext';
+import { resolveHookInspectRuntimeContext } from '../../src/content/hooks/pageAgentHookGroupRuntimeContext';
 
 type HookWindow = Window & {
   __REACT_DEVTOOLS_GLOBAL_HOOK__?: unknown;

@@ -1,4 +1,4 @@
-import { parseHookDisplayName } from "../../pageAgentHookStack";
+import { parseHookDisplayName } from "../pageAgentHookStack";
 import { createHookInspectDispatcherMethods } from "./pageAgentHookDispatcherMethods";
 import {
   createHookInspectStateHelpers,

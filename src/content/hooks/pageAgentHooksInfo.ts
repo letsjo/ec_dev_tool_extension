@@ -4,9 +4,9 @@ import {
   normalizeHookStateForDisplay,
 } from './pageAgentHookState';
 import { applyCustomHookMetadata } from './pageAgentHookMetadata';
-import { makeSerializer } from './serialization/pageAgentSerialization';
-import { isRecord } from '../shared/inspector';
-import type { FiberLike } from './fiber/pageAgentFiberSearchTypes';
+import { makeSerializer } from '../serialization/pageAgentSerialization';
+import { isRecord } from '../../shared/inspector';
+import type { FiberLike } from '../fiber/pageAgentFiberSearchTypes';
 import type { HookInspectMetadataResult } from './pageAgentHookResult';
 
 interface CreatePageAgentHooksInfoHelpersOptions {
