@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { FiberLike } from "./pageAgentFiberSearchTypes";
 
 interface ScanDocumentFiberRootsOptions<T> {
@@ -15,10 +14,11 @@ function scanDocumentFiberRoots<T>(options: ScanDocumentFiberRootsOptions<T>) {
   const rootEl = document.body || document.documentElement;
   if (!rootEl) return null;
 
-  const queue = [rootEl];
+  const queue: Element[] = [rootEl];
   let cursor = 0;
   let guard = 0;
-  const visitedRoots = typeof WeakSet === "function" ? new WeakSet() : [];
+  const visitedRoots: WeakSet<FiberLike> | FiberLike[] =
+    typeof WeakSet === "function" ? new WeakSet<FiberLike>() : [];
 
   function hasVisited(root: FiberLike | null | undefined) {
     if (!root) return true;

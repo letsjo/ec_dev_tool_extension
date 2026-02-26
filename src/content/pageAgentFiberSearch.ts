@@ -1,7 +1,12 @@
-// @ts-nocheck
 import { scanDocumentFiberRoots } from "./pageAgentFiberSearchDomScan";
-import { findFiberByComponentIdInTree, rootHasComponentIdInTree } from "./pageAgentFiberSearchTree";
-import type { CreatePageAgentFiberSearchHelpersOptions, FiberLike } from "./pageAgentFiberSearchTypes";
+import {
+  findFiberByComponentIdInTree,
+  rootHasComponentIdInTree,
+} from "./pageAgentFiberSearchTree";
+import type {
+  CreatePageAgentFiberSearchHelpersOptions,
+  FiberLike,
+} from "./pageAgentFiberSearchTypes";
 
 /** componentId 기반 fiber/root 탐색 유틸을 구성한다. */
 export function createPageAgentFiberSearchHelpers(options: CreatePageAgentFiberSearchHelpersOptions) {

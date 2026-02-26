@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { FiberLike } from "./pageAgentFiberSearchTypes";
 
 interface RootHasComponentIdInTreeOptions {
@@ -25,6 +24,13 @@ interface FindFiberByComponentIdInTreeOptions {
   fiberIdMap: WeakMap<object, string>;
 }
 
+function isInspectableFiber(
+  node: FiberLike,
+  isInspectableTag: (tag: number) => boolean,
+) {
+  return typeof node.tag === "number" && isInspectableTag(node.tag);
+}
+
 /** root fiber subtree에 target component id가 존재하는지 검사한다. */
 function rootHasComponentIdInTree(options: RootHasComponentIdInTreeOptions) {
   const {
@@ -47,7 +53,7 @@ function rootHasComponentIdInTree(options: RootHasComponentIdInTreeOptions) {
       continue;
     }
 
-    if (isInspectableTag(node.tag)) {
+    if (isInspectableFiber(node, isInspectableTag)) {
       const stableId = getStableFiberId(node, fiberIdMap);
       if (stableId === componentId) {
         return true;
@@ -85,7 +91,7 @@ function findFiberByComponentIdInTree(options: FindFiberByComponentIdInTreeOptio
       continue;
     }
 
-    if (isInspectableTag(node.tag)) {
+    if (isInspectableFiber(node, isInspectableTag)) {
       const legacyId = String(inspectableIndex);
       const stableId = getStableFiberId(node, fiberIdMap);
       if (stableId === targetId || legacyId === targetId) return node;

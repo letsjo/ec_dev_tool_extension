@@ -217,6 +217,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentFiberSearchTypes.ts`: fiber search helper 타입(`FiberLike`, options) 정의 전담
 - `pageAgentFiberSearchTree.ts`: root subtree DFS 기반 component id 존재 검사/target fiber 탐색 전담
 - `pageAgentFiberSearchDomScan.ts`: document BFS 기반 root fiber 스캔(visited-root dedupe 포함) 전담
+- 2026-02 리팩터링: fiber search 모듈(`types/tree/domScan/main`)에서 `@ts-nocheck`를 제거하고 `tag` type guard를 도입해 inspectable 판정 타입 안정성을 강화
 - `pageAgentFiberElement.ts`: DOM element -> fiber 탐색(`getReactFiberFromElement`, `findNearestFiber`, `findAnyFiberInDocument`) 전담
 - `pageAgentFiberDescribe.ts`: fiber root/name/tag/선택 대상 계산(`findRootFiber`, `getFiberName`, `isInspectableTag`, `findPreferredSelectedFiber`) 전담
 - `pageAgentFiberRegistry.ts`: fiber stable id 할당(`getFiberIdMap`, `getStableFiberId`)과 function inspect registry(`registerFunctionForInspect`) 전담

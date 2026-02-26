@@ -88,6 +88,22 @@ describe('pageAgentFiberSearch', () => {
     expect(foundByLegacyIndex).toBe(first);
   });
 
+  it('skips fibers whose tag is not inspectable number', () => {
+    const { helpers } = createHarness();
+    const root = createFiber('root');
+    const nonInspectable = createFiber('hidden-target');
+    nonInspectable.tag = undefined;
+    const inspectable = createFiber('visible-target');
+    connectParent(root, nonInspectable, inspectable);
+
+    const fiberIdMap = new WeakMap<object, string>();
+    expect(helpers.rootHasComponentId(root, 'hidden-target', fiberIdMap)).toBe(false);
+    expect(helpers.findFiberByComponentId(root, 'hidden-target', fiberIdMap)).toBeNull();
+    expect(helpers.findFiberByComponentId(root, 'visible-target', fiberIdMap)).toBe(
+      inspectable,
+    );
+  });
+
   it('scans document roots and returns matching root by component id', () => {
     const { helpers, bind } = createHarness();
     const container = document.createElement('div');

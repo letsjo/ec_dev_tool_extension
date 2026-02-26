@@ -1,20 +1,17 @@
-// @ts-nocheck
-
-type AnyRecord = Record<string, any>;
-
-type FiberLike = AnyRecord & {
+type FiberLike = {
   tag?: number;
-  type?: any;
-  elementType?: any;
+  type?: unknown;
+  elementType?: unknown;
   return?: FiberLike | null;
   child?: FiberLike | null;
   sibling?: FiberLike | null;
   alternate?: FiberLike | null;
-  stateNode?: any;
-  memoizedState?: any;
-  memoizedProps?: any;
-  ref?: any;
+  stateNode?: unknown;
+  memoizedState?: unknown;
+  memoizedProps?: unknown;
+  ref?: unknown;
   _debugHookTypes?: unknown[];
+  [key: string]: unknown;
 };
 
 interface CreatePageAgentFiberSearchHelpersOptions {
@@ -29,7 +26,6 @@ interface CreatePageAgentFiberSearchHelpersOptions {
 }
 
 export type {
-  AnyRecord,
   FiberLike,
   CreatePageAgentFiberSearchHelpersOptions,
 };
