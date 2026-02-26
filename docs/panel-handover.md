@@ -201,7 +201,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentHookDispatcherMethods.ts`: context/effect/computed 메서드 팩토리를 병합한 built-in dispatcher 메서드 조립 전담
 - `pageAgentHookDispatcher.ts`: state/method helper 조립과 Proxy 기반 generic hook fallback 결선 전담
 - `pageAgentHookPrimitiveStack.ts`: dispatcher warmup 로그를 primitive별 stack frame 캐시로 구성하는 단계 전담
-- `pageAgentHookInspectContext.ts`: hook inspect dispatcher/state 생성과 primitive warmup cache 조립 전담
+- `pageAgentHookInspectContext.ts`: hook inspect dispatcher/state(`currentHook`/`suspendedToken`/`hookLog`) 생성과 primitive warmup cache 조립 전담
 - `pageAgentHookInspectRender.ts`: dispatcher 적용 render 실행 단계(runHookInspectRender 옵션 조립) 전담
 - `pageAgentHookRenderExecution.ts`: dispatcher 교체, console mute, hook inspect render 실행, suspended(use) 예외 완화, dispatcher/console 복구 전담
 - `pageAgentHookGroups.ts`: stack/grouping/runtime/result/metadata-build/dispatcher/primitive-stack/render-execution 유틸을 조합해 custom metadata(group/path/primitive) 오케스트레이션 전담
@@ -954,6 +954,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentFiberSearch.test.ts`: componentId 기반 root/fiber 탐색(root match, legacy index, 문서 전역 탐색) 분기
   - `tests/content/pageAgentHookGrouping.test.ts`: 공통 조상 frame 탐색, primitive frame index 보정, group path 추론, primitive 이름 정규화 분기
   - `tests/content/pageAgentHookGroupRuntimeContext.test.ts`: hook group inspect runtime 컨텍스트 해석(null/class fiber/dispatcher 미존재/정상) 분기
+  - `tests/content/pageAgentHookInspectContext.test.ts`: inspect context(dispatcher/state/warmup cache) 초기화 분기
   - `tests/content/pageAgentHookDispatcherMethods.test.ts`: dispatcher built-in method(`useSyncExternalStore`, `useTransition`, `use`) 분기
   - `tests/content/reactRuntimeHookLifecycle.test.ts`: runtime hook 설치/세터 인터셉트/commit throttle/beforeunload 정리 분기
   - `tests/content/pageAgentHooksInfo.test.ts`: hook linked-list 정규화, class component payload 직렬화, includeCustomGroups 옵션 payload 안전 fallback 분기
