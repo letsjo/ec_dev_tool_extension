@@ -29,7 +29,7 @@ npm test
 5. 페이지 이동/새로고침 또는 React commit 이벤트가 감지되면 트리를 자동으로 다시 가져온다.
 6. 대상(예: EC Dev Manager)을 선택하고 **데이터 가져오기** 버튼을 누르면 메서드 호출 결과가 표시된다.
 7. **Select element**를 누른 뒤 페이지 요소를 클릭하면, React 컴포넌트 체인(선택 요소 기준)이 표시된다.
-8. 목록에서 컴포넌트를 클릭하면 해당 컴포넌트의 `props`/`state`를 트리 형태로 확인하고, 페이지의 대응 DOM 요소를 자동 하이라이트한다.
+8. 목록에서 컴포넌트를 클릭하면 해당 컴포넌트의 `props`/`state`를 트리 형태로 확인하고, 페이지의 대응 DOM 요소를 자동 하이라이트한다. React 매핑이 없으면 `DomElement` fallback 노드로 선택 요소를 계속 추적한다.
 9. 함수 값은 링크로 표시되며 클릭 시 DevTools inspect/console 대상으로 이동을 시도한다.
 10. 순환 참조(`Circular`) 값은 참조 노드 형태로 표시되어 트리에서 확장해 확인할 수 있다.
 11. 선택한 요소의 DOM 구조를 **접기/펼치기 가능한 트리**로 확인할 수 있다.
@@ -82,7 +82,7 @@ npm test
 │   │   ├── dom/                          # DOM selector/tree/highlight 핸들러 모듈
 │   │   ├── elementPicker.ts              # 요소 선택 + content/main world 브릿지
 │   │   ├── inspect/
-│   │   │   ├── components/               # reactInspect components 입력/루트해석/walk/결과 조립 모듈
+│   │   │   ├── components/               # reactInspect components 입력/루트해석/walk + non-React DomElement fallback 모듈
 │   │   │   └── path/                     # reactInspectPath 입력/경로해석/모드응답 모듈
 │   │   ├── hooks/inspect/                # hook inspect dispatcher/render/warmup 보조 모듈
 │   │   ├── runtime/

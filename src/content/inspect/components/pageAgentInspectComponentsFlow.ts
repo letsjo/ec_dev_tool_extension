@@ -1,6 +1,8 @@
 import { parseInspectReactComponentsArgs } from "./pageAgentInspectComponentsArgs";
+import { createInspectComponentsDomFallbackFactory } from "./pageAgentInspectComponentsDomFallback";
 import { resolveInspectComponentsSelectionResult } from "./pageAgentInspectComponentsResult";
 import { resolveInspectComponentsRootContext } from "./pageAgentInspectComponentsRoot";
+import { buildSourceElementSummary } from "./pageAgentInspectComponentsSource";
 import { runInspectComponentsWalk } from "./pageAgentInspectComponentsWalkContext";
 import type { SourceElementSummary } from "./pageAgentInspectComponentsSource";
 import type { ReactComponentInfo } from "../../../shared/inspector";
@@ -90,12 +92,17 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
     getFiberName,
     getFiberKind,
   } = options;
+  const domFallbackFactory = createInspectComponentsDomFallbackFactory({
+    buildCssSelector,
+    getElementPath,
+  });
 
   return function inspectReactComponents(args: unknown): InspectReactComponentsResult {
     const { selector, pickPoint, includeSerializedData, selectedComponentId } =
       parseInspectReactComponentsArgs(args);
 
     try {
+      const fallbackTargetElement = resolveTargetElement(selector, pickPoint);
       const resolvedRoot = resolveInspectComponentsRootContext({
         selector,
         pickPoint,
@@ -110,6 +117,26 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
         findRootFiberByComponentId,
       });
       if (!resolvedRoot.ok) {
+        if (fallbackTargetElement) {
+          const fallbackComponents = domFallbackFactory.buildTargetChain(
+            fallbackTargetElement,
+          );
+          if (fallbackComponents.length > 0) {
+            return {
+              selector,
+              selectedIndex: fallbackComponents.length - 1,
+              sourceElement: buildSourceElementSummary({
+                sourceElement: fallbackTargetElement,
+                buildCssSelector,
+                getElementPath,
+              }),
+              rootSummary: {
+                totalComponents: fallbackComponents.length,
+              },
+              components: fallbackComponents,
+            };
+          }
+        }
         return {
           error: resolvedRoot.error,
           selector: resolvedRoot.selector,
@@ -143,10 +170,28 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       const { idByFiber, targetMatchedIndex } = walked;
 
       if (components.length === 0) {
+        if (targetEl) {
+          const fallbackComponents = domFallbackFactory.buildTargetChain(targetEl);
+          if (fallbackComponents.length > 0) {
+            return {
+              selector,
+              selectedIndex: fallbackComponents.length - 1,
+              sourceElement: buildSourceElementSummary({
+                sourceElement: targetEl,
+                buildCssSelector,
+                getElementPath,
+              }),
+              rootSummary: {
+                totalComponents: fallbackComponents.length,
+              },
+              components: fallbackComponents,
+            };
+          }
+        }
         return { error: "분석 가능한 React 컴포넌트를 찾지 못했습니다.", selector };
       }
 
-      const { selectedIndex, sourceElement } = resolveInspectComponentsSelectionResult({
+      const selectionResult = resolveInspectComponentsSelectionResult({
         components,
         idByFiber,
         targetMatchedIndex,
@@ -158,6 +203,33 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
         buildCssSelector,
         getElementPath,
       });
+      let selectedIndex = selectionResult.selectedIndex;
+      let sourceElement = selectionResult.sourceElement;
+
+      const targetDomPath = targetEl ? getElementPath(targetEl) : '';
+      const hasExactTargetMatch =
+        Boolean(targetDomPath) &&
+        components.some((component) => component.domPath === targetDomPath);
+
+      if (targetEl && !hasExactTargetMatch) {
+        // 선택 target이 React 컴포넌트 DOM과 1:1 매칭되지 않으면
+        // leaf DOM fallback을 추가해 Components Tree/Inspector가 실제 클릭 요소를 반영한다.
+        const fallbackLeaf = domFallbackFactory.buildTargetLeaf(targetEl, 0, null);
+        const existingFallbackIndex = components.findIndex(
+          (component) => component.id === fallbackLeaf.id,
+        );
+        if (existingFallbackIndex >= 0) {
+          selectedIndex = existingFallbackIndex;
+        } else {
+          components.push(fallbackLeaf);
+          selectedIndex = components.length - 1;
+        }
+        sourceElement = buildSourceElementSummary({
+          sourceElement: targetEl,
+          buildCssSelector,
+          getElementPath,
+        });
+      }
 
       return {
         selector,
