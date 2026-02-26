@@ -946,7 +946,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
   - `tests/content/pageAgentInspectComponentsFlow.test.ts`: `reactInspect` 입력 파싱/nearest source summary/기본 selectedIndex/nearest 미해석 에러 분기
   - `tests/content/pageAgentInspect.test.ts`: `createPageAgentInspectHandlers` 결선 후 `reactInspect`/`reactInspectPath` 기본 가드 에러 + roundtrip(component 목록 id -> inspectPath serialize) 회귀 분기
-  - `tests/content/pageAgentBridge.test.ts`: bridge request 유효성 통과 시 성공 응답, executeMethod 예외 시 실패 응답 전송 분기
+  - `tests/content/pageAgentBridge.test.ts`: bridge request 유효성 통과 시 성공 응답, executeMethod 예외 시 실패 응답, unrelated/invalid request 무시 분기
+  - `tests/content/runtimeMessaging.test.ts`: `sendRuntimeMessageSafe`의 sync throw/promise-like catch 처리와 picker/runtime notify payload 분기
   - `tests/content/pageAgentTargetFetch.test.ts`: targetPath 비어있음/autoDiscover 비활성 에러/zero-arg 자동탐색 + 예외 결과 포맷 분기
   - `tests/content/pageAgentInspectTarget.test.ts`: `resolveInspectRootContext`/`resolveInspectPathTargetFiber`의 nearest fallback 및 문서 전역 componentId fallback 분기
   - `tests/content/pageAgentFiberSearch.test.ts`: componentId 기반 root/fiber 탐색(root match, legacy index, 문서 전역 탐색) 분기

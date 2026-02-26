@@ -82,4 +82,53 @@ describe('pageAgentBridge', () => {
 
     removeListener();
   });
+
+  it('ignores unrelated bridge messages', () => {
+    const executeMethod = vi.fn(() => ({ ok: true }));
+    const removeListener = installPageAgentBridge({
+      bridgeSource: 'TEST_BRIDGE',
+      requestAction: 'request',
+      responseAction: 'response',
+      executeMethod,
+    });
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: null,
+        data: {
+          source: 'TEST_BRIDGE',
+          action: 'request',
+          requestId: 'req-x',
+          method: 'ping',
+        },
+      }),
+    );
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: window,
+        data: {
+          source: 'OTHER_SOURCE',
+          action: 'request',
+          requestId: 'req-y',
+          method: 'ping',
+        },
+      }),
+    );
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: window,
+        data: {
+          source: 'TEST_BRIDGE',
+          action: 'request',
+          requestId: '',
+          method: 'ping',
+        },
+      }),
+    );
+
+    expect(executeMethod).not.toHaveBeenCalled();
+    expect(postMessageSpy).not.toHaveBeenCalled();
+
+    removeListener();
+  });
 });
