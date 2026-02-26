@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createHookInspectContext } from '../../src/content/pageAgentHookInspectContext';
+import { createHookInspectContext } from '../../src/content/hooks/inspect/pageAgentHookInspectContext';
 
 describe('pageAgentHookInspectContext', () => {
   it('builds dispatcher context and primitive warmup cache', () => {

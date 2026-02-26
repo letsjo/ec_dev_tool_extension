@@ -1,4 +1,4 @@
-import { resolveDefaultPropsForHookInspect } from './pageAgentHookRuntime';
+import { resolveDefaultPropsForHookInspect } from '../../pageAgentHookRuntime';
 import { runHookInspectRender } from './pageAgentHookRenderExecution';
 
 type HookInspectRenderArgs = Parameters<typeof runHookInspectRender>[0];

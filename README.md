@@ -72,6 +72,7 @@ npm test
 │   │   ├── inspect/
 │   │   │   ├── components/               # reactInspect components 입력/루트해석/walk/결과 조립 모듈
 │   │   │   └── path/                     # reactInspectPath 입력/경로해석/모드응답 모듈
+│   │   ├── hooks/inspect/                # hook inspect dispatcher/render/warmup 보조 모듈
 │   │   ├── serialization/                # pageAgent serializer 전략/props/path 토큰 모듈
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
 │   │   └── pageAgent.ts                  # main world React/DOM inspector 실행기

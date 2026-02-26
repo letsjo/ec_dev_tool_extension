@@ -1,7 +1,7 @@
 import { alignHookInspectMetadataResultLength } from './pageAgentHookResult';
 import { buildHookInspectMetadataFromLog } from './pageAgentHookMetadataBuild';
-import { createHookInspectContext } from './pageAgentHookInspectContext';
-import { runHookInspectPass } from './pageAgentHookInspectRender';
+import { createHookInspectContext } from './hooks/inspect/pageAgentHookInspectContext';
+import { runHookInspectPass } from './hooks/inspect/pageAgentHookInspectRender';
 import { resolveHookInspectRuntimeContext } from './pageAgentHookGroupRuntimeContext';
 import type { FiberLike } from './pageAgentFiberSearchTypes';
 

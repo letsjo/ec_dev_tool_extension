@@ -1,7 +1,7 @@
 import { createHookInspectDispatcher } from './pageAgentHookDispatcher';
 import { buildPrimitiveStackCacheForHookInspect } from './pageAgentHookPrimitiveStack';
 import type { HookInspectState } from './pageAgentHookDispatcherTypes';
-import type { StackFrame } from './pageAgentHookStack';
+import type { StackFrame } from '../../pageAgentHookStack';
 
 interface CreateHookInspectContextOptions {
   initialHookState: unknown;

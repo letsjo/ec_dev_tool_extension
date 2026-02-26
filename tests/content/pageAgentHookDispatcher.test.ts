@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createHookInspectDispatcher } from '../../src/content/pageAgentHookDispatcher';
+import { createHookInspectDispatcher } from '../../src/content/hooks/inspect/pageAgentHookDispatcher';
 
 describe('pageAgentHookDispatcher', () => {
   it('reads memoized state for useState and advances hook cursor', () => {

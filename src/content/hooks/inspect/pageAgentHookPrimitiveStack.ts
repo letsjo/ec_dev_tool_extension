@@ -1,5 +1,5 @@
-import { parseErrorStackFrames } from "./pageAgentHookStack";
-import type { StackFrame } from "./pageAgentHookStack";
+import { parseErrorStackFrames } from "../../pageAgentHookStack";
+import type { StackFrame } from "../../pageAgentHookStack";
 
 type HookLogEntry = {
   primitive?: string | null;

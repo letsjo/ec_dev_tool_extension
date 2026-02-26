@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createHookInspectDispatcherMethods } from '../../src/content/pageAgentHookDispatcherMethods';
+import { createHookInspectDispatcherMethods } from '../../src/content/hooks/inspect/pageAgentHookDispatcherMethods';
 
 type AnyRecord = Record<string, any>;
 
