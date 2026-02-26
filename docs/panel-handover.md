@@ -69,7 +69,7 @@
   - `controller/context.ts` 유틸로 panel DOM ref/picker 상태/payload mode(Lite/Full)/workspace lifecycle 핸들 저장·조회 책임 위임
   - `controller/runtime.ts`, `controller/runtimePickerFlow.ts` 유틸로 runtime refresh + picker bridge/runtime listener 결선 + teardown 결선 책임 위임
   - `controller/bootstrap.ts` 유틸로 workspace 초기화 결선 + bootstrap flow 결선 책임 위임
-  - `lifecycle/bootstrapFlow.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
+  - `lifecycle/bootstrapFlow.ts`, `lifecycle/bootstrapEventBindings.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), 이벤트 결선, workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts`, `paneSetters.ts` 유틸로 패널 텍스트/empty/error 클래스 토글 규칙과 pane setter 결선 위임
   - `debugLog/debugLogFlow.ts`, `debugLog/debugDiagnosticsFlow.ts` 유틸로 패널 액션 로그 누적/복사 + dev-only diagnostics 이벤트 집계(`ecDevTool.devDiagnostics=1`) 위임
@@ -579,6 +579,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.11 Panel Lifecycle Bootstrap 모듈 분리 규칙
 
 - `lifecycle/bootstrapFlow.ts`: 패널 부트스트랩 순서(React 마운트, DOM ref 초기화, 초기 상태 문구, 이벤트 바인딩)와 unload cleanup 훅 바인딩 전담
+- `lifecycle/bootstrapEventBindings.ts`: toolbar/list/window 이벤트 바인딩 순서와 대상(fetch/select/payload/search/list/beforeunload) 전담
 - `lifecycle/panelWorkspaceInitialization.ts`: workspace manager/wheel fallback 초기화 콜백 결선 전담
 - `lifecycle/runtimeMessageBinding.ts`: runtime message listener 결선/해제 함수 전담
 - `lifecycle/fatalErrorView.ts`: 패널 bootstrap 실패 시 body 에러 뷰 렌더(기존 DOM 초기화 + 메시지 표시) 전담
@@ -719,6 +720,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/domTree/renderer.ts`
 - `src/features/panel/elementPicker/bridgeFlow.ts`
 - `src/features/panel/lifecycle/bootstrapFlow.ts`
+- `src/features/panel/lifecycle/bootstrapEventBindings.ts`
 - `src/features/panel/lifecycle/panelWorkspaceInitialization.ts`
 - `src/features/panel/lifecycle/runtimeMessageBinding.ts`
 - `src/features/panel/lifecycle/panelTeardownFlow.ts`
@@ -961,6 +963,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/noResultStateFlow.test.ts`: `noResultStateFlow.ts`의 searchInput/inspectResult 문구와 hover-preview/하이라이트 처리 분기
   - `tests/lifecycle/fatalErrorView.test.ts`: `fatalErrorView.ts`의 body 초기화/에러 메시지 렌더 분기
   - `tests/lifecycle/panelWorkspaceInitialization.test.ts`: `panelWorkspaceInitialization.ts`의 workspace manager/wheel fallback 초기화 결선 분기
+  - `tests/lifecycle/bootstrapEventBindings.test.ts`: `bootstrapEventBindings.ts`의 toolbar/list/window 이벤트 바인딩과 fetch 버튼 optional 분기
   - `tests/lifecycle/runtimeMessageBinding.test.ts`: `runtimeMessageBinding.ts`의 runtime listener add/remove 결선 분기
   - `tests/lifecycle/panelTeardownFlow.test.ts`: `panelTeardownFlow.ts`의 unload 자원 해제(workspace/wheel/runtime message listener/runtime scheduler/nav listener) 분기
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리

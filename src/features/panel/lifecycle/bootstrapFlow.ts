@@ -1,3 +1,5 @@
+import { bindPanelBootstrapEvents as bindPanelBootstrapEventsValue } from './bootstrapEventBindings';
+
 interface CreatePanelBootstrapFlowOptions {
   mountPanelView: () => void;
   initDomRefs: () => void;
@@ -23,11 +25,22 @@ interface CreatePanelBootstrapFlowOptions {
   runInitialRefresh: () => void;
 }
 
+interface PanelBootstrapFlowDependencies {
+  bindPanelBootstrapEvents: typeof bindPanelBootstrapEventsValue;
+}
+
+const PANEL_BOOTSTRAP_FLOW_DEFAULT_DEPS: PanelBootstrapFlowDependencies = {
+  bindPanelBootstrapEvents: bindPanelBootstrapEventsValue,
+};
+
 /**
  * 패널 부트스트랩 순서(마운트 -> DOM ref -> 초기 문구 -> 이벤트 바인딩)를 고정한다.
  * controller는 실제 부수효과 구현을 주입하고 이 흐름을 호출만 한다.
  */
-export function createPanelBootstrapFlow(options: CreatePanelBootstrapFlowOptions) {
+export function createPanelBootstrapFlow(
+  options: CreatePanelBootstrapFlowOptions,
+  deps: PanelBootstrapFlowDependencies = PANEL_BOOTSTRAP_FLOW_DEFAULT_DEPS,
+) {
   function bootstrapPanel() {
     options.mountPanelView();
     options.initDomRefs();
@@ -40,21 +53,20 @@ export function createPanelBootstrapFlow(options: CreatePanelBootstrapFlowOption
     options.setDomTreeStatus('요소를 선택하면 DOM 트리를 표시합니다.');
     options.setDomTreeEmpty('요소를 선택하면 DOM 트리를 표시합니다.');
 
-    const fetchBtnEl = options.getFetchBtnEl();
-    if (fetchBtnEl) {
-      fetchBtnEl.addEventListener('click', options.onFetch);
-    }
-    options.getSelectElementBtnEl().addEventListener('click', options.onSelectElement);
-    options.getPayloadModeBtnEl().addEventListener('click', options.onTogglePayloadMode);
-    options
-      .getComponentSearchInputEl()
-      .addEventListener('input', options.onComponentSearchInput);
-    options.getReactComponentListEl().addEventListener('mouseleave', () => {
-      options.clearPageHoverPreview();
+    deps.bindPanelBootstrapEvents({
+      getFetchBtnEl: options.getFetchBtnEl,
+      getSelectElementBtnEl: options.getSelectElementBtnEl,
+      getPayloadModeBtnEl: options.getPayloadModeBtnEl,
+      getComponentSearchInputEl: options.getComponentSearchInputEl,
+      getReactComponentListEl: options.getReactComponentListEl,
+      onFetch: options.onFetch,
+      onSelectElement: options.onSelectElement,
+      onTogglePayloadMode: options.onTogglePayloadMode,
+      onComponentSearchInput: options.onComponentSearchInput,
+      clearPageHoverPreview: options.clearPageHoverPreview,
+      onBeforeUnload: options.onBeforeUnload,
     });
-
     options.addNavigatedListener();
-    window.addEventListener('beforeunload', options.onBeforeUnload);
     options.runInitialRefresh();
   }
 
