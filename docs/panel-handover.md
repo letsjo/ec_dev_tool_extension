@@ -25,7 +25,7 @@
 - 역할: 요소 선택 오버레이/하이라이트 상태(선택 중 pointer/click/contextmenu/Escape 이벤트 consume 포함), runtime hook/pageAgent 브리지 상태, 선택 element selector/path 정보 계산(중복 id 감지 시 ancestor 범위 selector로 보정), runtime 메시지 안전 전송 유틸
 
 4. Main world scripts (페이지 컨텍스트)
-- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentRuntime.ts`, `src/content/pageAgentRuntimeBootstrap.ts`, `src/content/runtime/pageAgentRuntimeConfig.ts`, `src/content/runtime/pageAgentRuntimeDomHandlers.ts`, `src/content/runtime/pageAgentRuntimeInspectHandlers.ts`, `src/content/runtime/pageAgentRuntimeTypes.ts`, `src/content/dom/pageAgentDom.ts`, `src/content/dom/pageAgentDomSelectors.ts`, `src/content/dom/pageAgentDomTree.ts`, `src/content/dom/pageAgentDomHighlight.ts`, `src/content/dom/pageAgentDomHighlightState.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentBridgeMessages.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentTargetFetch.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookGroupRuntimeContext.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookGroupingAncestor.ts`, `src/content/pageAgentHookGroupingPath.ts`, `src/content/pageAgentHookGroupingPrimitive.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/hooks/inspect/pageAgentHookPrimitiveStack.ts`, `src/content/hooks/inspect/pageAgentHookInspectContext.ts`, `src/content/hooks/inspect/pageAgentHookInspectRender.ts`, `src/content/hooks/inspect/pageAgentHookRenderExecution.ts`, `src/content/hooks/inspect/pageAgentHookDispatcher.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherTypes.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherState.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodTypes.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodContextState.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodEffects.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodComputed.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectTypes.ts`, `src/content/pageAgentInspectFlowWiring.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/inspect/path/pageAgentInspectPathArgs.ts`, `src/content/inspect/path/pageAgentInspectPathValue.ts`, `src/content/inspect/path/pageAgentInspectPathMode.ts`, `src/content/inspect/path/pageAgentInspectPathFlow.ts`, `src/content/inspect/components/pageAgentInspectComponentsArgs.ts`, `src/content/inspect/components/pageAgentInspectComponentsSource.ts`, `src/content/inspect/components/pageAgentInspectComponentsRoot.ts`, `src/content/inspect/components/pageAgentInspectComponentsWalkContext.ts`, `src/content/inspect/components/pageAgentInspectComponentsResult.ts`, `src/content/inspect/components/pageAgentInspectComponentsFlow.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberSearchTypes.ts`, `src/content/pageAgentFiberSearchTree.ts`, `src/content/pageAgentFiberSearchDomScan.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/serialization/pageAgentSerialization.ts`, `src/content/serialization/pageAgentSerializationValue.ts`, `src/content/serialization/pageAgentSerializationValuePrimitives.ts`, `src/content/serialization/pageAgentSerializationProps.ts`, `src/content/serialization/pageAgentSerializationPropsBudget.ts`, `src/content/serialization/pageAgentSerializationPropsEntries.ts`, `src/content/serialization/pageAgentSerializationCore.ts`, `src/content/serialization/pageAgentSerializationCoreInternalKey.ts`, `src/content/serialization/pageAgentSerializationCoreDehydrated.ts`, `src/content/serialization/pageAgentSerializationCoreSeenStore.ts`, `src/content/serialization/pageAgentSerializationStrategies.ts`, `src/content/serialization/pageAgentSerializationStrategyTypes.ts`, `src/content/serialization/pageAgentSerializationCollectionStrategies.ts`, `src/content/serialization/pageAgentSerializationObjectStrategy.ts`, `src/content/serialization/pageAgentCollectionPath.ts`, `src/content/serialization/pageAgentSerializerSummary.ts`, `src/content/serialization/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`, `src/content/reactRuntimeHookLifecycle.ts`
+- 파일: `src/content/pageAgent.ts`, `src/content/pageAgentRuntime.ts`, `src/content/pageAgentRuntimeBootstrap.ts`, `src/content/runtime/pageAgentRuntimeConfig.ts`, `src/content/runtime/pageAgentRuntimeDomHandlers.ts`, `src/content/runtime/pageAgentRuntimeMethodHandlers.ts`, `src/content/runtime/pageAgentRuntimeInspectHandlers.ts`, `src/content/runtime/pageAgentRuntimeInstallFlow.ts`, `src/content/runtime/pageAgentRuntimeTypes.ts`, `src/content/dom/pageAgentDom.ts`, `src/content/dom/pageAgentDomSelectors.ts`, `src/content/dom/pageAgentDomTree.ts`, `src/content/dom/pageAgentDomHighlight.ts`, `src/content/dom/pageAgentDomHighlightState.ts`, `src/content/pageAgentBridge.ts`, `src/content/pageAgentBridgeMessages.ts`, `src/content/pageAgentMethods.ts`, `src/content/pageAgentTargetFetch.ts`, `src/content/pageAgentHookGroups.ts`, `src/content/pageAgentHookGroupRuntimeContext.ts`, `src/content/pageAgentHookStack.ts`, `src/content/pageAgentHookGrouping.ts`, `src/content/pageAgentHookGroupingAncestor.ts`, `src/content/pageAgentHookGroupingPath.ts`, `src/content/pageAgentHookGroupingPrimitive.ts`, `src/content/pageAgentHookRuntime.ts`, `src/content/pageAgentHookResult.ts`, `src/content/pageAgentHookMetadataBuild.ts`, `src/content/hooks/inspect/pageAgentHookPrimitiveStack.ts`, `src/content/hooks/inspect/pageAgentHookInspectContext.ts`, `src/content/hooks/inspect/pageAgentHookInspectRender.ts`, `src/content/hooks/inspect/pageAgentHookRenderExecution.ts`, `src/content/hooks/inspect/pageAgentHookDispatcher.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherTypes.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherState.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodTypes.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodContextState.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodEffects.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethodComputed.ts`, `src/content/hooks/inspect/pageAgentHookDispatcherMethods.ts`, `src/content/pageAgentHookState.ts`, `src/content/pageAgentHookMetadata.ts`, `src/content/pageAgentHooksInfo.ts`, `src/content/pageAgentInspect.ts`, `src/content/pageAgentInspectTypes.ts`, `src/content/pageAgentInspectFlowWiring.ts`, `src/content/pageAgentInspectSelection.ts`, `src/content/inspect/path/pageAgentInspectPathArgs.ts`, `src/content/inspect/path/pageAgentInspectPathValue.ts`, `src/content/inspect/path/pageAgentInspectPathMode.ts`, `src/content/inspect/path/pageAgentInspectPathFlow.ts`, `src/content/inspect/components/pageAgentInspectComponentsArgs.ts`, `src/content/inspect/components/pageAgentInspectComponentsSource.ts`, `src/content/inspect/components/pageAgentInspectComponentsRoot.ts`, `src/content/inspect/components/pageAgentInspectComponentsWalkContext.ts`, `src/content/inspect/components/pageAgentInspectComponentsResult.ts`, `src/content/inspect/components/pageAgentInspectComponentsFlow.ts`, `src/content/pageAgentInspectDomInfo.ts`, `src/content/pageAgentInspectTarget.ts`, `src/content/pageAgentInspectComponentWalk.ts`, `src/content/pageAgentFiberSearch.ts`, `src/content/pageAgentFiberSearchTypes.ts`, `src/content/pageAgentFiberSearchTree.ts`, `src/content/pageAgentFiberSearchDomScan.ts`, `src/content/pageAgentFiberElement.ts`, `src/content/pageAgentFiberDescribe.ts`, `src/content/pageAgentFiberRegistry.ts`, `src/content/serialization/pageAgentSerialization.ts`, `src/content/serialization/pageAgentSerializationValue.ts`, `src/content/serialization/pageAgentSerializationValuePrimitives.ts`, `src/content/serialization/pageAgentSerializationProps.ts`, `src/content/serialization/pageAgentSerializationPropsBudget.ts`, `src/content/serialization/pageAgentSerializationPropsEntries.ts`, `src/content/serialization/pageAgentSerializationCore.ts`, `src/content/serialization/pageAgentSerializationCoreInternalKey.ts`, `src/content/serialization/pageAgentSerializationCoreDehydrated.ts`, `src/content/serialization/pageAgentSerializationCoreSeenStore.ts`, `src/content/serialization/pageAgentSerializationStrategies.ts`, `src/content/serialization/pageAgentSerializationStrategyTypes.ts`, `src/content/serialization/pageAgentSerializationCollectionStrategies.ts`, `src/content/serialization/pageAgentSerializationObjectStrategy.ts`, `src/content/serialization/pageAgentCollectionPath.ts`, `src/content/serialization/pageAgentSerializerSummary.ts`, `src/content/serialization/pageAgentSerializerOptions.ts`, `src/content/reactRuntimeHook.ts`, `src/content/reactRuntimeHookLifecycle.ts`
 - 역할: React Fiber/DOM 실제 접근, commit 이벤트 감지
 
 ## 3. 빌드 결과와 엔트리 매핑
@@ -174,16 +174,18 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentDomHighlightState.ts`: highlight/preview 스타일 snapshot 저장·복원·clear와 selector 기반 스타일 적용 상태 전이 전담
 - `pageAgentDomHighlight.ts`: highlight/preview 응답 payload(tag/selector/domPath/rect) 조립 오케스트레이션 전담
 - `pageAgent.ts`: 설치 가드와 runtime bootstrap 엔트리 전담
-- `pageAgentRuntime.ts`: 요청 method 라우팅/핸들러 조립과 bridge 설치 전담
+- `pageAgentRuntime.ts`: main-world 진입용 runtime 설치 facade 전담
 
 ## 6.2 pageAgent Bridge 모듈 분리 규칙
 
 - `pageAgentBridgeMessages.ts`: bridge request payload 검증(`readBridgeRequestMessage`)과 공통 response 전송(`postBridgeResponse`) 전담
 - `pageAgentBridge.ts`: window message 리스너 설치와 bridge message pipeline(request 검증 -> method 실행 -> response 전송) 오케스트레이션, non-string method 문자열 정규화 전담
-- `pageAgentRuntime.ts`: bridge 설치 엔트리와 runtime 옵션(bridge source/action) 주입 전담
+- `pageAgentRuntime.ts`: main-world runtime 설치 facade(install flow 위임) 전담
 - `runtime/pageAgentRuntimeConfig.ts`: runtime method executor 기본 옵션(storage key, budget)을 생성하는 설정 계층 전담
 - `runtime/pageAgentRuntimeDomHandlers.ts`: DOM handler args 캐스팅(unknown -> typed payload) 어댑터 계층 전담
 - `runtime/pageAgentRuntimeInspectHandlers.ts`: inspect 의존성(fiber/hook/serializer/function inspect registry) 결선 조립 전담
+- `runtime/pageAgentRuntimeMethodHandlers.ts`: DOM/inspect handler를 method router 입력 형태로 조립하는 결선 계층 전담
+- `runtime/pageAgentRuntimeInstallFlow.ts`: bridge source/action + method executor를 결합해 runtime bridge 설치를 수행하는 install flow 전담
 - `runtime/pageAgentRuntimeTypes.ts`: runtime method executor 옵션/함수 타입 정의 전담
 - `pageAgentRuntimeBootstrap.ts`: dom handler + inspect handler를 method executor로 조합하는 bootstrap 오케스트레이션 전담
 
@@ -252,8 +254,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectTarget.ts`: target element/nearest/root resolution과 inspectPath targetFiber 조회 fallback 전담
 - `pageAgentInspectComponentWalk.ts`: inspect 대상 root fiber 트리를 순회해 component 목록과 target 후보 인덱스 계산(closest DOM target distance 우선) 전담
 - `pageAgentInspect.ts`: `reactInspect`/`reactInspectPath` 오케스트레이션과 응답 조립 전담
-- `pageAgentRuntime.ts`: bridge 설치 entry와 runtime option 주입 전담
+- `pageAgentRuntime.ts`: runtime 설치 facade와 호출 진입점 전담
 - `runtime/pageAgentRuntimeInspectHandlers.ts`: inspect/helper 의존성 결선 전담
+- `runtime/pageAgentRuntimeMethodHandlers.ts`: method router 주입용 handler 결선 전담
+- `runtime/pageAgentRuntimeInstallFlow.ts`: bridge 설치 install flow 전담
 - `pageAgentRuntimeBootstrap.ts`: method executor 생성 오케스트레이션 전담
 
 ## 6.6 pageAgent Fiber Search 모듈 분리 규칙
@@ -288,23 +292,23 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentSerializerOptions.ts`: serializer 옵션(`maxDepth`, `maxObjectKeys` 등) 입력을 내부 한계값으로 정규화 전담
 - `pageAgentSerializerSummary.ts`: React-like type name 해석과 `children` 요약 직렬화(`summarizeChildrenValue`) 전담
 - `pageAgentCollectionPath.ts`: inspectPath 특수 collection path token(`__ec_map_entry__`, `__ec_map_value__`, `__ec_set_entry__`) 해석 전담
-- `pageAgentRuntime.ts`/`pageAgentInspect.ts`: serializer/collection path 유틸을 호출해 hook/props 데이터 직렬화와 path 탐색 흐름만 조립
+- `pageAgentRuntimeBootstrap.ts`/`pageAgentInspect.ts`: serializer/collection path 유틸을 호출해 hook/props 데이터 직렬화와 path 탐색 흐름만 조립
 
 ## 6.8 pageAgent Hook State 모듈 분리 규칙
 
 - `pageAgentHookState.ts`: hook 이름 추론(`inferHookName`, queue/reducer/memoizedState 패턴)과 Ref hook 상태 표시 정규화(`normalizeHookStateForDisplay`) 전담
-- `pageAgentRuntime.ts`: fiber hook 순회 중 hook state helper를 호출해 목록 오케스트레이션만 담당
+- `runtime/pageAgentRuntimeInspectHandlers.ts`: fiber hook 순회 중 hook state helper를 호출해 목록 오케스트레이션만 담당
 
 ## 6.9 pageAgent Hook Metadata 모듈 분리 규칙
 
 - `pageAgentHookMetadata.ts`: custom hook metadata(`groupNames`, `groupPaths`, primitive metadata`)를 hooks 배열에 병합하고 fallback hook slot 보강/빈 groupPath 정규화 규칙 전담
 - 2026-02 리팩터링: main-world pageAgent 경로의 잔여 `@ts-nocheck` 제거 완료(`pageAgentBridge.ts`, `pageAgentRuntime.ts`, `pageAgentInspectPathFlow.ts`, `pageAgentHookState.ts`, `pageAgentHookInspectContext.ts`, `pageAgentHookInspectRender.ts`, `pageAgentHookMetadata.ts`)
-- `pageAgentRuntime.ts`: hook 순회 결과와 custom metadata를 결합하기 위한 호출 지점만 담당
+- `runtime/pageAgentRuntimeInspectHandlers.ts`: hook 순회 결과와 custom metadata를 결합하기 위한 호출 지점만 담당
 
 ## 6.10 pageAgent Hook Info 모듈 분리 규칙
 
 - `pageAgentHooksInfo.ts`: fiber hook linked-list 순회(`getHooksRootValue`), includeCustomGroups 옵션 안전 파싱, custom group metadata 병합, hook 개수 집계(`getHooksCount`), panel 전달용 hook payload 직렬화(`getHooksInfo`) 전담
-- `pageAgentRuntime.ts`: hook info helper 생성과 inspect 흐름 dependency 결선만 담당
+- `runtime/pageAgentRuntimeInspectHandlers.ts`: hook info helper 생성과 inspect 흐름 dependency 결선만 담당
 
 ## 6.11 Shared 배럴 export 규칙
 
@@ -838,7 +842,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/content/pageAgentRuntimeBootstrap.ts`
 - `src/content/runtime/pageAgentRuntimeConfig.ts`
 - `src/content/runtime/pageAgentRuntimeDomHandlers.ts`
+- `src/content/runtime/pageAgentRuntimeMethodHandlers.ts`
 - `src/content/runtime/pageAgentRuntimeInspectHandlers.ts`
+- `src/content/runtime/pageAgentRuntimeInstallFlow.ts`
 - `src/content/runtime/pageAgentRuntimeTypes.ts`
 - `src/content/dom/pageAgentDom.ts`
 - `src/content/dom/pageAgentDomSelectors.ts`

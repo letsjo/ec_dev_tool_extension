@@ -1,34 +1,15 @@
-import { installPageAgentBridge } from './pageAgentBridge';
-import { createPageAgentRuntimeMethodExecutor } from './pageAgentRuntimeBootstrap';
-import { createDefaultPageAgentRuntimeMethodExecutorOptions } from './runtime/pageAgentRuntimeConfig';
+import { installPageAgentRuntimeFlow } from './runtime/pageAgentRuntimeInstallFlow';
+import type { InstallPageAgentRuntimeOptions } from './runtime/pageAgentRuntimeInstallFlow';
 
-interface InstallPageAgentRuntimeOptions {
-  bridgeSource: string;
-  requestAction: string;
-  responseAction: string;
-}
-
-const DEFAULT_OPTIONS: InstallPageAgentRuntimeOptions = {
-  bridgeSource: 'EC_DEV_TOOL_PAGE_AGENT_BRIDGE',
-  requestAction: 'request',
-  responseAction: 'response',
-};
-
-/** pageAgent 도메인 핸들러를 조립하고 bridge request handler를 설치한다. */
+/**
+ * main world entry에서 사용하는 pageAgent runtime 설치 진입점.
+ * 실제 bridge/install 결선은 runtime install flow 모듈로 위임한다.
+ */
 function installPageAgentRuntime(
   runtimeWindow: Window,
-  options: InstallPageAgentRuntimeOptions = DEFAULT_OPTIONS,
+  options?: InstallPageAgentRuntimeOptions,
 ): void {
-  const executeMethod = createPageAgentRuntimeMethodExecutor(
-    createDefaultPageAgentRuntimeMethodExecutorOptions(runtimeWindow),
-  );
-
-  installPageAgentBridge({
-    bridgeSource: options.bridgeSource,
-    requestAction: options.requestAction,
-    responseAction: options.responseAction,
-    executeMethod,
-  });
+  installPageAgentRuntimeFlow(runtimeWindow, options);
 }
 
 export { installPageAgentRuntime };

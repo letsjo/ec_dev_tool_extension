@@ -1,7 +1,6 @@
 import { createPageDomHandlers } from './dom/pageAgentDom';
 import { createPageAgentMethodExecutor } from './pageAgentMethods';
-import { createPageAgentRuntimeDomMethodHandlers } from './runtime/pageAgentRuntimeDomHandlers';
-import { createPageAgentRuntimeInspectHandlers } from './runtime/pageAgentRuntimeInspectHandlers';
+import { createPageAgentRuntimeMethodHandlers } from './runtime/pageAgentRuntimeMethodHandlers';
 import type {
   CreatePageAgentRuntimeMethodExecutorOptions,
   MethodExecutor,
@@ -19,18 +18,12 @@ function createPageAgentRuntimeMethodExecutor(
     hoverPreviewStorageKey: options.hoverPreviewStorageKey,
   });
 
-  const { inspectReactComponents, inspectReactPath } =
-    createPageAgentRuntimeInspectHandlers(options);
-
-  return createPageAgentMethodExecutor({
-    domHandlers: createPageAgentRuntimeDomMethodHandlers(domHandlers),
-    inspectReactComponents(args) {
-      return inspectReactComponents(args);
-    },
-    inspectReactPath(args) {
-      return inspectReactPath(args as Record<string, unknown> | null | undefined);
-    },
-  });
+  return createPageAgentMethodExecutor(
+    createPageAgentRuntimeMethodHandlers({
+      runtimeOptions: options,
+      domHandlers,
+    }),
+  );
 }
 
 export { createPageAgentRuntimeMethodExecutor };

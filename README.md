@@ -88,7 +88,9 @@ npm test
 │   │   ├── runtime/
 │   │   │   ├── pageAgentRuntimeConfig.ts # runtime 기본 옵션(storage key/budget)
 │   │   │   ├── pageAgentRuntimeDomHandlers.ts # DOM handler adapter(unknown payload 경계)
-│   │   │   └── pageAgentRuntimeInspectHandlers.ts # inspect 의존성 결선 helper
+│   │   │   ├── pageAgentRuntimeMethodHandlers.ts # DOM/inspect handler -> method router 결선
+│   │   │   ├── pageAgentRuntimeInspectHandlers.ts # inspect 의존성 결선 helper
+│   │   │   └── pageAgentRuntimeInstallFlow.ts # bridge/action + executor 설치 플로우
 │   │   ├── serialization/                # pageAgent serializer 전략/props/path 토큰 모듈
 │   │   ├── reactRuntimeHook.ts           # React commit 감지 훅
 │   │   └── pageAgent.ts                  # main world React/DOM inspector 실행기
