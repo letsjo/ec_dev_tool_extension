@@ -3,7 +3,7 @@
  * 엔트리 파일은 설치 중복 방지와 runtime 조립 진입만 담당한다.
  */
 
-import { installPageAgentRuntime } from './pageAgentRuntime';
+import { installPageAgentRuntime } from './runtime/pageAgentRuntime';
 
 const PAGE_AGENT_INSTALLED_KEY = '__EC_DEV_TOOL_PAGE_AGENT_INSTALLED__';
 

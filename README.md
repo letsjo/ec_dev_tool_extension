@@ -101,6 +101,8 @@ npm test
 │   │   ├── hooks/                        # hook runtime/metadata/grouping + inspect dispatcher 보조 모듈
 │   │   ├── runtime/
 │   │   │   ├── pageAgentRuntimeConfig.ts # runtime 기본 옵션(storage key/budget)
+│   │   │   ├── pageAgentRuntime.ts # main world runtime 설치 진입점
+│   │   │   ├── pageAgentRuntimeBootstrap.ts # method executor 생성 조립
 │   │   │   ├── pageAgentRuntimeDomHandlers.ts # DOM handler adapter(unknown payload 경계)
 │   │   │   ├── pageAgentRuntimeMethodHandlers.ts # DOM/inspect handler -> method router 결선
 │   │   │   ├── pageAgentRuntimeInspectHandlers.ts # inspect 의존성 결선 helper

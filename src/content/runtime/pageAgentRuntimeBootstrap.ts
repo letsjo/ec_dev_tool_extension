@@ -1,10 +1,10 @@
-import { createPageDomHandlers } from './dom/pageAgentDom';
-import { createPageAgentMethodExecutor } from './pageAgentMethods';
-import { createPageAgentRuntimeMethodHandlers } from './runtime/pageAgentRuntimeMethodHandlers';
+import { createPageDomHandlers } from '../dom/pageAgentDom';
+import { createPageAgentMethodExecutor } from '../pageAgentMethods';
+import { createPageAgentRuntimeMethodHandlers } from './pageAgentRuntimeMethodHandlers';
 import type {
   CreatePageAgentRuntimeMethodExecutorOptions,
   MethodExecutor,
-} from './runtime/pageAgentRuntimeTypes';
+} from './pageAgentRuntimeTypes';
 
 /**
  * pageAgent runtime 초기화 단계(도메인 핸들러 + inspect + method executor)를 조립한다.

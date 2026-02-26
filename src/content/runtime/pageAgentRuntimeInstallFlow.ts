@@ -1,5 +1,5 @@
 import { installPageAgentBridge } from '../pageAgentBridge';
-import { createPageAgentRuntimeMethodExecutor } from '../pageAgentRuntimeBootstrap';
+import { createPageAgentRuntimeMethodExecutor } from './pageAgentRuntimeBootstrap';
 import { createDefaultPageAgentRuntimeMethodExecutorOptions } from './pageAgentRuntimeConfig';
 
 interface InstallPageAgentRuntimeOptions {

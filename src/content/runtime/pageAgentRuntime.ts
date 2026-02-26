@@ -1,5 +1,5 @@
-import { installPageAgentRuntimeFlow } from './runtime/pageAgentRuntimeInstallFlow';
-import type { InstallPageAgentRuntimeOptions } from './runtime/pageAgentRuntimeInstallFlow';
+import { installPageAgentRuntimeFlow } from './pageAgentRuntimeInstallFlow';
+import type { InstallPageAgentRuntimeOptions } from './pageAgentRuntimeInstallFlow';
 
 /**
  * main world entry에서 사용하는 pageAgent runtime 설치 진입점.
