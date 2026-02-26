@@ -1,11 +1,11 @@
-import type { PickPoint } from '../../shared/inspector';
-import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from './elementPicker/bridgeFlow';
-import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from './lifecycle/runtimeMessageBinding';
-import { createPanelTeardownFlow as createPanelTeardownFlowValue } from './lifecycle/panelTeardownFlow';
-import type { PanelControllerContext } from './controllerContext';
-import type { RuntimeRefreshLookup } from './reactInspector/lookup';
-import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from './runtimeRefresh/panelRuntimeRefreshFlow';
-import type { RuntimeRefreshScheduler } from './runtimeRefresh/scheduler';
+import type { PickPoint } from '../../../shared/inspector';
+import { createElementPickerBridgeFlow as createElementPickerBridgeFlowValue } from '../elementPicker/bridgeFlow';
+import { bindRuntimeMessageListener as bindRuntimeMessageListenerValue } from '../lifecycle/runtimeMessageBinding';
+import { createPanelTeardownFlow as createPanelTeardownFlowValue } from '../lifecycle/panelTeardownFlow';
+import type { PanelControllerContext } from './context';
+import type { RuntimeRefreshLookup } from '../reactInspector/lookup';
+import { createPanelRuntimeRefreshFlow as createPanelRuntimeRefreshFlowValue } from '../runtimeRefresh/panelRuntimeRefreshFlow';
+import type { RuntimeRefreshScheduler } from '../runtimeRefresh/scheduler';
 
 interface CreatePanelControllerRuntimeOptions {
   panelControllerContext: PanelControllerContext;

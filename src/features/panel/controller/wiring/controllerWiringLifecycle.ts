@@ -1,13 +1,13 @@
 import type { PickPoint } from '../../../../shared/inspector';
-import { createPanelControllerBootstrap as createPanelControllerBootstrapValue } from '../../controllerBootstrap';
-import type { PanelControllerContext } from '../../controllerContext';
+import { createPanelControllerBootstrap as createPanelControllerBootstrapValue } from '../bootstrap';
+import type { PanelControllerContext } from '../context';
 import { mountPanelView as mountPanelViewValue } from '../../domRefs';
 import {
   addInspectedPageNavigatedListener as addInspectedPageNavigatedListenerValue,
   getInspectedTabId as getInspectedTabIdValue,
   removeInspectedPageNavigatedListener as removeInspectedPageNavigatedListenerValue,
 } from '../../devtoolsNetworkBridge';
-import { createPanelControllerRuntime as createPanelControllerRuntimeValue } from '../../controllerRuntime';
+import { createPanelControllerRuntime as createPanelControllerRuntimeValue } from '../runtime';
 import {
   createElementSelectionFetchOptions as createElementSelectionFetchOptionsValue,
   createRuntimeRefreshFetchOptions as createRuntimeRefreshFetchOptionsValue,

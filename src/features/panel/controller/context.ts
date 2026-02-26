@@ -1,6 +1,6 @@
-import type { PanelDomRefs } from './domRefs';
-import type { WorkspaceLayoutManager } from './workspace/manager';
-import type { WorkspacePanelId } from './workspacePanels';
+import type { PanelDomRefs } from '../domRefs';
+import type { WorkspaceLayoutManager } from '../workspace/manager';
+import type { WorkspacePanelId } from '../workspacePanels';
 
 interface CreatePanelControllerContextOptions {
   initPanelDomRefs: () => PanelDomRefs;

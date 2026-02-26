@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPanelControllerBootstrap } from '../../src/features/panel/controllerBootstrap';
-import type { PanelControllerContext } from '../../src/features/panel/controllerContext';
+import { createPanelControllerBootstrap } from '../../src/features/panel/controller/bootstrap';
+import type { PanelControllerContext } from '../../src/features/panel/controller/context';
 
 function createContextStub(): PanelControllerContext {
   return {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelDomRefs } from '../../src/features/panel/domRefs';
-import { createPanelControllerContext } from '../../src/features/panel/controllerContext';
+import { createPanelControllerContext } from '../../src/features/panel/controller/context';
 import type { WorkspaceLayoutManager } from '../../src/features/panel/workspace/manager';
 
 function createDomRefsFixture(): PanelDomRefs {

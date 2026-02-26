@@ -62,6 +62,9 @@ npm test
 │   │   └── panel/
 │   │       ├── controller.ts             # 패널 기능 오케스트레이션 로직
 │   │       ├── controller/
+│   │       │   ├── bootstrap.ts          # 패널 bootstrap/workspace 초기화 결선
+│   │       │   ├── context.ts            # panel DOM ref/lifecycle mutable 컨텍스트
+│   │       │   ├── runtime.ts            # runtime refresh + picker + teardown 결선
 │   │       │   └── wiring/               # controller 결선 조립(wiring/data-flow/lifecycle/react)
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/

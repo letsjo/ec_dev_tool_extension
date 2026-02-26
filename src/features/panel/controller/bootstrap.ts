@@ -1,8 +1,8 @@
-import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from './lifecycle/bootstrapFlow';
-import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializationValue } from './lifecycle/panelWorkspaceInitialization';
-import type { PanelControllerContext } from './controllerContext';
-import type { createWorkspaceLayoutManager as createWorkspaceLayoutManagerValue } from './workspace/manager';
-import type { initWheelScrollFallback as initWheelScrollFallbackValue } from './workspace/wheelScrollFallback';
+import { createPanelBootstrapFlow as createPanelBootstrapFlowValue } from '../lifecycle/bootstrapFlow';
+import { createPanelWorkspaceInitialization as createPanelWorkspaceInitializationValue } from '../lifecycle/panelWorkspaceInitialization';
+import type { PanelControllerContext } from './context';
+import type { createWorkspaceLayoutManager as createWorkspaceLayoutManagerValue } from '../workspace/manager';
+import type { initWheelScrollFallback as initWheelScrollFallbackValue } from '../workspace/wheelScrollFallback';
 
 interface CreatePanelControllerBootstrapOptions {
   panelControllerContext: PanelControllerContext;

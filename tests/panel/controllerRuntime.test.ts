@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { RuntimeRefreshLookup } from '../../src/features/panel/reactInspector/lookup';
-import { createPanelControllerRuntime } from '../../src/features/panel/controllerRuntime';
-import type { PanelControllerContext } from '../../src/features/panel/controllerContext';
+import { createPanelControllerRuntime } from '../../src/features/panel/controller/runtime';
+import type { PanelControllerContext } from '../../src/features/panel/controller/context';
 import type { RuntimeRefreshScheduler } from '../../src/features/panel/runtimeRefresh/scheduler';
 
 function createContextStub() {

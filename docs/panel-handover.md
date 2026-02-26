@@ -13,7 +13,7 @@
 런타임은 크게 4개 실행 컨텍스트로 나뉩니다.
 
 1. DevTools panel context
-- 파일: `src/features/panel/controller.ts`, `src/features/panel/controller/wiring/controllerWiring.ts`, `src/features/panel/controller/wiring/controllerWiringDataFlows.ts`, `src/features/panel/controller/wiring/controllerWiringReactInspector.ts`, `src/features/panel/controller/wiring/controllerWiringLifecycle.ts`, `src/features/panel/controllerContext.ts`, `src/features/panel/controllerRuntime.ts`, `src/features/panel/controllerBootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
+- 파일: `src/features/panel/controller.ts`, `src/features/panel/controller/wiring/controllerWiring.ts`, `src/features/panel/controller/wiring/controllerWiringDataFlows.ts`, `src/features/panel/controller/wiring/controllerWiringReactInspector.ts`, `src/features/panel/controller/wiring/controllerWiringLifecycle.ts`, `src/features/panel/controller/context.ts`, `src/features/panel/controller/runtime.ts`, `src/features/panel/controller/bootstrap.ts`, `src/features/panel/devtoolsNetworkBridge.ts`, `src/features/panel/domRefs.ts`, `src/features/panel/bridge/**`, `src/features/panel/domTree/**`, `src/features/panel/pageAgent/**`, `src/features/panel/reactInspector/**`, `src/features/panel/runtimeRefresh/**`, `src/features/panel/workspace/**`, `src/ui/sections/shell/PanelViewSection.tsx`, `src/ui/sections/**`, `src/ui/panels/**`, `src/ui/components/**`
 - 역할: UI 렌더링, 사용자 이벤트 처리, 데이터 조회 트리거
 
 2. Background service worker
@@ -66,9 +66,9 @@
   - `domRefs.ts` 유틸로 PanelView 마운트(`mountPanelView`)와 필수 DOM ref 수집(`initPanelDomRefs`) 위임
   - `controllerWiring.ts` 유틸로 pane/target/dom/react/runtime/bootstrap 결선 조립 책임 위임
   - `devtoolsNetworkBridge.ts` 유틸로 inspected tab id 조회와 network.onNavigated listener add/remove 결선 책임 위임
-  - `controllerContext.ts` 유틸로 panel DOM ref/picker 상태/workspace lifecycle 핸들 저장·조회 책임 위임
-  - `controllerRuntime.ts` 유틸로 runtime refresh + element picker bridge + runtime message listener + teardown 결선 책임 위임
-  - `controllerBootstrap.ts` 유틸로 workspace 초기화 결선 + bootstrap flow 결선 책임 위임
+  - `controller/context.ts` 유틸로 panel DOM ref/picker 상태/workspace lifecycle 핸들 저장·조회 책임 위임
+  - `controller/runtime.ts` 유틸로 runtime refresh + element picker bridge + runtime message listener + teardown 결선 책임 위임
+  - `controller/bootstrap.ts` 유틸로 workspace 초기화 결선 + bootstrap flow 결선 책임 위임
   - `lifecycle/bootstrapFlow.ts`, `lifecycle/panelWorkspaceInitialization.ts`, `lifecycle/runtimeMessageBinding.ts` 유틸로 패널 부트스트랩 순서(마운트/초기 문구/이벤트 바인딩), workspace/wheel 초기화 결선, runtime message listener 결선/해제 위임
   - `targetFetch/flow.ts` 유틸로 Raw Result 패널의 target 목록 렌더링과 `fetchTargetData` 요청/응답 문구 반영 위임
   - `paneState.ts`, `paneSetters.ts` 유틸로 패널 텍스트/empty/error 클래스 토글 규칙과 pane setter 결선 위임
@@ -414,8 +414,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `wheelScrollFallback.ts`: 패널 wheel capture 보정 리스너 설치/해제
 - `controller.ts`: panel 실행 엔트리(`runPanel`)와 fatal error fallback 렌더만 담당
 - `controllerWiring.ts`: panel 도메인 결선(pane/target/dom/react/runtime/bootstrap) 조립과 `bootstrapPanel` 핸들 생성 전담
-- `controllerRuntime.ts`: runtime refresh 스케줄러, element picker 브리지, runtime message listener, unload teardown 결선 전담
-- `controllerBootstrap.ts`: workspace 초기화(createWorkspaceLayoutManager/initWheelScrollFallback)와 bootstrap flow 결선 전담
+- `controller/runtime.ts`: runtime refresh 스케줄러, element picker 브리지, runtime message listener, unload teardown 결선 전담
+- `controller/bootstrap.ts`: workspace 초기화(createWorkspaceLayoutManager/initWheelScrollFallback)와 bootstrap flow 결선 전담
 
 ## 7.2 React Inspector 모듈 분리 규칙
 
@@ -480,9 +480,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/controllerFlowTypes.ts`: controller flow 결선 옵션/공용 pane setter 타입 정의 전담
 - `reactInspector/controllerFlowInteractionWiring.ts`: list/detail render flow, selection/search binding, detail queue와 no-result 상태 결선 전담
 - `reactInspector/controllerFlows.ts`: interaction wiring + fetch/reset/apply 파이프라인 조립 전담(DOM ref getter 기반 지연 접근 + derivation helper 조합)
-- `controllerContext.ts`: panel DOM ref, picker mode 상태, workspace/runtime listener 해제 핸들을 컨텍스트 객체로 수집해 controller 오케스트레이션과 상태 저장 책임 분리
-- `controllerRuntime.ts`: runtime refresh + element picker + runtime message listener + teardown 결선을 조합해 controller에서 런타임 이벤트 결선 책임 분리
-- `controllerBootstrap.ts`: workspace initialization + bootstrap flow 결선을 조합해 controller에서 부트스트랩 wiring 책임 분리
+- `controller/context.ts`: panel DOM ref, picker mode 상태, workspace/runtime listener 해제 핸들을 컨텍스트 객체로 수집해 controller 오케스트레이션과 상태 저장 책임 분리
+- `controller/runtime.ts`: runtime refresh + element picker + runtime message listener + teardown 결선을 조합해 controller에서 런타임 이벤트 결선 책임 분리
+- `controller/bootstrap.ts`: workspace initialization + bootstrap flow 결선을 조합해 controller에서 부트스트랩 wiring 책임 분리
 - `reactInspector/search/searchInputFlow.ts`: 검색 입력 이벤트 시 no-result 처리, 조상 확장, 선택 보정, 상태 문구 갱신 오케스트레이션 전담
 - `reactInspector/search/searchInputBindingFlow.ts`: 검색 input DOM 값 읽기, query 상태 갱신, searchInputFlow 결선 전담
 - `reactInspector/viewState.ts`: React Inspector 기본/로딩/빈 목록 placeholder 상태와 list empty 문구 생성 규칙 전담
@@ -502,10 +502,10 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `reactInspector/detail/detailFetchQueueMessages.ts`: 상세 fetch 실패 문구 템플릿과 stale selection 기본 문구 전담
 - `reactInspector/detail/detailFetchQueueResponse.ts`: reactInspect 상세 응답(payload/error/형식 오류/missing detail)을 detail queue용 결과로 정규화 전담
 - `reactInspector/detail/detailFetchQueue.ts`: 선택 컴포넌트 상세 데이터 지연 조회 큐 오케스트레이션과 queue state/response/messages helper 결선 전담
-- `controllerWiring.ts`: panel 이벤트/도메인 결선을 조립하고, DOM/lifecycle mutable 상태는 `controllerContext.ts`, 런타임 이벤트 결선은 `controllerRuntime.ts`, 부트스트랩 결선은 `controllerBootstrap.ts`, React Inspector 상태는 `reactInspector/controllerState.ts`/`reactInspector/controllerStateModel.ts`, 결선 파이프라인은 `reactInspector/controllerFlows.ts`로 위임
+- `controllerWiring.ts`: panel 이벤트/도메인 결선을 조립하고, DOM/lifecycle mutable 상태는 `controller/context.ts`, 런타임 이벤트 결선은 `controller/runtime.ts`, 부트스트랩 결선은 `controller/bootstrap.ts`, React Inspector 상태는 `reactInspector/controllerState.ts`/`reactInspector/controllerStateModel.ts`, 결선 파이프라인은 `reactInspector/controllerFlows.ts`로 위임
 - `controllerWiringDataFlows.ts`: `targetFetch/flow.ts`, `domTree/fetchFlow.ts`, `pageAgent/selectionSync.ts`를 결선해 `populateTargetSelect`/`onFetch`/`fetchDomTree`/selection sync 핸들을 조립
 - `controllerWiringReactInspector.ts`: `reactInspector/path/pathBindings.ts`와 `reactInspector/controllerFlows.ts`를 연결해 `fetchReactInfo`/`onComponentSearchInput` 핸들을 조립
-- `controllerWiringLifecycle.ts`: `controllerRuntime.ts`와 `controllerBootstrap.ts`를 결선하고 runtime fetch 옵션 프리셋/네비게이션 리스너/초기 refresh 호출을 조립
+- `controllerWiringLifecycle.ts`: `controller/runtime.ts`와 `controller/bootstrap.ts`를 결선하고 runtime fetch 옵션 프리셋/네비게이션 리스너/초기 refresh 호출을 조립
 - `controller.ts`: `controllerWiring.ts`가 반환한 `bootstrapPanel` 실행과 fatal error fallback만 담당
 - `domRefs.ts`: PanelView 마운트와 필수 DOM ref 수집/검증 전담
 
@@ -545,8 +545,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 7.9 Panel Element Picker Bridge 모듈 분리 규칙
 
 - `elementPicker/bridgeFlow.ts`: 요소 선택 시작 요청(`startElementPicker`)과 runtime 메시지 분기(`elementPickerStopped`/`pageRuntimeChanged`/`elementSelected`) 규칙, Selected Element 출력 텍스트 조립 전담
-- `controllerRuntime.ts`: picker 상태 setter, DOM/React fetch 액션, runtime refresh scheduler를 주입하고 runtime listener 결선까지 조립
-- `controllerWiring.ts`: `controllerRuntime.ts`를 bootstrap flow와 결합하는 결선 오케스트레이션 전담
+- `controller/runtime.ts`: picker 상태 setter, DOM/React fetch 액션, runtime refresh scheduler를 주입하고 runtime listener 결선까지 조립
+- `controllerWiring.ts`: `controller/runtime.ts`를 bootstrap flow와 결합하는 결선 오케스트레이션 전담
 
 ## 7.10 Panel Target Fetch 모듈 분리 규칙
 
@@ -560,8 +560,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `lifecycle/runtimeMessageBinding.ts`: runtime message listener 결선/해제 함수 전담
 - `lifecycle/fatalErrorView.ts`: 패널 bootstrap 실패 시 body 에러 뷰 렌더(기존 DOM 초기화 + 메시지 표시) 전담
 - `lifecycle/panelTeardownFlow.ts`: unload 시 workspace manager/wheel fallback/runtime message listener/runtime scheduler/nav listener teardown 순서 전담
-- `controllerRuntime.ts`: runtime message binding/teardown flow/runtimerefresh+picker 결선을 구성하고, controller에 onSelect/onUnload 핸들을 제공
-- `controllerBootstrap.ts`: workspace initialization + bootstrap flow를 결선하고 controller에 `bootstrapPanel` 핸들을 제공
+- `controller/runtime.ts`: runtime message binding/teardown flow/runtimerefresh+picker 결선을 구성하고, controller에 onSelect/onUnload 핸들을 제공
+- `controller/bootstrap.ts`: workspace initialization + bootstrap flow를 결선하고 controller에 `bootstrapPanel` 핸들을 제공
 - `controllerWiring.ts`: bootstrap/runtime/teardown flow에 의존성을 주입하고 상위 결선을 조립
 - `controller.ts`: `bootstrapPanel` 실행과 fatal error fallback 렌더만 담당
 
@@ -665,7 +665,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 4. `src/ui/panels/`에 새 패널 컴포넌트 파일 추가
 5. `src/ui/panels/index.ts` export 등록
 6. `src/ui/sections/workspace/WorkspacePanelsSection.tsx` 조립 목록에 추가
-7. `controllerWiring.ts`(필요 시 `controllerContext.ts`)에서 필요한 DOM ref/getter 결선 추가
+7. `controllerWiring.ts`(필요 시 `controller/context.ts`)에서 필요한 DOM ref/getter 결선 추가
 8. `panel.html`에서 필요 스타일 추가
 
 ### 새 pageAgent 메서드 추가
@@ -682,9 +682,9 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 - `src/features/panel/controller.ts`
 - `src/features/panel/controller/wiring/controllerWiring.ts`
-- `src/features/panel/controllerContext.ts`
-- `src/features/panel/controllerRuntime.ts`
-- `src/features/panel/controllerBootstrap.ts`
+- `src/features/panel/controller/context.ts`
+- `src/features/panel/controller/runtime.ts`
+- `src/features/panel/controller/bootstrap.ts`
 - `src/features/panel/domRefs.ts`
 - `src/features/panel/bridge/pageAgentClient.ts`
 - `src/features/panel/domTree/fetchFlow.ts`
@@ -919,7 +919,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/reactInspector/controllerFlowInteractionWiring.test.ts`: `controllerFlowInteractionWiring.ts`의 list/detail/search/selection 핸들러 결선과 detail queue reset 핸들 노출 분기
   - `tests/reactInspector/hookTreeModel.test.ts`: `hookTreeModel.ts`/`hookTreeNormalization.ts`/`hookTreeBuilders.ts`의 explicit group path 트리, fallback group 빌드, group->groupPath 보정 분기
   - `tests/panel/controllerWiring.test.ts`: `controllerWiring.ts`가 panel bootstrap 핸들을 생성하는 최소 결선 smoke test
-  - `tests/panel/controllerContext.test.ts`: `controllerContext.ts`의 DOM ref 초기화 가드, picker 버튼 상태 토글, lifecycle handle setter/getter 분기
+  - `tests/panel/controllerContext.test.ts`: `controller/context.ts`의 DOM ref 초기화 가드, picker 버튼 상태 토글, lifecycle handle setter/getter 분기
   - `tests/reactInspector/searchTextCache.test.ts`: `searchTextCache.ts`의 토큰 생성, 캐시 재사용/재빌드, 단일 인덱스 patch 분기
   - `tests/reactInspector/searchFilter.test.ts`: `searchFilter.ts`의 terms 매칭 + 조상 가시성 포함, 조상 펼침, 접힘 id 복원 분기
   - `tests/reactInspector/resetStateFlow.test.ts`: `resetStateFlow.ts`의 상태/캐시 초기화와 reset pane 상태 반영 분기
@@ -930,8 +930,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/lifecycle/panelTeardownFlow.test.ts`: `panelTeardownFlow.ts`의 unload 자원 해제(workspace/wheel/runtime message listener/runtime scheduler/nav listener) 분기
   - `tests/runtimeRefresh/panelRuntimeRefreshFlow.test.ts`: `panelRuntimeRefreshFlow.ts`의 scheduler 결선과 navigation reset/foreground refresh 처리
   - `tests/runtimeRefresh/scheduler.test.ts`: `scheduler.ts`의 debounce 병합, min interval 보장, in-flight queued 실행, `reset`/`dispose` 상태 정리 분기
-  - `tests/panel/controllerRuntime.test.ts`: `controllerRuntime.ts`의 runtime refresh/picker/teardown 결선과 runtime listener remove handle 저장 분기
-  - `tests/panel/controllerBootstrap.test.ts`: `controllerBootstrap.ts`의 workspace initialization + bootstrap flow 결선(컨텍스트 getter 주입) 분기
+  - `tests/panel/controllerRuntime.test.ts`: `controller/runtime.ts`의 runtime refresh/picker/teardown 결선과 runtime listener remove handle 저장 분기
+  - `tests/panel/controllerBootstrap.test.ts`: `controller/bootstrap.ts`의 workspace initialization + bootstrap flow 결선(컨텍스트 getter 주입) 분기
   - `tests/workspace/workspaceFlows.test.ts`: `dragDropFlow.ts`, `resizeFlow.ts`의 이벤트 전이/상태 정리/persist 호출
   - `tests/workspace/workspaceDockLogic.test.ts`: `dragOverTarget.ts`, `dockDropApply.ts`의 drop target 계산과 레이아웃 변경 분기
   - `tests/workspace/workspaceLayoutModelModules.test.ts`: `layoutTypes.ts`/`layoutTreeOps.ts`/`layoutVisibility.ts`의 path/parse, prune/dedupe, visible id 산출 분기

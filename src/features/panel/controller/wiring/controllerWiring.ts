@@ -5,7 +5,7 @@ import { createControllerWiringLifecycle } from './controllerWiringLifecycle';
 import { createReactInspectorControllerState } from '../../reactInspector/controllerState';
 import { callInspectedPageAgent } from '../../bridge/pageAgentClient';
 import { createPanelPaneSetters } from '../../paneSetters';
-import { createPanelControllerContext } from '../../controllerContext';
+import { createPanelControllerContext } from '../context';
 
 const DETAIL_FETCH_RETRY_COOLDOWN_MS = 2500;
 
