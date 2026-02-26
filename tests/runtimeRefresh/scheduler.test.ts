@@ -5,6 +5,7 @@ interface SchedulerHarnessOptions {
   minIntervalMs?: number;
   debounceMs?: number;
   isPickerModeActive?: () => boolean;
+  getLookup?: () => { selector: string };
   runRefresh?: (
     lookup: { selector: string },
     background: boolean,
@@ -22,7 +23,7 @@ function createSchedulerHarness(options: SchedulerHarnessOptions = {}) {
     minIntervalMs: options.minIntervalMs ?? 1000,
     debounceMs: options.debounceMs ?? 100,
     isPickerModeActive: options.isPickerModeActive ?? (() => false),
-    getLookup: () => ({ selector: '#root' }),
+    getLookup: options.getLookup ?? (() => ({ selector: '#root' })),
     runRefresh,
   });
   return {
@@ -56,6 +57,30 @@ describe('createRuntimeRefreshScheduler', () => {
 
     vi.advanceTimersByTime(1);
     expect(harness.runRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads latest lookup when debounced schedule flushes', () => {
+    let lookup = { selector: '#first' };
+    const runRefresh = vi.fn((_lookup, _background, onDone: () => void) => {
+      onDone();
+    });
+    const harness = createSchedulerHarness({
+      minIntervalMs: 0,
+      debounceMs: 120,
+      getLookup: () => lookup,
+      runRefresh,
+    });
+
+    harness.scheduler.schedule(true);
+    lookup = { selector: '#latest' };
+    vi.advanceTimersByTime(120);
+
+    expect(runRefresh).toHaveBeenCalledTimes(1);
+    expect(runRefresh).toHaveBeenCalledWith(
+      { selector: '#latest' },
+      true,
+      expect.any(Function),
+    );
   });
 
   it('enforces min interval for background refresh', () => {
@@ -96,6 +121,43 @@ describe('createRuntimeRefreshScheduler', () => {
 
     vi.advanceTimersByTime(1);
     expect(harness.runRefresh).toHaveBeenCalledTimes(2);
+  });
+
+  it('uses latest lookup for queued refresh after in-flight completion', () => {
+    let lookup = { selector: '#initial' };
+    const callbacks: Array<() => void> = [];
+    const runRefresh = vi.fn((lookupArg, _background, onDone: () => void) => {
+      callbacks.push(onDone);
+      return lookupArg;
+    });
+    const harness = createSchedulerHarness({
+      minIntervalMs: 0,
+      debounceMs: 80,
+      getLookup: () => lookup,
+      runRefresh,
+    });
+
+    harness.scheduler.refresh(true);
+    harness.scheduler.refresh(true);
+    expect(runRefresh).toHaveBeenCalledTimes(1);
+    expect(runRefresh).toHaveBeenNthCalledWith(
+      1,
+      { selector: '#initial' },
+      true,
+      expect.any(Function),
+    );
+
+    lookup = { selector: '#queued-latest' };
+    callbacks[0]?.();
+    vi.advanceTimersByTime(80);
+
+    expect(runRefresh).toHaveBeenCalledTimes(2);
+    expect(runRefresh).toHaveBeenNthCalledWith(
+      2,
+      { selector: '#queued-latest' },
+      true,
+      expect.any(Function),
+    );
   });
 
   it('reset clears pending timer and queued follow-up', () => {
