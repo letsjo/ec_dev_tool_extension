@@ -311,7 +311,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLifecycle.ts`
 - `src/features/panel/workspace/managerInteractionFlowWiring.ts`
-- `src/features/panel/workspace/managerLayoutState.ts`
+- `src/features/panel/workspace/state/managerLayoutState.ts`
 - `src/features/panel/workspace/managerInteractionHandlers.ts`
 - `src/features/panel/workspace/interaction/dockDropApply.ts`
 - `src/features/panel/workspace/interaction/dockPreview.ts`
@@ -333,8 +333,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/interaction/splitResizeSession.ts`
 - `src/features/panel/workspace/interaction/resizeFlow.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
-- `src/features/panel/workspace/statePersistence.ts`
-- `src/features/panel/workspace/storage.ts`
+- `src/features/panel/workspace/state/statePersistence.ts`
+- `src/features/panel/workspace/state/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `panel.html` (레이아웃 CSS)
 
@@ -772,7 +772,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/manager.ts`
 - `src/features/panel/workspace/managerLifecycle.ts`
 - `src/features/panel/workspace/managerInteractionFlowWiring.ts`
-- `src/features/panel/workspace/managerLayoutState.ts`
+- `src/features/panel/workspace/state/managerLayoutState.ts`
 - `src/features/panel/workspace/managerInteractionHandlers.ts`
 - `src/features/panel/workspace/interaction/dockDropApply.ts`
 - `src/features/panel/workspace/interaction/dockPreview.ts`
@@ -794,8 +794,8 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `src/features/panel/workspace/interaction/splitResizeSession.ts`
 - `src/features/panel/workspace/interaction/resizeFlow.ts`
 - `src/features/panel/workspace/scrollSnapshot.ts`
-- `src/features/panel/workspace/statePersistence.ts`
-- `src/features/panel/workspace/storage.ts`
+- `src/features/panel/workspace/state/statePersistence.ts`
+- `src/features/panel/workspace/state/storage.ts`
 - `src/features/panel/workspace/wheelScrollFallback.ts`
 - `src/ui/sections/PanelViewSection.tsx`
 - `src/ui/sections/WorkspacePanelsSection.tsx`

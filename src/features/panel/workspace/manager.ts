@@ -8,7 +8,7 @@ import {
 import { syncWorkspacePanelBodySizes } from './panelSizing';
 import { createWorkspacePanelBodySizeObserver } from './panelBodySizeObserver';
 import { createWorkspaceRenderFlow } from './renderFlow';
-import { createWorkspaceManagerLayoutState } from './managerLayoutState';
+import { createWorkspaceManagerLayoutState } from './state/managerLayoutState';
 import { createWorkspaceManagerLifecycle } from './managerLifecycle';
 import { createWorkspaceManagerInteractionFlowWiring } from './managerInteractionFlowWiring';
 

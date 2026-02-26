@@ -1,10 +1,10 @@
-import { WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '../workspacePanels';
+import { WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '../../workspacePanels';
 import {
   createDefaultWorkspaceLayout,
   parseWorkspaceLayoutNode,
   type WorkspaceLayoutNode,
   type WorkspacePanelState,
-} from './layout/layoutModel';
+} from '../layout/layoutModel';
 import { readStoredJson, writeStoredJson } from './storage';
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = 'ecDevTool.workspaceLayout.v1';
