@@ -1,4 +1,4 @@
-import type { WorkspacePanelId } from '../workspacePanels';
+import type { WorkspacePanelId } from '../../workspacePanels';
 
 interface CreateWorkspacePanelBodySizeObserverOptions {
   panelContentEl: HTMLElement;

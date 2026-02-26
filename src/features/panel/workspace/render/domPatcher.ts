@@ -1,16 +1,16 @@
-import type { WorkspacePanelId } from "../workspacePanels";
+import type { WorkspacePanelId } from "../../workspacePanels";
 import {
   collectPanelIdsFromLayout,
   stringifyWorkspaceNodePath,
   type WorkspaceLayoutNode,
   type WorkspaceNodePath,
-} from "./layout/layoutModel";
+} from "../layout/layoutModel";
 import {
   collectWorkspacePanelIdsFromDom,
   findReusableWorkspaceDomRoot,
   isSameWorkspacePanelIdSet,
 } from "./domReuse";
-import { createWorkspaceSplitElement } from "./layout/layoutDom";
+import { createWorkspaceSplitElement } from "../layout/layoutDom";
 
 interface PatchWorkspaceLayoutDomNodeArgs {
   layoutNode: WorkspaceLayoutNode;

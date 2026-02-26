@@ -1,9 +1,9 @@
-import { WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '../workspacePanels';
-import type { WorkspaceLayoutNode, WorkspacePanelState } from './layout/layoutModel';
+import { WORKSPACE_PANEL_IDS, type WorkspacePanelId } from '../../workspacePanels';
+import type { WorkspaceLayoutNode, WorkspacePanelState } from '../layout/layoutModel';
 import {
   captureWorkspaceScrollSnapshots,
   restoreWorkspaceScrollSnapshots,
-} from './scrollSnapshot';
+} from '../scrollSnapshot';
 import {
   syncWorkspacePanelBodySizes,
   syncWorkspaceSplitCollapsedRows,
@@ -11,8 +11,8 @@ import {
 import {
   renderWorkspacePanelToggleBar,
   updateWorkspacePanelControlState,
-} from './toggleBar';
-import { resetWorkspacePanelSplitClasses } from './layout/layoutDom';
+} from '../toggleBar';
+import { resetWorkspacePanelSplitClasses } from '../layout/layoutDom';
 import { renderWorkspaceLayoutPipeline } from './renderPipeline';
 
 interface CreateWorkspaceRenderFlowOptions {

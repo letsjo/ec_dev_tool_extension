@@ -1,4 +1,4 @@
-import type { WorkspacePanelId } from '../workspacePanels';
+import type { WorkspacePanelId } from '../../workspacePanels';
 
 /** 노드가 접혔을 때 필요한 높이를 계산 */
 function getWorkspaceNodeCollapsedHeight(

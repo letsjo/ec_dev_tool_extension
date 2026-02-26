@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createWorkspaceRenderFlow } from '../../src/features/panel/workspace/renderFlow';
+import { createWorkspaceRenderFlow } from '../../src/features/panel/workspace/render/renderFlow';
 import type { WorkspacePanelId } from '../../src/features/panel/workspacePanels';
 import type { WorkspaceLayoutNode, WorkspacePanelState } from '../../src/features/panel/workspace/layout/layoutModel';
 

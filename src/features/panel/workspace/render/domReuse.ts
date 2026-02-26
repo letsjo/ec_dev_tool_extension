@@ -1,8 +1,8 @@
-import { isWorkspacePanelId, type WorkspacePanelId } from '../workspacePanels';
+import { isWorkspacePanelId, type WorkspacePanelId } from '../../workspacePanels';
 import {
   collectPanelIdsFromLayout,
   type WorkspaceLayoutNode,
-} from './layout/layoutModel';
+} from '../layout/layoutModel';
 
 /** 파생 데이터나 요약 값을 구성 */
 export function collectWorkspacePanelIdsFromDom(rootEl: Element | null): Set<WorkspacePanelId> {

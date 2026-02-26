@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { renderWorkspaceLayoutPipeline } from '../../src/features/panel/workspace/renderPipeline';
+import { renderWorkspaceLayoutPipeline } from '../../src/features/panel/workspace/render/renderPipeline';
 
 describe('renderWorkspaceLayoutPipeline', () => {
   it('reuses existing empty placeholder and clears stale nodes when layout is empty', () => {

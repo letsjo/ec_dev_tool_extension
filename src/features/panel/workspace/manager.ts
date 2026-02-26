@@ -5,9 +5,9 @@ import {
 import {
   bindWorkspaceInteractionBindings,
 } from './interactionBindings';
-import { syncWorkspacePanelBodySizes } from './panelSizing';
-import { createWorkspacePanelBodySizeObserver } from './panelBodySizeObserver';
-import { createWorkspaceRenderFlow } from './renderFlow';
+import { syncWorkspacePanelBodySizes } from './render/panelSizing';
+import { createWorkspacePanelBodySizeObserver } from './render/panelBodySizeObserver';
+import { createWorkspaceRenderFlow } from './render/renderFlow';
 import { createWorkspaceManagerLayoutState } from './state/managerLayoutState';
 import { createWorkspaceManagerLifecycle } from './managerLifecycle';
 import { createWorkspaceManagerInteractionFlowWiring } from './managerInteractionFlowWiring';

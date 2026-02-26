@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createWorkspacePanelBodySizeObserver } from '../../src/features/panel/workspace/panelBodySizeObserver';
+import { createWorkspacePanelBodySizeObserver } from '../../src/features/panel/workspace/render/panelBodySizeObserver';
 import type { WorkspacePanelId } from '../../src/features/panel/workspacePanels';
 
 describe('workspacePanelBodySizeObserver', () => {
