@@ -108,18 +108,6 @@ npm test
 
 추가로 컴포넌트 트리 탐색 고도화(검색/필터, 상위-하위 이동, live update)를 확장할 수 있습니다.
 
-## 리팩터링 TODO 운영
-
-- 로컬 `todo.md`(gitignored)에서 작업을 주제별로 분리해 관리합니다.
-  - `Refactoring`: 구조 분해/폴더 재배치
-  - `Bug Fix`: 회귀/예외 흐름 수정
-  - `Feature Add`: 기능 확장
-  - `Docs / Comment`: 문서/주석 동기화
-  - `Validation`: 타입/테스트 검증
-- 리팩터링 대상은 `src` 전체(UI 포함)이며, 발견 즉시 TODO 항목을 추가/갱신합니다.
-- 우선순위(P0~P3) 기준으로 순차 진행하며, 작업 중에도 TODO를 계속 업데이트합니다.
-- `src/features/panel/reactInspector`는 `path`/`search`/`selection`/`preview`/`list`/`detail`/`flow` 하위 폴더 기준으로 단계적 재정리를 진행합니다.
-
 ## UI 디렉터리 규칙
 
 - `src/ui/components`: 버튼/라벨/텍스트 같은 최소 단위 UI 컴포넌트
