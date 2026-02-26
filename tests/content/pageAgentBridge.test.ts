@@ -131,4 +131,31 @@ describe('pageAgentBridge', () => {
 
     removeListener();
   });
+
+  it('stringifies non-string method values before dispatch', () => {
+    const executeMethod = vi.fn(() => ({ ok: true }));
+    const removeListener = installPageAgentBridge({
+      bridgeSource: 'TEST_BRIDGE',
+      requestAction: 'request',
+      responseAction: 'response',
+      executeMethod,
+    });
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        source: window,
+        data: {
+          source: 'TEST_BRIDGE',
+          action: 'request',
+          requestId: 'req-3',
+          method: 123,
+          args: null,
+        },
+      }),
+    );
+
+    expect(executeMethod).toHaveBeenCalledWith('123', null);
+
+    removeListener();
+  });
 });

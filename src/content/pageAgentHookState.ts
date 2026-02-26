@@ -1,10 +1,24 @@
-// @ts-nocheck
 import { parseHookDisplayName } from "./pageAgentHookStack";
 
-type AnyRecord = Record<string, any>;
+interface HookQueueLike {
+  lastRenderedReducer?: unknown;
+}
+
+interface HookNodeLike {
+  queue?: HookQueueLike | null;
+  memoizedState?: unknown;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
+}
 
 /** React primitive hook metadata와 memoizedState 패턴을 조합해 hook 표시 이름을 추론한다. */
-export function inferHookName(node: AnyRecord | null | undefined, index: number, hookTypes: unknown[] | null) {
+export function inferHookName(
+  node: HookNodeLike | null | undefined,
+  index: number,
+  hookTypes: unknown[] | null,
+): string {
   let hookTypeName = null;
   if (hookTypes && typeof hookTypes[index] === "string" && hookTypes[index]) {
     hookTypeName = parseHookDisplayName(String(hookTypes[index]).trim());
@@ -15,8 +29,9 @@ export function inferHookName(node: AnyRecord | null | undefined, index: number,
   if (!node || typeof node !== "object") return "Hook#" + String(index + 1);
 
   const memoizedState = node.memoizedState;
-  if (node.queue && typeof node.queue === "object") {
-    const reducer = node.queue.lastRenderedReducer;
+  const queue = node.queue;
+  if (queue && typeof queue === "object") {
+    const reducer = queue.lastRenderedReducer;
     if (typeof reducer === "function") {
       const reducerName = reducer.name || "";
       if (reducerName && reducerName !== "basicStateReducer") return "Reducer";
@@ -31,8 +46,7 @@ export function inferHookName(node: AnyRecord | null | undefined, index: number,
   }
   if (hookTypeName) return hookTypeName;
   if (
-    memoizedState
-    && typeof memoizedState === "object"
+    isRecord(memoizedState)
     && "current" in memoizedState
     && !Array.isArray(memoizedState)
   ) {
@@ -52,7 +66,7 @@ export function inferHookName(node: AnyRecord | null | undefined, index: number,
 }
 
 /** 표시/전달용 값으로 변환 */
-function toRefCurrentDisplayValue(value: unknown) {
+function toRefCurrentDisplayValue(value: unknown): unknown {
   if (typeof Element !== "undefined" && value instanceof Element) {
     const tagName = String(value.tagName || "").toLowerCase();
     return tagName ? `<${tagName} />` : "<element />";
@@ -61,10 +75,10 @@ function toRefCurrentDisplayValue(value: unknown) {
 }
 
 /** Ref hook은 current 값을 사람이 읽기 쉬운 값으로 정규화한다. */
-export function normalizeHookStateForDisplay(hookName: string, state: unknown) {
+export function normalizeHookStateForDisplay(hookName: string, state: unknown): unknown {
   if (hookName !== "Ref") return state;
-  if (state && typeof state === "object" && !Array.isArray(state) && "current" in state) {
-    return toRefCurrentDisplayValue(state.current);
+  if (isRecord(state) && !Array.isArray(state) && "current" in state) {
+    return toRefCurrentDisplayValue((state as { current?: unknown }).current);
   }
   return toRefCurrentDisplayValue(state);
 }

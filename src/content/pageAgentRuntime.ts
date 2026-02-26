@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { installPageAgentBridge } from './pageAgentBridge';
 import { createPageAgentRuntimeMethodExecutor } from './pageAgentRuntimeBootstrap';
 
@@ -31,7 +30,7 @@ const DEFAULT_OPTIONS: InstallPageAgentRuntimeOptions = {
 function installPageAgentRuntime(
   runtimeWindow: Window,
   options: InstallPageAgentRuntimeOptions = DEFAULT_OPTIONS,
-) {
+): void {
   const executeMethod = createPageAgentRuntimeMethodExecutor({
     runtimeWindow,
     componentHighlightStorageKey: COMPONENT_HIGHLIGHT_STORAGE_KEY,

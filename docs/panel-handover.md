@@ -171,7 +171,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 ## 6.2 pageAgent Bridge 모듈 분리 규칙
 
 - `pageAgentBridgeMessages.ts`: bridge request payload 검증(`readBridgeRequestMessage`)과 공통 response 전송(`postBridgeResponse`) 전담
-- `pageAgentBridge.ts`: window message 리스너 설치와 bridge message pipeline(request 검증 -> method 실행 -> response 전송) 오케스트레이션 전담
+- `pageAgentBridge.ts`: window message 리스너 설치와 bridge message pipeline(request 검증 -> method 실행 -> response 전송) 오케스트레이션, non-string method 문자열 정규화 전담
 - `pageAgentRuntime.ts`: bridge 설치 엔트리와 runtime 옵션(bridge source/action) 주입 전담
 - `pageAgentRuntimeBootstrap.ts`: pageAgent method executor 조립 단계(도메인 핸들러 + inspect 의존성 결선) 전담
 
@@ -224,7 +224,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 - `pageAgentInspectFlowWiring.ts`: `createInspectReactPathFlow`/`createInspectReactComponentsFlow` 결선 조립 전담
 - `pageAgentInspectPathValue.ts`: `reactInspectPath` path 순회와 collection token 해석 전담
 - `pageAgentInspectPathMode.ts`: `reactInspectPath` mode별 serialize/function inspect 응답 구성 전담
-- `pageAgentInspectPathFlow.ts`: `reactInspectPath` 대상 fiber 해석 + path resolution + mode 응답 조립 오케스트레이션 전담
+- `pageAgentInspectPathFlow.ts`: `reactInspectPath` 입력 파싱(componentId/section/mode/path/serializeLimit) + 대상 fiber 해석 + path resolution + mode 응답 조립 오케스트레이션 전담
 - `pageAgentInspectComponentsArgs.ts`: `reactInspect` 입력 파싱/정규화 전담
 - `pageAgentInspectComponentsSource.ts`: `reactInspect` 응답의 source element 요약(selector/path/tag) 조립 전담
 - `pageAgentInspectComponentsFlow.ts`: `reactInspect` root 해석 + fiber walk + selectedIndex 계산 오케스트레이션 전담
@@ -270,7 +270,7 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
 
 ## 6.8 pageAgent Hook State 모듈 분리 규칙
 
-- `pageAgentHookState.ts`: hook 이름 추론(`inferHookName`), Ref hook 상태 표시 정규화(`normalizeHookStateForDisplay`) 전담
+- `pageAgentHookState.ts`: hook 이름 추론(`inferHookName`, queue/reducer/memoizedState 패턴)과 Ref hook 상태 표시 정규화(`normalizeHookStateForDisplay`) 전담
 - `pageAgentRuntime.ts`: fiber hook 순회 중 hook state helper를 호출해 목록 오케스트레이션만 담당
 
 ## 6.9 pageAgent Hook Metadata 모듈 분리 규칙
@@ -943,10 +943,11 @@ custom hook stack 파싱 유틸은 `src/content/pageAgentHookStack.ts`로, group
   - `tests/content/elementPickerBridge.test.ts`: `elementPickerBridge.ts`의 pageAgent script load 실패 후 재주입, load 성공 후 injected 고정 분기
   - `tests/content/elementPickerPageAgentClient.test.ts`: `elementPickerPageAgentClient.ts`의 request/response resolve, error reject, stop listener cancel 분기
   - `tests/content/pageAgentHookDispatcher.test.ts`: `pageAgentHookDispatcher.ts`의 useState cursor 전진, `use` promise unresolved/resolved 처리, context snapshot, generic hook fallback 분기
+  - `tests/content/pageAgentHookState.test.ts`: hook 이름 추론(queue/reducer/memoizedState 패턴)과 Ref state display 정규화 분기
   - `tests/content/pageAgentInspectPathFlow.test.ts`: `inspectReactPath`의 serialize/inspectFunction/path 실패/special segment 처리
   - `tests/content/pageAgentInspectComponentsFlow.test.ts`: `reactInspect` 입력 파싱/nearest source summary/기본 selectedIndex/nearest 미해석 에러 분기
   - `tests/content/pageAgentInspect.test.ts`: `createPageAgentInspectHandlers` 결선 후 `reactInspect`/`reactInspectPath` 기본 가드 에러 + roundtrip(component 목록 id -> inspectPath serialize) 회귀 분기
-  - `tests/content/pageAgentBridge.test.ts`: bridge request 유효성 통과 시 성공 응답, executeMethod 예외 시 실패 응답, unrelated/invalid request 무시 분기
+  - `tests/content/pageAgentBridge.test.ts`: bridge request 유효성 통과 시 성공 응답, executeMethod 예외 시 실패 응답, unrelated/invalid request 무시, non-string method 문자열 정규화 분기
   - `tests/content/runtimeMessaging.test.ts`: `sendRuntimeMessageSafe`의 sync throw/promise-like catch 처리와 picker/runtime notify payload 분기
   - `tests/content/pageAgentTargetFetch.test.ts`: targetPath 비어있음/autoDiscover 비활성 에러/zero-arg 자동탐색 + 예외 결과 포맷 분기
   - `tests/content/pageAgentInspectTarget.test.ts`: `resolveInspectRootContext`/`resolveInspectPathTargetFiber`의 nearest fallback 및 문서 전역 componentId fallback 분기

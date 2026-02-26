@@ -1,29 +1,79 @@
-// @ts-nocheck
 import { resolveInspectPathModeResponse } from './pageAgentInspectPathMode';
 import { resolveInspectPathTargetFiber, resolveInspectRootContext } from './pageAgentInspectTarget';
 import { resolveInspectPathValue } from './pageAgentInspectPathValue';
 
-type AnyRecord = Record<string, any>;
+type FiberLike = Record<string, unknown> & {
+  memoizedProps?: unknown;
+};
+
+interface NearestFiberMatch {
+  fiber: FiberLike;
+  sourceElement: Element | null;
+}
+
+type InspectPathSection = 'props' | 'hooks';
+type InspectPathMode = 'serializeValue' | 'inspectFunction';
+
+interface ParsedInspectReactPathArgs {
+  componentId: string;
+  selector: string;
+  pickPoint: unknown;
+  section: InspectPathSection;
+  path: Array<string | number>;
+  mode: InspectPathMode;
+  serializeLimit: number;
+}
 
 interface CreateInspectReactPathFlowOptions {
   resolveTargetElement: (selector: string, pickPoint: unknown) => Element | null;
-  findNearestFiber: (startEl: Element | null) => { fiber: AnyRecord; sourceElement: Element | null } | null;
-  findAnyFiberInDocument: () => { fiber: AnyRecord; sourceElement: Element | null } | null;
-  findRootFiber: (fiber: AnyRecord) => AnyRecord | null;
+  findNearestFiber: (startEl: Element | null) => NearestFiberMatch | null;
+  findAnyFiberInDocument: () => NearestFiberMatch | null;
+  findRootFiber: (fiber: FiberLike) => FiberLike | null;
   getFiberIdMap: () => WeakMap<object, string>;
   findFiberByComponentId: (
-    rootFiber: AnyRecord,
+    rootFiber: FiberLike,
     componentId: string,
     fiberIdMap: WeakMap<object, string>,
-  ) => AnyRecord | null;
+  ) => FiberLike | null;
   findFiberByComponentIdAcrossDocument: (
     componentId: string,
     fiberIdMap: WeakMap<object, string>,
-  ) => AnyRecord | null;
-  getHooksRootValue: (fiber: AnyRecord | null | undefined, options: AnyRecord) => any;
-  resolveSpecialCollectionPathSegment: (currentValue: unknown, segment: string) => AnyRecord;
-  makeSerializer: (options: AnyRecord) => (value: unknown, depth?: number) => unknown;
+  ) => FiberLike | null;
+  getHooksRootValue: (
+    fiber: FiberLike | null | undefined,
+    options: Record<string, unknown>,
+  ) => unknown;
+  resolveSpecialCollectionPathSegment: (
+    currentValue: unknown,
+    segment: string,
+  ) => Record<string, unknown>;
+  makeSerializer: (
+    options: Record<string, unknown>,
+  ) => (value: unknown, depth?: number) => unknown;
   registerFunctionForInspect: (value: Function) => string;
+}
+
+function parseInspectReactPathArgs(
+  args: Record<string, unknown> | null | undefined,
+): ParsedInspectReactPathArgs {
+  const rawSerializeLimit = args?.serializeLimit;
+  const path = Array.isArray(args?.path)
+    ? args.path.filter((segment): segment is string | number => {
+      return typeof segment === 'string' || typeof segment === 'number';
+    })
+    : [];
+
+  return {
+    componentId: typeof args?.componentId === 'string' ? args.componentId : '',
+    selector: typeof args?.selector === 'string' ? args.selector : '',
+    pickPoint: args?.pickPoint,
+    section: args?.section === 'hooks' ? 'hooks' : 'props',
+    path,
+    mode: args?.mode === 'inspectFunction' ? 'inspectFunction' : 'serializeValue',
+    serializeLimit: Number.isFinite(rawSerializeLimit)
+      ? Math.max(1000, Math.floor(rawSerializeLimit as number))
+      : 45000,
+  };
 }
 
 /** reactInspectPath 흐름(대상 fiber 조회 + path resolve + mode 응답 조립)을 구성한다. */
@@ -42,16 +92,9 @@ function createInspectReactPathFlow(options: CreateInspectReactPathFlowOptions) 
     registerFunctionForInspect,
   } = options;
 
-  return function inspectReactPath(args: AnyRecord | null | undefined) {
-    const componentId = typeof args?.componentId === 'string' ? args.componentId : '';
-    const selector = typeof args?.selector === 'string' ? args.selector : '';
-    const pickPoint = args?.pickPoint;
-    const section = args?.section === 'hooks' ? 'hooks' : 'props';
-    const path = Array.isArray(args?.path) ? args.path : [];
-    const mode = args?.mode === 'inspectFunction' ? 'inspectFunction' : 'serializeValue';
-    const serializeLimit = Number.isFinite(args?.serializeLimit)
-      ? Math.max(1000, Math.floor(args.serializeLimit))
-      : 45000;
+  return function inspectReactPath(args: Record<string, unknown> | null | undefined) {
+    const parsed = parseInspectReactPathArgs(args);
+    const { componentId, selector, pickPoint, section, path, mode, serializeLimit } = parsed;
 
     try {
       if (!componentId) {
@@ -105,10 +148,15 @@ function createInspectReactPathFlow(options: CreateInspectReactPathFlowOptions) 
         makeSerializer,
         registerFunctionForInspect,
       });
-    } catch (e) {
-      return { ok: false, error: String(e && e.message) };
+    } catch (error) {
+      const typedError = error as { message?: unknown } | null;
+      return {
+        ok: false,
+        error: String(typedError && typedError.message ? typedError.message : error),
+      };
     }
   };
 }
 
 export { createInspectReactPathFlow };
+export type { ParsedInspectReactPathArgs, CreateInspectReactPathFlowOptions };
