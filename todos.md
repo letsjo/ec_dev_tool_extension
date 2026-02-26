@@ -10,7 +10,7 @@ Last Updated: 2026-02-26
 
 ## Phase 83 (In Progress): `pageAgentInspectComponentsFlow` 타입화/분해
 
-- [ ] 83.1 입력 파싱/응답 조립 helper 분리
+- [x] 83.1 입력 파싱/응답 조립 helper 분리
 - [ ] 83.2 `pageAgentInspectComponentsFlow.ts` `@ts-nocheck` 제거 및 타입 정리
 - [ ] 83.3 단위 테스트 추가 + 문서 동기화 + 검증/커밋
 
@@ -55,4 +55,3 @@ Last Updated: 2026-02-26
 - [ ] 90.1 main-world inspect 흐름 통합 회귀 테스트
 - [ ] 90.2 runtime/hook 메시지 edge case 테스트
 - [ ] 90.3 잔여 `@ts-nocheck` 제거 상태 재점검
-

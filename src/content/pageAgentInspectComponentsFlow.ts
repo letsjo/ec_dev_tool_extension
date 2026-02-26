@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { parseInspectReactComponentsArgs } from "./pageAgentInspectComponentsArgs";
+import { buildSourceElementSummary } from "./pageAgentInspectComponentsSource";
 import { walkInspectableComponents } from "./pageAgentInspectComponentWalk";
 import { getDomInfoForFiber } from "./pageAgentInspectDomInfo";
 import { resolveSelectedComponentIndex } from "./pageAgentInspectSelection";
@@ -65,13 +67,8 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
   } = options;
 
   return function inspectReactComponents(args: AnyRecord | null | undefined) {
-    const selector = typeof args?.selector === "string" ? args.selector : "";
-    const pickPoint = args?.pickPoint;
-    const includeSerializedData = args?.includeSerializedData !== false;
-    const selectedComponentId =
-      typeof args?.selectedComponentId === "string" && args.selectedComponentId
-        ? args.selectedComponentId
-        : null;
+    const { selector, pickPoint, includeSerializedData, selectedComponentId } =
+      parseInspectReactComponentsArgs(args);
 
     try {
       const resolvedRoot = resolveInspectRootContext({
@@ -163,13 +160,11 @@ function createInspectReactComponentsFlow(options: CreateInspectReactComponentsF
       return {
         selector,
         selectedIndex,
-        sourceElement: nearest.sourceElement
-          ? {
-              selector: buildCssSelector(nearest.sourceElement),
-              domPath: getElementPath(nearest.sourceElement),
-              tagName: String(nearest.sourceElement.tagName || "").toLowerCase(),
-            }
-          : null,
+        sourceElement: buildSourceElementSummary({
+          sourceElement: nearest.sourceElement,
+          buildCssSelector,
+          getElementPath,
+        }),
         rootSummary: {
           totalComponents: components.length,
         },
