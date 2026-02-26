@@ -29,6 +29,7 @@ export interface PanelControllerContext {
   getDebugDiagnosticsPaneEl: () => HTMLDivElement;
   getDebugLogPaneEl: () => HTMLDivElement;
   getDebugLogCopyBtnEl: () => HTMLButtonElement;
+  getDebugLogClearBtnEl: () => HTMLButtonElement;
   getPanelWorkspaceEl: () => HTMLElement;
   getPanelContentEl: () => HTMLElement;
   getWorkspacePanelToggleBarEl: () => HTMLDivElement;
@@ -105,6 +106,7 @@ export function createPanelControllerContext(
     getDebugDiagnosticsPaneEl: () => requireDomRefs(domRefs).debugDiagnosticsPaneEl,
     getDebugLogPaneEl: () => requireDomRefs(domRefs).debugLogPaneEl,
     getDebugLogCopyBtnEl: () => requireDomRefs(domRefs).debugLogCopyBtnEl,
+    getDebugLogClearBtnEl: () => requireDomRefs(domRefs).debugLogClearBtnEl,
     getPanelWorkspaceEl: () => requireDomRefs(domRefs).panelWorkspaceEl,
     getPanelContentEl: () => requireDomRefs(domRefs).panelContentEl,
     getWorkspacePanelToggleBarEl: () => requireDomRefs(domRefs).workspacePanelToggleBarEl,

@@ -8,16 +8,28 @@ export function DebugLogPanel() {
     <WorkspacePanelShell
       panelId="debugLogPanel"
       summaryActions={
-        <PanelActionButton
-          id="debugLogCopyBtn"
-          className="workspace-panel-action"
-          data-panel-action="copyDebugLog"
-          data-panel-target="debugLogPanel"
-          title="디버그 로그 전체 복사"
-          aria-label="Copy debug logs"
-        >
-          ⧉
-        </PanelActionButton>
+        <>
+          <PanelActionButton
+            id="debugLogCopyBtn"
+            className="workspace-panel-action"
+            data-panel-action="copyDebugLog"
+            data-panel-target="debugLogPanel"
+            title="디버그 로그 전체 복사"
+            aria-label="Copy debug logs"
+          >
+            ⧉
+          </PanelActionButton>
+          <PanelActionButton
+            id="debugLogClearBtn"
+            className="workspace-panel-action"
+            data-panel-action="clearDebugLog"
+            data-panel-target="debugLogPanel"
+            title="디버그 로그 전체 지우기"
+            aria-label="Clear debug logs"
+          >
+            ⌫
+          </PanelActionButton>
+        </>
       }
     >
       <div id="debugDiagnosticsPane" className="debug-diagnostics empty" hidden>

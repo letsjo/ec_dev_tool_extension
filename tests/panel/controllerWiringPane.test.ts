@@ -26,6 +26,7 @@ function createContextStub(): PanelControllerContext {
     getDebugDiagnosticsPaneEl: vi.fn(),
     getDebugLogPaneEl: vi.fn(),
     getDebugLogCopyBtnEl: vi.fn(),
+    getDebugLogClearBtnEl: vi.fn(),
     getPanelWorkspaceEl: vi.fn(),
     getPanelContentEl: vi.fn(),
     getWorkspacePanelToggleBarEl: vi.fn(),

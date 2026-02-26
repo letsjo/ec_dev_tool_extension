@@ -25,6 +25,7 @@ export interface PanelDomRefs {
   debugDiagnosticsPaneEl: HTMLDivElement;
   debugLogPaneEl: HTMLDivElement;
   debugLogCopyBtnEl: HTMLButtonElement;
+  debugLogClearBtnEl: HTMLButtonElement;
   workspacePanelElements: Map<WorkspacePanelId, HTMLDetailsElement>;
 }
 
@@ -87,6 +88,7 @@ export function initPanelDomRefs(): PanelDomRefs {
     debugDiagnosticsPaneEl: getRequiredElement<HTMLDivElement>('debugDiagnosticsPane'),
     debugLogPaneEl: getRequiredElement<HTMLDivElement>('debugLogPane'),
     debugLogCopyBtnEl: getRequiredElement<HTMLButtonElement>('debugLogCopyBtn'),
+    debugLogClearBtnEl: getRequiredElement<HTMLButtonElement>('debugLogClearBtn'),
     workspacePanelElements: collectWorkspacePanelElements(),
   };
 }

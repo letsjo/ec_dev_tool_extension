@@ -36,8 +36,8 @@ npm test
 12. 선택한 요소의 DOM 구조를 **접기/펼치기 가능한 트리**로 확인할 수 있다.
 13. React 컴포넌트 섹션 우측 검색창에서 이름/selector/path 기준으로 목록을 필터링할 수 있다.
 14. 패널 경계선(Components↔Inspector, Selected Element↔DOM Tree)을 드래그해 영역 폭을 조절할 수 있다.
-15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, 패널 제목의 `⧉` 버튼으로 전체 로그를 복사해 이슈 재현 기록으로 공유할 수 있다.
-16. Dev-only diagnostics 뷰가 필요하면 DevTools 콘솔에서 `localStorage.setItem('ecDevTool.devDiagnostics', '1')` 실행 후 패널을 새로 열면 Debug Log 상단에 이벤트 집계가 표시된다.
+15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, `⧉`(전체 복사)와 `⌫`(전체 지우기) 버튼으로 기록을 관리할 수 있다. 오류 이벤트는 라인에 `[ERROR]`로 표시된다.
+16. Dev-only diagnostics 뷰가 필요하면 DevTools 콘솔에서 `localStorage.setItem('ecDevTool.devDiagnostics', '1')` 실행 후 패널을 새로 열면 Debug Log 상단에 이벤트 총량/오류 수/최근 이벤트 집계가 표시된다.
 
 ## 대상 객체 설정
 
@@ -78,7 +78,7 @@ npm test
 │   │       │       ├── controllerWiringLifecycleRefresh.ts # payload mode/fetch preset 결선
 │   │       │       ├── controllerWiringPane.ts        # pane setter/debug 바인딩 결선
 │   │       │       └── controllerWiringReactInspector.ts # react inspector 결선
-│   │       ├── debugLog/                 # Debug Log 누적/복사 + dev-only diagnostics 플로우
+│   │       ├── debugLog/                 # Debug Log 누적/복사/초기화 + diagnostics(오류 집계) 플로우
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/
 │   │           ├── layout/

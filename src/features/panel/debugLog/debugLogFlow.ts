@@ -1,6 +1,7 @@
 interface CreatePanelDebugLogFlowOptions {
   getDebugLogPaneEl: () => HTMLDivElement;
   getDebugLogCopyBtnEl: () => HTMLButtonElement;
+  getDebugLogClearBtnEl?: () => HTMLButtonElement;
   maxEntries?: number;
   now?: () => Date;
   copyText?: (text: string) => Promise<void>;
@@ -10,11 +11,41 @@ interface CreatePanelDebugLogFlowOptions {
 interface PanelDebugLogFlow {
   appendDebugLog: (eventName: string, payload?: unknown) => void;
   getDebugLogText: () => string;
+  clearDebugLog: () => void;
 }
 
 const DEFAULT_MAX_DEBUG_LOG_ENTRIES = 700;
 const MAX_RENDER_PAYLOAD_LENGTH = 1400;
 const MAX_RENDER_LINE_LENGTH = 1800;
+const DEBUG_LOG_PLACEHOLDER_TEXT = '디버그 로그가 여기에 누적됩니다.';
+
+function isRecordValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isErrorPayload(payload: unknown): boolean {
+  if (!isRecordValue(payload)) return false;
+  if (payload.hasError === true || payload.isError === true) return true;
+
+  const errorValue = payload.error;
+  if (typeof errorValue === 'string' && errorValue.trim().length > 0) return true;
+  const errorTextValue = payload.errorText;
+  if (typeof errorTextValue === 'string' && errorTextValue.trim().length > 0) return true;
+
+  return false;
+}
+
+/** 이벤트명 규칙(.failure/.error)과 payload error 필드를 함께 보고 오류 레벨을 판별한다. */
+function resolveDebugLogLevel(eventName: string, payload?: unknown): 'INFO' | 'ERROR' {
+  if (
+    eventName.includes('.failure') ||
+    eventName.includes('.error') ||
+    isErrorPayload(payload)
+  ) {
+    return 'ERROR';
+  }
+  return 'INFO';
+}
 
 function toIsoTimestamp(date: Date): string {
   return date.toISOString();
@@ -52,7 +83,7 @@ function safeSerializeDebugPayload(payload: unknown): string {
 }
 
 function buildDebugLogLine(now: Date, eventName: string, payload?: unknown): string {
-  const head = `[${toIsoTimestamp(now)}] ${eventName}`;
+  const head = `[${toIsoTimestamp(now)}] [${resolveDebugLogLevel(eventName, payload)}] ${eventName}`;
   const payloadText = safeSerializeDebugPayload(payload);
   if (!payloadText) return head;
   const merged = `${head} ${payloadText}`;
@@ -92,7 +123,9 @@ export function createPanelDebugLogFlow(
 
   const lines: string[] = [];
   let copyBound = false;
+  let clearBound = false;
   let copyClickHandler: ((event: MouseEvent) => void) | null = null;
+  let clearClickHandler: ((event: MouseEvent) => void) | null = null;
 
   function getDebugLogText() {
     return lines.join('\n');
@@ -107,7 +140,7 @@ export function createPanelDebugLogFlow(
     }
 
     const text = getDebugLogText();
-    paneEl.textContent = text || '디버그 로그가 여기에 누적됩니다.';
+    paneEl.textContent = text || DEBUG_LOG_PLACEHOLDER_TEXT;
     paneEl.classList.toggle('empty', lines.length === 0);
     paneEl.scrollTop = paneEl.scrollHeight;
   }
@@ -139,6 +172,34 @@ export function createPanelDebugLogFlow(
     copyBound = true;
   }
 
+  function ensureClearBinding() {
+    if (clearBound || typeof options.getDebugLogClearBtnEl !== 'function') return;
+
+    let clearBtnEl: HTMLButtonElement;
+    try {
+      clearBtnEl = options.getDebugLogClearBtnEl();
+    } catch (_) {
+      return;
+    }
+
+    clearClickHandler = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      clearDebugLog();
+    };
+    clearBtnEl.addEventListener('click', clearClickHandler);
+    clearBound = true;
+  }
+
+  function clearDebugLog() {
+    if (lines.length === 0) {
+      tryRender();
+      return;
+    }
+    lines.splice(0, lines.length);
+    tryRender();
+  }
+
   function appendDebugLog(eventName: string, payload?: unknown) {
     lines.push(buildDebugLogLine(now(), eventName, payload));
     if (lines.length > maxEntries) {
@@ -147,12 +208,14 @@ export function createPanelDebugLogFlow(
 
     options.onLogAppended?.(eventName, payload);
     ensureCopyBinding();
+    ensureClearBinding();
     tryRender();
   }
 
   return {
     appendDebugLog,
     getDebugLogText,
+    clearDebugLog,
   };
 }
 

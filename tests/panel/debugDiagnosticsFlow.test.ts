@@ -31,12 +31,14 @@ describe('debugDiagnosticsFlow', () => {
     expect(flow.isEnabled()).toBe(true);
     expect(diagnosticsPaneEl.hidden).toBe(false);
     expect(diagnosticsPaneEl.textContent).toContain('events.total: 0');
+    expect(diagnosticsPaneEl.textContent).toContain('events.error: 0');
 
     flow.recordDebugEvent('pageAgent.request');
-    flow.recordDebugEvent('pageAgent.response');
+    flow.recordDebugEvent('pageAgent.response', { hasError: true, errorText: 'timeout' });
     flow.recordDebugEvent('pageAgent.request');
 
     expect(diagnosticsPaneEl.textContent).toContain('events.total: 3');
+    expect(diagnosticsPaneEl.textContent).toContain('events.error: 1');
     expect(diagnosticsPaneEl.textContent).toContain('events.unique: 2');
     expect(diagnosticsPaneEl.textContent).toContain('events.last: pageAgent.request');
     expect(diagnosticsPaneEl.textContent).toContain('- pageAgent.request: 2');

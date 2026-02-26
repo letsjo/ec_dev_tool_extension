@@ -26,8 +26,9 @@ export function createPanelControllerWiring(): PanelControllerWiring {
   const { appendDebugLog } = createPanelDebugLogFlow({
     getDebugLogPaneEl: panelControllerContext.getDebugLogPaneEl,
     getDebugLogCopyBtnEl: panelControllerContext.getDebugLogCopyBtnEl,
-    onLogAppended(eventName) {
-      debugDiagnosticsFlow.recordDebugEvent(eventName);
+    getDebugLogClearBtnEl: panelControllerContext.getDebugLogClearBtnEl,
+    onLogAppended(eventName, payload) {
+      debugDiagnosticsFlow.recordDebugEvent(eventName, payload);
     },
   });
 
