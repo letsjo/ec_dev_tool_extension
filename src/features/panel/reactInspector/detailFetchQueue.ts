@@ -1,4 +1,3 @@
-import { isReactInspectResult } from '../../../shared/inspector/guards';
 import type {
   PickPoint,
   ReactComponentDetailResult,
@@ -15,6 +14,11 @@ import {
   resetDetailQueueState,
   startDetailRequest,
 } from './detailFetchQueueState';
+import {
+  buildDetailFetchFailureText,
+  DETAIL_FETCH_STALE_SELECTION_MESSAGE,
+} from './detailFetchQueueMessages';
+import { resolveDetailFetchPayload } from './detailFetchQueueResponse';
 
 type CallInspectedPageAgent = (
   method: string,
@@ -43,6 +47,21 @@ interface ReactDetailFetchQueue {
   reset: () => void;
 }
 
+/** 상세조회 완료 후 큐를 이어서 소비한다. */
+function consumeQueuedRequest(
+  queueState: ReturnType<typeof createReactDetailQueueMutableState>,
+  currentComponentId: string,
+  findComponentById: CreateReactDetailFetchQueueOptions['findComponentById'],
+  request: (component: ReactComponentInfo) => void,
+) {
+  const nextQueuedComponentId = finishDetailRequest(queueState, currentComponentId);
+  if (!nextQueuedComponentId) return;
+
+  const queuedComponent = findComponentById(nextQueuedComponentId);
+  if (!queuedComponent || queuedComponent.hasSerializedData !== false) return;
+  request(queuedComponent);
+}
+
 /**
  * 선택 컴포넌트 상세(props/hooks) 지연 조회 큐를 구성한다.
  * - in-flight 중복 요청은 마지막 componentId 하나로 병합한다.
@@ -52,16 +71,6 @@ export function createReactDetailFetchQueue(
   options: CreateReactDetailFetchQueueOptions,
 ): ReactDetailFetchQueue {
   const queueState = createReactDetailQueueMutableState();
-
-  /** 상세조회 완료 후 큐를 이어서 소비한다. */
-  function finishRequest(currentComponentId: string, request: (component: ReactComponentInfo) => void) {
-    const nextQueuedComponentId = finishDetailRequest(queueState, currentComponentId);
-    if (!nextQueuedComponentId) return;
-
-    const queuedComponent = options.findComponentById(nextQueuedComponentId);
-    if (!queuedComponent || queuedComponent.hasSerializedData !== false) return;
-    request(queuedComponent);
-  }
 
   /** 비동기 상세 데이터를 요청 */
   function request(component: ReactComponentInfo) {
@@ -97,55 +106,37 @@ export function createReactDetailFetchQueue(
         includeSerializedData: false,
         selectedComponentId: componentId,
       },
-      (res, errorText) => {
+      (response, errorText) => {
         const selected = options.getSelectedComponent();
         const isCurrentSelection = selected?.id === componentId;
 
-        if (errorText) {
-          markDetailRequestFailed(queueState, componentId, Date.now());
-          if (isCurrentSelection) {
-            options.setReactDetailEmpty(`상세 정보 조회 실패: ${errorText}`);
-          }
-          finishRequest(componentId, request);
-          return;
-        }
-
-        if (!isReactInspectResult(res)) {
-          const reason = '응답 형식 오류';
-          markDetailRequestFailed(queueState, componentId, Date.now());
-          if (isCurrentSelection) {
-            options.setReactDetailEmpty(`상세 정보 조회 실패: ${reason}`);
-          }
-          finishRequest(componentId, request);
-          return;
-        }
-
-        const detailedComponent = res.components.find((candidate) => candidate.id === componentId);
-        if (!detailedComponent || detailedComponent.hasSerializedData === false) {
-          markDetailRequestFailed(queueState, componentId, Date.now());
-          if (isCurrentSelection) {
-            options.setReactDetailEmpty('선택 컴포넌트를 갱신하지 못했습니다. 다시 선택해 주세요.');
-          }
-          finishRequest(componentId, request);
-          return;
-        }
-
-        const applied = options.applySelectedComponentDetail({
-          ok: true,
+        const payload = resolveDetailFetchPayload({
+          response,
+          errorText: errorText ?? undefined,
           componentId,
-          props: detailedComponent.props,
-          hooks: detailedComponent.hooks,
-          hookCount: detailedComponent.hookCount,
         });
 
-        markDetailRequestApplied(queueState, componentId, applied, Date.now());
-        if (!applied) {
+        if (!payload.ok) {
+          markDetailRequestFailed(queueState, componentId, Date.now());
           if (isCurrentSelection) {
-            options.setReactDetailEmpty('선택 컴포넌트를 갱신하지 못했습니다. 다시 선택해 주세요.');
+            options.setReactDetailEmpty(
+              payload.shouldPrefixError
+                ? buildDetailFetchFailureText(payload.reason)
+                : payload.reason,
+            );
           }
+          consumeQueuedRequest(queueState, componentId, options.findComponentById, request);
+          return;
         }
 
-        finishRequest(componentId, request);
+        const applied = options.applySelectedComponentDetail(payload.detail);
+        markDetailRequestApplied(queueState, componentId, applied, Date.now());
+
+        if (!applied && isCurrentSelection) {
+          options.setReactDetailEmpty(DETAIL_FETCH_STALE_SELECTION_MESSAGE);
+        }
+
+        consumeQueuedRequest(queueState, componentId, options.findComponentById, request);
       },
     );
   }
