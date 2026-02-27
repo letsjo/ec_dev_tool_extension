@@ -36,7 +36,7 @@ npm test
 12. 선택한 요소의 DOM 구조를 **접기/펼치기 가능한 트리**로 확인할 수 있다.
 13. React 컴포넌트 섹션 우측 검색창에서 이름/selector/path 기준으로 목록을 필터링할 수 있다.
 14. 패널 경계선(Components↔Inspector, Selected Element↔DOM Tree)을 드래그해 영역 폭을 조절할 수 있다.
-15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, `Copy`(전체 복사)와 `Clear`(전체 지우기) 버튼으로 기록을 관리할 수 있다. 오류 이벤트는 라인에 `[ERROR]`로 표시되고, 하단 근처를 보고 있을 때만 자동으로 최신 로그를 따라간다.
+15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, `Copy`(전체 복사)와 `Clear`(전체 지우기) 버튼으로 기록을 관리할 수 있다. 오류 이벤트는 라인에 `[ERROR]`로 표시되고, 하단 근처를 보고 있을 때만 자동으로 최신 로그를 따라간다. footer에서 Debug Log 패널을 꺼서 `closed` 상태면 로그 적재를 멈추고, summary 접기(open=false)는 열린 상태로 간주해 계속 기록한다.
 16. Dev-only diagnostics 뷰가 필요하면 DevTools 콘솔에서 `localStorage.setItem('ecDevTool.devDiagnostics', '1')` 실행 후 패널을 새로 열면 Debug Log 상단에 이벤트 총량/오류 수/최근 이벤트 집계가 표시된다.
 
 ## 대상 객체 설정

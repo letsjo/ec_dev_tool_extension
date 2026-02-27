@@ -11,7 +11,8 @@ function isKnownWheelScrollableContainer(el: HTMLElement): boolean {
     el.id === 'selectedElementPane' ||
     el.id === 'selectedElementPathPane' ||
     el.id === 'selectedElementDomPane' ||
-    el.id === 'output'
+    el.id === 'output' ||
+    el.id === 'debugLogPane'
   );
 }
 

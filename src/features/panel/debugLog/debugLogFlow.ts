@@ -2,6 +2,7 @@ interface CreatePanelDebugLogFlowOptions {
   getDebugLogPaneEl: () => HTMLDivElement;
   getDebugLogCopyBtnEl: () => HTMLButtonElement;
   getDebugLogClearBtnEl?: () => HTMLButtonElement;
+  isLogEnabled?: () => boolean;
   maxEntries?: number;
   now?: () => Date;
   copyText?: (text: string) => Promise<void>;
@@ -102,6 +103,17 @@ function shouldAutoScrollToBottom(paneEl: HTMLDivElement): boolean {
   return distanceToBottom <= AUTO_SCROLL_BOTTOM_GAP_PX;
 }
 
+/**
+ * debug panel이 footer toggle로 꺼진(closed) 상태면 기록을 멈춘다.
+ * 단순 summary 접기(open=false)는 "열린 상태"로 간주하므로 기록을 유지한다.
+ */
+function isDebugLogPanelVisible(paneEl: HTMLDivElement): boolean {
+  const panelEl = paneEl.closest('details.workspace-panel');
+  if (!(panelEl instanceof HTMLDetailsElement)) return true;
+  if (panelEl.hidden) return false;
+  return panelEl.dataset.panelState !== 'closed';
+}
+
 async function copyTextWithFallback(text: string): Promise<void> {
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     await navigator.clipboard.writeText(text);
@@ -130,6 +142,15 @@ export function createPanelDebugLogFlow(
       : DEFAULT_MAX_DEBUG_LOG_ENTRIES;
   const now = options.now ?? (() => new Date());
   const copyText = options.copyText ?? copyTextWithFallback;
+  const isLogEnabled =
+    options.isLogEnabled ??
+    (() => {
+      try {
+        return isDebugLogPanelVisible(options.getDebugLogPaneEl());
+      } catch (_) {
+        return true;
+      }
+    });
 
   const lines: string[] = [];
   let copyBound = false;
@@ -214,6 +235,10 @@ export function createPanelDebugLogFlow(
   }
 
   function appendDebugLog(eventName: string, payload?: unknown) {
+    if (!isLogEnabled()) {
+      return;
+    }
+
     lines.push(buildDebugLogLine(now(), eventName, payload));
     if (lines.length > maxEntries) {
       lines.splice(0, lines.length - maxEntries);

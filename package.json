@@ -1,6 +1,6 @@
 {
   "name": "ec-dev-tool-extension",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Chrome DevTools panel for ec_dev_manager and other dev objects",
   "scripts": {
     "build": "tsup",

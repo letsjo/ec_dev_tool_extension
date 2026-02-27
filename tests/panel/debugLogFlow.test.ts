@@ -161,4 +161,32 @@ describe('debugLogFlow', () => {
 
     expect(debugLogPaneEl.scrollTop).toBe(120);
   });
+
+  it('does not append logs while panel logging is disabled', () => {
+    const debugLogPaneEl = document.createElement('div');
+    const debugLogCopyBtnEl = document.createElement('button');
+    const debugLogClearBtnEl = document.createElement('button');
+    const onLogAppended = vi.fn();
+    let enabled = false;
+
+    const flow = createPanelDebugLogFlow({
+      getDebugLogPaneEl: () => debugLogPaneEl,
+      getDebugLogCopyBtnEl: () => debugLogCopyBtnEl,
+      getDebugLogClearBtnEl: () => debugLogClearBtnEl,
+      isLogEnabled: () => enabled,
+      now: () => new Date('2026-02-27T00:00:00.000Z'),
+      onLogAppended,
+    });
+
+    flow.appendDebugLog('event.hidden');
+    expect(flow.getDebugLogText()).toBe('');
+    expect(onLogAppended).not.toHaveBeenCalled();
+
+    enabled = true;
+    flow.appendDebugLog('event.visible');
+
+    expect(flow.getDebugLogText()).toContain('event.visible');
+    expect(flow.getDebugLogText()).not.toContain('event.hidden');
+    expect(onLogAppended).toHaveBeenCalledTimes(1);
+  });
 });
