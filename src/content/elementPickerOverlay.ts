@@ -12,6 +12,7 @@ interface ElementPickerOverlayController {
 
 const OVERLAY_ID = "ec-dev-tool-element-picker-overlay";
 const HIGHLIGHT_CLASS = "ec-dev-tool-picker-highlight";
+const PICK_FOCUSED_ELEMENT_KEY = "Enter";
 
 function consumeOverlayEvent(event: Event) {
   event.preventDefault();
@@ -20,7 +21,25 @@ function consumeOverlayEvent(event: Event) {
   eventWithImmediateStop.stopImmediatePropagation?.();
 }
 
-/** 요소 선택 오버레이 생성/하이라이트/클릭 선택 상태를 관리한다. */
+/** 키보드 선택 확정 시 요소 중심 좌표를 계산한다. */
+function resolveSelectionPoint(target: Element): { clientX: number; clientY: number } {
+  if (!(target instanceof HTMLElement)) {
+    return { clientX: 0, clientY: 0 };
+  }
+  const rect = target.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return {
+      clientX: Math.max(0, Math.floor(rect.left)),
+      clientY: Math.max(0, Math.floor(rect.top)),
+    };
+  }
+  return {
+    clientX: Math.max(0, Math.floor(rect.left + rect.width / 2)),
+    clientY: Math.max(0, Math.floor(rect.top + rect.height / 2)),
+  };
+}
+
+/** 요소 선택 오버레이 생성/하이라이트/클릭/Enter 확정 선택 상태를 관리한다. */
 function createElementPickerOverlayController(
   args: CreateElementPickerOverlayControllerArgs,
 ): ElementPickerOverlayController {
@@ -34,6 +53,7 @@ function createElementPickerOverlayController(
   let onMoveHandler: ((e: MouseEvent) => void) | null = null;
   let onClickHandler: ((e: MouseEvent) => void) | null = null;
   let onKeyDownHandler: ((e: KeyboardEvent) => void) | null = null;
+  let onFocusInHandler: ((e: FocusEvent) => void) | null = null;
   let onPointerDownHandler: EventListener | null = null;
   let onPointerUpHandler: EventListener | null = null;
   let onMouseDownHandler: EventListener | null = null;
@@ -92,11 +112,15 @@ function createElementPickerOverlayController(
     if (onKeyDownHandler) {
       document.removeEventListener("keydown", onKeyDownHandler);
     }
+    if (onFocusInHandler) {
+      document.removeEventListener("focusin", onFocusInHandler, true);
+    }
     overlay = null;
     lastHighlight = null;
     onMoveHandler = null;
     onClickHandler = null;
     onKeyDownHandler = null;
+    onFocusInHandler = null;
     onPointerDownHandler = null;
     onPointerUpHandler = null;
     onMouseDownHandler = null;
@@ -139,7 +163,30 @@ function createElementPickerOverlayController(
       if (e.key === "Escape") {
         consumeOverlayEvent(e);
         stopPicking("cancelled");
+        return;
       }
+      if (e.key === PICK_FOCUSED_ELEMENT_KEY) {
+        consumeOverlayEvent(e);
+        const focusedElement = document.activeElement;
+        const target =
+          focusedElement instanceof Element &&
+          focusedElement !== document.body &&
+          focusedElement !== document.documentElement &&
+          focusedElement !== overlay
+            ? focusedElement
+            : lastHighlight;
+        if (!target) return;
+        const { clientX, clientY } = resolveSelectionPoint(target);
+        sendElementSelected(clientX, clientY, target);
+        stopPicking("selected");
+      }
+    };
+
+    const onFocusIn = (e: FocusEvent) => {
+      if (!overlay) return;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (!target || target === overlay) return;
+      highlight(target);
     };
 
     const blockPointerEvent: EventListener = (event) => {
@@ -149,6 +196,7 @@ function createElementPickerOverlayController(
     onMoveHandler = onMove;
     onClickHandler = onClick;
     onKeyDownHandler = onKeyDown;
+    onFocusInHandler = onFocusIn;
     onPointerDownHandler = blockPointerEvent;
     onPointerUpHandler = blockPointerEvent;
     onMouseDownHandler = blockPointerEvent;
@@ -163,6 +211,7 @@ function createElementPickerOverlayController(
     overlay.addEventListener("mouseup", onMouseUpHandler, true);
     overlay.addEventListener("contextmenu", onContextMenuHandler, true);
     document.addEventListener("keydown", onKeyDownHandler);
+    document.addEventListener("focusin", onFocusInHandler, true);
   }
 
   return {

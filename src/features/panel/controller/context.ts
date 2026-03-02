@@ -82,7 +82,9 @@ export function createPanelControllerContext(
       const selectElementBtnEl = requireDomRefs(domRefs).selectElementBtnEl;
       selectElementBtnEl.classList.toggle('active', active);
       selectElementBtnEl.setAttribute('aria-pressed', active ? 'true' : 'false');
-      selectElementBtnEl.title = active ? '요소 선택 중 (Esc로 취소)' : '요소 선택 모드 시작';
+      selectElementBtnEl.title = active
+        ? '요소 선택 중 (Enter 선택, Esc 취소)'
+        : '요소 선택 모드 시작';
     },
     getOutputEl: () => requireDomRefs(domRefs).outputEl,
     getTargetSelectEl: () => requireDomRefs(domRefs).targetSelectEl,

@@ -99,4 +99,102 @@ describe('elementPickerOverlay', () => {
 
     document.removeEventListener('keydown', pageKeyDownListener);
   });
+
+  it('selects focused element on Enter key without mouse click', () => {
+    const notifyPickerStopped = vi.fn();
+    const sendElementSelected = vi.fn();
+    const picker = createElementPickerOverlayController({
+      notifyPickerStopped,
+      sendElementSelected,
+    });
+    picker.startPicking();
+
+    const focusedInput = document.createElement('input');
+    focusedInput.value = 'focused';
+    focusedInput.getBoundingClientRect = () =>
+      ({
+        left: 10,
+        top: 20,
+        width: 50,
+        height: 30,
+        right: 60,
+        bottom: 50,
+        x: 10,
+        y: 20,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect);
+    document.body.appendChild(focusedInput);
+    focusedInput.focus();
+
+    const pageKeyDownListener = vi.fn();
+    document.addEventListener('keydown', pageKeyDownListener);
+
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    expect(document.dispatchEvent(enterEvent)).toBe(false);
+    expect(enterEvent.defaultPrevented).toBe(true);
+    expect(pageKeyDownListener).not.toHaveBeenCalled();
+    expect(sendElementSelected).toHaveBeenCalledWith(35, 35, focusedInput);
+    expect(notifyPickerStopped).toHaveBeenCalledWith('selected');
+    expect(document.getElementById(OVERLAY_ID)).toBeNull();
+
+    document.removeEventListener('keydown', pageKeyDownListener);
+    focusedInput.remove();
+  });
+
+  it('falls back to highlighted element when focused element is not available', () => {
+    const notifyPickerStopped = vi.fn();
+    const sendElementSelected = vi.fn();
+    const target = document.createElement('button');
+    target.textContent = 'target';
+    target.getBoundingClientRect = () =>
+      ({
+        left: 100,
+        top: 40,
+        width: 20,
+        height: 20,
+        right: 120,
+        bottom: 60,
+        x: 100,
+        y: 40,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect);
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: vi.fn(() => target),
+    });
+
+    const picker = createElementPickerOverlayController({
+      notifyPickerStopped,
+      sendElementSelected,
+    });
+    picker.startPicking();
+
+    const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    const moveEvent = new MouseEvent('mousemove', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 110,
+      clientY: 50,
+    });
+    overlay?.dispatchEvent(moveEvent);
+
+    document.body.focus();
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(enterEvent);
+
+    expect(sendElementSelected).toHaveBeenCalledWith(110, 50, target);
+    expect(notifyPickerStopped).toHaveBeenCalledWith('selected');
+  });
 });
