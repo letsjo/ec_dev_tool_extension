@@ -22,7 +22,6 @@ export interface PanelDomRefs {
   reactComponentListEl: HTMLDivElement;
   treePaneEl: HTMLDivElement;
   reactComponentDetailEl: HTMLDivElement;
-  debugDiagnosticsPaneEl: HTMLDivElement;
   debugLogPaneEl: HTMLDivElement;
   debugLogCopyBtnEl: HTMLButtonElement;
   debugLogClearBtnEl: HTMLButtonElement;
@@ -85,7 +84,6 @@ export function initPanelDomRefs(): PanelDomRefs {
     reactComponentListEl: getRequiredElement<HTMLDivElement>('reactComponentList'),
     treePaneEl: getRequiredElement<HTMLDivElement>('treePane'),
     reactComponentDetailEl: getRequiredElement<HTMLDivElement>('reactComponentDetail'),
-    debugDiagnosticsPaneEl: getRequiredElement<HTMLDivElement>('debugDiagnosticsPane'),
     debugLogPaneEl: getRequiredElement<HTMLDivElement>('debugLogPane'),
     debugLogCopyBtnEl: getRequiredElement<HTMLButtonElement>('debugLogCopyBtn'),
     debugLogClearBtnEl: getRequiredElement<HTMLButtonElement>('debugLogClearBtn'),

@@ -4,7 +4,6 @@ import { createControllerWiringDataFlows } from './controllerWiringDataFlows';
 import { createControllerWiringLifecycle } from './controllerWiringLifecycle';
 import { createReactInspectorControllerState } from '../../reactInspector/controllerState';
 import { createPanelControllerContext } from '../context';
-import { createPanelDebugDiagnosticsFlow } from '../../debugLog/debugDiagnosticsFlow';
 import { createPanelDebugLogFlow } from '../../debugLog/debugLogFlow';
 import { createControllerWiringPaneBindings } from './controllerWiringPane';
 
@@ -20,16 +19,10 @@ export function createPanelControllerWiring(): PanelControllerWiring {
   const panelControllerContext = createPanelControllerContext({
     initPanelDomRefs,
   });
-  const debugDiagnosticsFlow = createPanelDebugDiagnosticsFlow({
-    getDebugDiagnosticsPaneEl: panelControllerContext.getDebugDiagnosticsPaneEl,
-  });
   const { appendDebugLog } = createPanelDebugLogFlow({
     getDebugLogPaneEl: panelControllerContext.getDebugLogPaneEl,
     getDebugLogCopyBtnEl: panelControllerContext.getDebugLogCopyBtnEl,
     getDebugLogClearBtnEl: panelControllerContext.getDebugLogClearBtnEl,
-    onLogAppended(eventName, payload) {
-      debugDiagnosticsFlow.recordDebugEvent(eventName, payload);
-    },
   });
 
   const {

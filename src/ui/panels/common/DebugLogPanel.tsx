@@ -32,10 +32,7 @@ export function DebugLogPanel() {
         </>
       }
     >
-      <div id="debugDiagnosticsPane" className="debug-diagnostics empty" hidden>
-        Diagnostics disabled. Set localStorage `ecDevTool.devDiagnostics=1`.
-      </div>
-      <div id="debugLogPane" className="empty">
+      <div id="debugLogPane" className="components-pane-body empty">
         디버그 로그가 여기에 누적됩니다.
       </div>
     </WorkspacePanelShell>

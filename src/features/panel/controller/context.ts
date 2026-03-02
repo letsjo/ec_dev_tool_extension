@@ -26,7 +26,6 @@ export interface PanelControllerContext {
   getReactComponentListEl: () => HTMLDivElement;
   getTreePaneEl: () => HTMLDivElement;
   getReactComponentDetailEl: () => HTMLDivElement;
-  getDebugDiagnosticsPaneEl: () => HTMLDivElement;
   getDebugLogPaneEl: () => HTMLDivElement;
   getDebugLogCopyBtnEl: () => HTMLButtonElement;
   getDebugLogClearBtnEl: () => HTMLButtonElement;
@@ -103,7 +102,6 @@ export function createPanelControllerContext(
     getReactComponentListEl: () => requireDomRefs(domRefs).reactComponentListEl,
     getTreePaneEl: () => requireDomRefs(domRefs).treePaneEl,
     getReactComponentDetailEl: () => requireDomRefs(domRefs).reactComponentDetailEl,
-    getDebugDiagnosticsPaneEl: () => requireDomRefs(domRefs).debugDiagnosticsPaneEl,
     getDebugLogPaneEl: () => requireDomRefs(domRefs).debugLogPaneEl,
     getDebugLogCopyBtnEl: () => requireDomRefs(domRefs).debugLogCopyBtnEl,
     getDebugLogClearBtnEl: () => requireDomRefs(domRefs).debugLogClearBtnEl,

@@ -25,7 +25,6 @@ function createContextStub(): PanelControllerContext {
     getReactComponentListEl: vi.fn(),
     getTreePaneEl: vi.fn(),
     getReactComponentDetailEl: vi.fn(),
-    getDebugDiagnosticsPaneEl: vi.fn(),
     getDebugLogPaneEl: vi.fn(),
     getDebugLogCopyBtnEl: vi.fn(),
     getDebugLogClearBtnEl: vi.fn(),
