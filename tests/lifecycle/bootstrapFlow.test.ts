@@ -20,6 +20,7 @@ describe('createPanelBootstrapFlow', () => {
     const setDomTreeEmpty = vi.fn();
     const onFetch = vi.fn();
     const onSelectElement = vi.fn();
+    const onPickerShortcutKeyDown = vi.fn();
     const onTogglePayloadMode = vi.fn();
     const onComponentSearchInput = vi.fn();
     const clearPageHoverPreview = vi.fn();
@@ -44,6 +45,7 @@ describe('createPanelBootstrapFlow', () => {
       getReactComponentListEl: () => reactComponentListEl,
       onFetch,
       onSelectElement,
+      onPickerShortcutKeyDown,
       onTogglePayloadMode,
       onComponentSearchInput,
       clearPageHoverPreview,
@@ -106,6 +108,7 @@ describe('createPanelBootstrapFlow', () => {
       getReactComponentListEl: () => reactComponentListEl,
       onFetch,
       onSelectElement: vi.fn(),
+      onPickerShortcutKeyDown: vi.fn(),
       onTogglePayloadMode: vi.fn(),
       onComponentSearchInput: vi.fn(),
       clearPageHoverPreview: vi.fn(),

@@ -68,6 +68,7 @@ describe('createPanelControllerBootstrap', () => {
         setDomTreeEmpty: vi.fn(),
         onFetch: vi.fn(),
         onSelectElement: vi.fn(),
+        onPickerShortcutKeyDown: vi.fn(),
         onTogglePayloadMode: vi.fn(),
         onComponentSearchInput: vi.fn(),
         clearPageHoverPreview: vi.fn(),

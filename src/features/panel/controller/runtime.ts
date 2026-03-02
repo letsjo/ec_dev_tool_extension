@@ -37,6 +37,7 @@ export interface PanelControllerRuntimeBindings {
   runtimeRefreshScheduler: RuntimeRefreshScheduler;
   onInspectedPageNavigated: (url: string) => void;
   onSelectElement: () => void;
+  onPickerShortcutKeyDown: (event: KeyboardEvent) => void;
   onPanelBeforeUnload: () => void;
 }
 
@@ -66,7 +67,7 @@ export function createPanelControllerRuntime(
       appendDebugLog: options.appendDebugLog,
     });
 
-  const { onSelectElement } = deps.createPanelRuntimePickerFlow({
+  const { onSelectElement, onPickerShortcutKeyDown } = deps.createPanelRuntimePickerFlow({
     panelControllerContext: options.panelControllerContext,
     runtimeRefreshScheduler,
     getInspectedTabId: options.getInspectedTabId,
@@ -97,6 +98,7 @@ export function createPanelControllerRuntime(
     runtimeRefreshScheduler,
     onInspectedPageNavigated,
     onSelectElement,
+    onPickerShortcutKeyDown,
     onPanelBeforeUnload,
   };
 }

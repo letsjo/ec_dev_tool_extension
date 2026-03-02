@@ -58,6 +58,7 @@ describe('createPanelControllerRuntime', () => {
     let capturedRuntimeRefreshOptions: any = null;
     let capturedPickerFlowOptions: CreatePanelRuntimePickerFlowOptions | null = null;
     const onSelectElement = vi.fn();
+    const onPickerShortcutKeyDown = vi.fn();
     let capturedTeardownOptions: any = null;
     const fetchReactInfoForRuntimeRefresh = vi.fn();
     const fetchReactInfoForElementSelection = vi.fn();
@@ -88,7 +89,7 @@ describe('createPanelControllerRuntime', () => {
         createPanelRuntimePickerFlow: vi.fn(
           (pickerFlowOptions: CreatePanelRuntimePickerFlowOptions) => {
             capturedPickerFlowOptions = pickerFlowOptions;
-            return { onSelectElement };
+            return { onSelectElement, onPickerShortcutKeyDown };
           },
         ),
         createPanelTeardownFlow: vi.fn((teardownOptions: any) => {
@@ -101,6 +102,7 @@ describe('createPanelControllerRuntime', () => {
     expect(bindings.runtimeRefreshScheduler).toBe(runtimeRefreshScheduler);
     expect(bindings.onInspectedPageNavigated).toBe(onInspectedPageNavigated);
     expect(bindings.onSelectElement).toBe(onSelectElement);
+    expect(bindings.onPickerShortcutKeyDown).toBe(onPickerShortcutKeyDown);
     expect(capturedRuntimeRefreshOptions.runRefresh).toBe(fetchReactInfoForRuntimeRefresh);
     expect(capturedPickerFlowOptions?.runtimeRefreshScheduler).toBe(runtimeRefreshScheduler);
     expect(capturedPickerFlowOptions?.fetchReactInfoForElementSelection).toBe(

@@ -94,6 +94,7 @@ function createControllerWiringLifecycle(
     runtimeRefreshScheduler,
     onInspectedPageNavigated,
     onSelectElement,
+    onPickerShortcutKeyDown,
     onPanelBeforeUnload,
   } = deps.createPanelControllerRuntime({
     panelControllerContext: options.panelControllerContext,
@@ -129,6 +130,7 @@ function createControllerWiringLifecycle(
     setDomTreeEmpty: options.setDomTreeEmpty,
     onFetch: options.onFetch,
     onSelectElement,
+    onPickerShortcutKeyDown,
     onTogglePayloadMode,
     onComponentSearchInput: options.onComponentSearchInput,
     clearPageHoverPreview: options.clearPageHoverPreview,

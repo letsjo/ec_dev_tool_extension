@@ -15,6 +15,7 @@ interface CreatePanelControllerBootstrapBindingsOptions {
   setDomTreeEmpty: (text: string) => void;
   onFetch: () => void;
   onSelectElement: () => void;
+  onPickerShortcutKeyDown: (event: KeyboardEvent) => void;
   onTogglePayloadMode: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;
@@ -72,6 +73,7 @@ export function createBootstrapFlowBindings(
     getReactComponentListEl: options.panelControllerContext.getReactComponentListEl,
     onFetch: options.onFetch,
     onSelectElement: options.onSelectElement,
+    onPickerShortcutKeyDown: options.onPickerShortcutKeyDown,
     onTogglePayloadMode: options.onTogglePayloadMode,
     onComponentSearchInput: options.onComponentSearchInput,
     clearPageHoverPreview: options.clearPageHoverPreview,

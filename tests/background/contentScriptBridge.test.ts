@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ensureContentScript,
+  ensureElementPickerControl,
   ensureStartElementPicker,
   sendCallPageAgent,
 } from '../../src/background/router/contentScriptBridge';
@@ -106,5 +107,19 @@ describe('contentScriptBridge', () => {
       args: { lightweight: true },
     });
     expect(result).toEqual({ ok: true, result: { value: 1 } });
+  });
+
+  it('forwards confirmElementPickerSelection control to content script', async () => {
+    const { tabsSendMessage } = installChromeMock();
+    tabsSendMessage.mockImplementation((_tabId: number, payload: AnyRecord) => {
+      if (payload.action === 'pingContentScript') return Promise.resolve({ ok: true });
+      if (payload.action === 'confirmElementPickerSelection') return Promise.resolve({ ok: true });
+      return Promise.resolve({ ok: true });
+    });
+
+    const result = await ensureElementPickerControl(21, 'confirmElementPickerSelection');
+
+    expect(tabsSendMessage).toHaveBeenCalledWith(21, { action: 'confirmElementPickerSelection' });
+    expect(result).toEqual({ ok: true });
   });
 });

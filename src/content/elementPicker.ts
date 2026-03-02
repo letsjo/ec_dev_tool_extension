@@ -31,6 +31,19 @@ chrome.runtime.onMessage.addListener((message: { action: string }, _sender, send
     sendResponse({ ok: true });
     return false;
   }
+  if (message.action === "confirmElementPickerSelection") {
+    const confirmed = elementPickerOverlay.confirmSelectionByKeyboard();
+    sendResponse({
+      ok: confirmed,
+      error: confirmed ? undefined : "선택할 요소가 없습니다. 마우스를 요소 위로 이동해 하이라이트를 만든 뒤 다시 시도하세요.",
+    });
+    return false;
+  }
+  if (message.action === "cancelElementPicker") {
+    elementPickerOverlay.stopPicking("cancelled");
+    sendResponse({ ok: true });
+    return false;
+  }
   if (message.action === "callPageAgent") {
     const method = (message as { method?: unknown }).method;
     const args = (message as { args?: unknown }).args;

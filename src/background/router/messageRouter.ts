@@ -1,5 +1,6 @@
 import {
   ensureContentScript,
+  ensureElementPickerControl,
   ensureStartElementPicker,
   sendCallPageAgent,
 } from './contentScriptBridge';
@@ -31,6 +32,40 @@ function createBackgroundMessageListener() {
       (async () => {
         try {
           await ensureStartElementPicker(tabId);
+          sendResponse({ ok: true });
+        } catch (error) {
+          sendResponse({ ok: false, error: toErrorMessage(error) });
+        }
+      })();
+      return true;
+    }
+
+    if (
+      message.action === 'confirmElementPickerSelection' ||
+      message.action === 'cancelElementPicker'
+    ) {
+      if (!hasValidTabId(message.tabId)) {
+        sendResponse({ ok: false, error: '유효한 탭 ID를 찾지 못했습니다.' });
+        return false;
+      }
+      const tabId = message.tabId;
+      const action = message.action;
+
+      (async () => {
+        try {
+          const result = await ensureElementPickerControl(tabId, action);
+          if (
+            result &&
+            typeof result === 'object' &&
+            'ok' in result &&
+            (result as { ok?: unknown }).ok === false
+          ) {
+            sendResponse({
+              ok: false,
+              error: String((result as { error?: unknown }).error ?? '요소 선택 제어에 실패했습니다.'),
+            });
+            return;
+          }
           sendResponse({ ok: true });
         } catch (error) {
           sendResponse({ ok: false, error: toErrorMessage(error) });

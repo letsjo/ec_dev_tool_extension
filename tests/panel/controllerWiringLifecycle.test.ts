@@ -24,6 +24,7 @@ describe('createControllerWiringLifecycle', () => {
     };
     const onInspectedPageNavigated = vi.fn();
     const onSelectElement = vi.fn();
+    const onPickerShortcutKeyDown = vi.fn();
     const onPanelBeforeUnload = vi.fn();
     const bootstrapPanel = vi.fn();
     const fetchReactInfo = vi.fn();
@@ -62,6 +63,7 @@ describe('createControllerWiringLifecycle', () => {
             runtimeRefreshScheduler,
             onInspectedPageNavigated,
             onSelectElement,
+            onPickerShortcutKeyDown,
             onPanelBeforeUnload,
           };
         }),
@@ -99,6 +101,7 @@ describe('createControllerWiringLifecycle', () => {
     });
 
     expect(capturedBootstrapOptions.onSelectElement).toBe(onSelectElement);
+    expect(capturedBootstrapOptions.onPickerShortcutKeyDown).toBe(onPickerShortcutKeyDown);
     expect(capturedBootstrapOptions.onPanelBeforeUnload).toBe(onPanelBeforeUnload);
     capturedBootstrapOptions.addNavigatedListener();
     expect(addInspectedPageNavigatedListener).toHaveBeenCalledWith(onInspectedPageNavigated);

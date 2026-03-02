@@ -59,9 +59,30 @@ function buildSelectedElementSnapshot(elementInfo: ElementInfo): SelectedElement
 
 /**
  * element picker 시작 액션과 runtime 메시지 분기를 한 곳으로 모은다.
+ * panel keydown shortcut(Enter/Escape)에서 content picker 제어 메시지를 보내는 경로도 관리한다.
  * controller는 의존성만 주입하고, picker 상태/문구 전환 규칙은 이 모듈에서 유지한다.
  */
 export function createElementPickerBridgeFlow(options: CreateElementPickerBridgeFlowOptions) {
+  function sendPickerControlAction(
+    action: 'confirmElementPickerSelection' | 'cancelElementPicker',
+    debugEventName: string,
+  ) {
+    const tabId = options.getInspectedTabId();
+    chrome.runtime.sendMessage({ action, tabId }, (response?: PickerStartResponse) => {
+      if (chrome.runtime.lastError) {
+        options.appendDebugLog?.(`${debugEventName}.error.runtime`, {
+          message: chrome.runtime.lastError.message ?? 'unknown',
+        });
+        return;
+      }
+      if (!response?.ok) {
+        options.appendDebugLog?.(`${debugEventName}.error.response`, {
+          message: response?.error ?? '요소 선택 제어에 실패했습니다.',
+        });
+      }
+    });
+  }
+
   function onSelectElement() {
     options.appendDebugLog?.('picker.select.start');
     options.clearPageHoverPreview();
@@ -96,12 +117,22 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
 
         options.appendDebugLog?.('picker.select.ready');
         options.setPickerModeActive(true);
-        options.setElementOutput('페이지에서 요소를 클릭하세요. (취소: Esc)');
+        options.setElementOutput('페이지에서 요소를 클릭하거나 Enter로 확정하세요. (취소: Esc)');
         options.setReactStatus('요소 선택 대기 중… 선택 후 컴포넌트 트리를 조회합니다.');
         options.setDomTreeStatus('요소 선택 대기 중…');
-        options.setDomTreeEmpty('요소를 클릭하면 DOM 트리를 표시합니다.');
+        options.setDomTreeEmpty('요소를 클릭하거나 Enter로 확정하면 DOM 트리를 표시합니다.');
       },
     );
+  }
+
+  function onConfirmElementByShortcut() {
+    options.appendDebugLog?.('picker.shortcut.confirm');
+    sendPickerControlAction('confirmElementPickerSelection', 'picker.shortcut.confirm');
+  }
+
+  function onCancelElementByShortcut() {
+    options.appendDebugLog?.('picker.shortcut.cancel');
+    sendPickerControlAction('cancelElementPicker', 'picker.shortcut.cancel');
   }
 
   function onRuntimeMessage(message: ElementSelectedMessage) {
@@ -156,6 +187,8 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
 
   return {
     onSelectElement,
+    onConfirmElementByShortcut,
+    onCancelElementByShortcut,
     onRuntimeMessage,
   };
 }

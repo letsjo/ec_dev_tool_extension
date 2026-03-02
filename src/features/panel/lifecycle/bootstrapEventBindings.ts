@@ -6,6 +6,7 @@ interface BindPanelBootstrapEventsOptions {
   getReactComponentListEl: () => HTMLDivElement;
   onFetch: () => void;
   onSelectElement: () => void;
+  onPickerShortcutKeyDown: (event: KeyboardEvent) => void;
   onTogglePayloadMode: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;
@@ -26,6 +27,7 @@ export function bindPanelBootstrapEvents(options: BindPanelBootstrapEventsOption
   options.getPayloadModeBtnEl().addEventListener('click', options.onTogglePayloadMode);
   options.getComponentSearchInputEl().addEventListener('input', options.onComponentSearchInput);
   options.getReactComponentListEl().addEventListener('mouseleave', options.clearPageHoverPreview);
+  window.addEventListener('keydown', options.onPickerShortcutKeyDown, true);
   window.addEventListener('beforeunload', options.onBeforeUnload);
 }
 

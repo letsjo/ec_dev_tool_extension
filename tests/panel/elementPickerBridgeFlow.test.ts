@@ -70,4 +70,49 @@ describe('elementPickerBridgeFlow', () => {
 
     expect(scheduleRuntimeRefresh).toHaveBeenCalledTimes(1);
   });
+
+  it('sends picker shortcut control actions through runtime bridge', () => {
+    const originalChrome = (globalThis as { chrome?: unknown }).chrome;
+    const sendMessage = vi.fn((_payload: unknown, callback?: (response: { ok: boolean }) => void) => {
+      callback?.({ ok: true });
+    });
+    try {
+      (globalThis as { chrome?: unknown }).chrome = {
+        runtime: {
+          sendMessage,
+          lastError: undefined,
+        },
+      };
+
+      const flow = createElementPickerBridgeFlow({
+        getInspectedTabId: () => 5,
+        clearPageHoverPreview: vi.fn(),
+        setPickerModeActive: vi.fn(),
+        setElementOutput: vi.fn(),
+        setReactStatus: vi.fn(),
+        setDomTreeStatus: vi.fn(),
+        setDomTreeEmpty: vi.fn(),
+        fetchDomTree: vi.fn(),
+        fetchReactInfoForElementSelection: vi.fn(),
+        resetRuntimeRefresh: vi.fn(),
+        scheduleRuntimeRefresh: vi.fn(),
+      });
+
+      flow.onConfirmElementByShortcut();
+      flow.onCancelElementByShortcut();
+
+      expect(sendMessage).toHaveBeenNthCalledWith(
+        1,
+        { action: 'confirmElementPickerSelection', tabId: 5 },
+        expect.any(Function),
+      );
+      expect(sendMessage).toHaveBeenNthCalledWith(
+        2,
+        { action: 'cancelElementPicker', tabId: 5 },
+        expect.any(Function),
+      );
+    } finally {
+      (globalThis as { chrome?: unknown }).chrome = originalChrome;
+    }
+  });
 });

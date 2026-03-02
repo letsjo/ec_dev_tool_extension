@@ -5,6 +5,7 @@ import type { RuntimeRefreshScheduler } from '../../src/features/panel/runtimeRe
 
 function createContextStub() {
   return {
+    isPickerModeActive: vi.fn(() => true),
     setPickerModeActive: vi.fn(),
     setRemoveRuntimeMessageListener: vi.fn(),
   } as unknown as PanelControllerContext;
@@ -26,6 +27,8 @@ describe('createPanelRuntimePickerFlow', () => {
     const appendDebugLog = vi.fn();
     const removeRuntimeMessageListener = vi.fn();
     const onSelectElement = vi.fn();
+    const onConfirmElementByShortcut = vi.fn();
+    const onCancelElementByShortcut = vi.fn();
     const onRuntimeMessage = vi.fn();
     let capturedPickerOptions: any = null;
 
@@ -48,6 +51,8 @@ describe('createPanelRuntimePickerFlow', () => {
           capturedPickerOptions = options;
           return {
             onSelectElement,
+            onConfirmElementByShortcut,
+            onCancelElementByShortcut,
             onRuntimeMessage,
           };
         }),
@@ -56,6 +61,14 @@ describe('createPanelRuntimePickerFlow', () => {
     );
 
     expect(bindings.onSelectElement).toBe(onSelectElement);
+    bindings.onPickerShortcutKeyDown(
+      new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }),
+    );
+    bindings.onPickerShortcutKeyDown(
+      new KeyboardEvent('keydown', { key: 'Escape', cancelable: true, bubbles: true }),
+    );
+    expect(onConfirmElementByShortcut).toHaveBeenCalledTimes(1);
+    expect(onCancelElementByShortcut).toHaveBeenCalledTimes(1);
     capturedPickerOptions.scheduleRuntimeRefresh();
     capturedPickerOptions.resetRuntimeRefresh();
     expect(runtimeRefreshScheduler.schedule).toHaveBeenCalledWith(true);
@@ -68,5 +81,46 @@ describe('createPanelRuntimePickerFlow', () => {
     expect(panelControllerContext.setRemoveRuntimeMessageListener).toHaveBeenCalledWith(
       removeRuntimeMessageListener,
     );
+  });
+
+  it('ignores Enter/Escape shortcuts when picker mode is inactive', () => {
+    const panelControllerContext = {
+      isPickerModeActive: vi.fn(() => false),
+      setPickerModeActive: vi.fn(),
+      setRemoveRuntimeMessageListener: vi.fn(),
+    } as unknown as PanelControllerContext;
+    const runtimeRefreshScheduler = createSchedulerStub();
+    const onConfirmElementByShortcut = vi.fn();
+    const onCancelElementByShortcut = vi.fn();
+
+    const bindings = createPanelRuntimePickerFlow(
+      {
+        panelControllerContext,
+        runtimeRefreshScheduler,
+        getInspectedTabId: vi.fn(() => 1),
+        clearPageHoverPreview: vi.fn(),
+        fetchReactInfoForElementSelection: vi.fn(),
+        fetchDomTree: vi.fn(),
+        setElementOutput: vi.fn(),
+        setReactStatus: vi.fn(),
+        setDomTreeStatus: vi.fn(),
+        setDomTreeEmpty: vi.fn(),
+      },
+      {
+        createElementPickerBridgeFlow: vi.fn(() => ({
+          onSelectElement: vi.fn(),
+          onConfirmElementByShortcut,
+          onCancelElementByShortcut,
+          onRuntimeMessage: vi.fn(),
+        })),
+        bindRuntimeMessageListener: vi.fn(() => vi.fn()),
+      },
+    );
+
+    bindings.onPickerShortcutKeyDown(new KeyboardEvent('keydown', { key: 'Enter' }));
+    bindings.onPickerShortcutKeyDown(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    expect(onConfirmElementByShortcut).not.toHaveBeenCalled();
+    expect(onCancelElementByShortcut).not.toHaveBeenCalled();
   });
 });

@@ -19,6 +19,7 @@ interface CreatePanelControllerBootstrapOptions {
   setDomTreeEmpty: (text: string) => void;
   onFetch: () => void;
   onSelectElement: () => void;
+  onPickerShortcutKeyDown: (event: KeyboardEvent) => void;
   onTogglePayloadMode: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;

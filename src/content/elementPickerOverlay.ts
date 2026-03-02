@@ -8,6 +8,7 @@ interface CreateElementPickerOverlayControllerArgs {
 interface ElementPickerOverlayController {
   startPicking: () => void;
   stopPicking: (reason?: PickerStopReason) => void;
+  confirmSelectionByKeyboard: () => boolean;
 }
 
 const OVERLAY_ID = "ec-dev-tool-element-picker-overlay";
@@ -84,6 +85,25 @@ function createElementPickerOverlayController(
       "background:rgba(26,115,232,0.05);pointer-events:auto;",
     ].join(" ");
     return div;
+  }
+
+  /** 현재 상태(포커스 요소 우선, 없으면 마지막 하이라이트)에서 선택 확정을 시도한다. */
+  function confirmSelectionByKeyboard(): boolean {
+    if (!overlay) return false;
+    const focusedElement = document.activeElement;
+    const target =
+      focusedElement instanceof Element &&
+      focusedElement !== document.body &&
+      focusedElement !== document.documentElement &&
+      focusedElement !== overlay
+        ? focusedElement
+        : lastHighlight;
+    if (!target) return false;
+
+    const { clientX, clientY } = resolveSelectionPoint(target);
+    sendElementSelected(clientX, clientY, target);
+    stopPicking("selected");
+    return true;
   }
 
   function stopPicking(reason: PickerStopReason = "cancelled") {
@@ -167,18 +187,7 @@ function createElementPickerOverlayController(
       }
       if (e.key === PICK_FOCUSED_ELEMENT_KEY) {
         consumeOverlayEvent(e);
-        const focusedElement = document.activeElement;
-        const target =
-          focusedElement instanceof Element &&
-          focusedElement !== document.body &&
-          focusedElement !== document.documentElement &&
-          focusedElement !== overlay
-            ? focusedElement
-            : lastHighlight;
-        if (!target) return;
-        const { clientX, clientY } = resolveSelectionPoint(target);
-        sendElementSelected(clientX, clientY, target);
-        stopPicking("selected");
+        confirmSelectionByKeyboard();
       }
     };
 
@@ -217,6 +226,7 @@ function createElementPickerOverlayController(
   return {
     startPicking,
     stopPicking,
+    confirmSelectionByKeyboard,
   };
 }
 

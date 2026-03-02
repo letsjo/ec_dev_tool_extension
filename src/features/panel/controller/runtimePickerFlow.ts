@@ -28,6 +28,13 @@ const PANEL_RUNTIME_PICKER_FLOW_DEFAULT_DEPS: PanelRuntimePickerFlowDependencies
   bindRuntimeMessageListener: bindRuntimeMessageListenerValue,
 };
 
+function consumeKeyboardShortcutEvent(event: KeyboardEvent) {
+  event.preventDefault();
+  event.stopPropagation();
+  const eventWithImmediateStop = event as KeyboardEvent & { stopImmediatePropagation?: () => void };
+  eventWithImmediateStop.stopImmediatePropagation?.();
+}
+
 /**
  * picker bridge/runtime-message 결선을 구성하고 제거 핸들을 context에 저장한다.
  * runtime controller는 refresh/teardown 조립에 집중하고 picker 이벤트 결선은 분리한다.
@@ -35,8 +42,12 @@ const PANEL_RUNTIME_PICKER_FLOW_DEFAULT_DEPS: PanelRuntimePickerFlowDependencies
 export function createPanelRuntimePickerFlow(
   options: CreatePanelRuntimePickerFlowOptions,
   deps: PanelRuntimePickerFlowDependencies = PANEL_RUNTIME_PICKER_FLOW_DEFAULT_DEPS,
-): { onSelectElement: () => void } {
-  const { onSelectElement, onRuntimeMessage } = deps.createElementPickerBridgeFlow({
+): {
+  onSelectElement: () => void;
+  onPickerShortcutKeyDown: (event: KeyboardEvent) => void;
+} {
+  const { onSelectElement, onConfirmElementByShortcut, onCancelElementByShortcut, onRuntimeMessage } =
+    deps.createElementPickerBridgeFlow({
     getInspectedTabId: options.getInspectedTabId,
     clearPageHoverPreview: options.clearPageHoverPreview,
     setPickerModeActive: options.panelControllerContext.setPickerModeActive,
@@ -71,7 +82,20 @@ export function createPanelRuntimePickerFlow(
     }),
   );
 
-  return { onSelectElement };
+  function onPickerShortcutKeyDown(event: KeyboardEvent) {
+    if (!options.panelControllerContext.isPickerModeActive()) return;
+    if (event.key === 'Enter') {
+      consumeKeyboardShortcutEvent(event);
+      onConfirmElementByShortcut();
+      return;
+    }
+    if (event.key === 'Escape') {
+      consumeKeyboardShortcutEvent(event);
+      onCancelElementByShortcut();
+    }
+  }
+
+  return { onSelectElement, onPickerShortcutKeyDown };
 }
 
 export type { CreatePanelRuntimePickerFlowOptions, PanelRuntimePickerFlowDependencies };

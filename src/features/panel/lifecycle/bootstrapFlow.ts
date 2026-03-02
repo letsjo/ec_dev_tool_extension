@@ -17,6 +17,7 @@ interface CreatePanelBootstrapFlowOptions {
   getReactComponentListEl: () => HTMLDivElement;
   onFetch: () => void;
   onSelectElement: () => void;
+  onPickerShortcutKeyDown: (event: KeyboardEvent) => void;
   onTogglePayloadMode: () => void;
   onComponentSearchInput: () => void;
   clearPageHoverPreview: () => void;
@@ -61,6 +62,7 @@ export function createPanelBootstrapFlow(
       getReactComponentListEl: options.getReactComponentListEl,
       onFetch: options.onFetch,
       onSelectElement: options.onSelectElement,
+      onPickerShortcutKeyDown: options.onPickerShortcutKeyDown,
       onTogglePayloadMode: options.onTogglePayloadMode,
       onComponentSearchInput: options.onComponentSearchInput,
       clearPageHoverPreview: options.clearPageHoverPreview,

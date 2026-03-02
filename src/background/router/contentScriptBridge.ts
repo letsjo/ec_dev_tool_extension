@@ -6,6 +6,14 @@ async function sendStartElementPicker(tabId: number): Promise<void> {
 }
 
 /** 메시지를 전달 */
+async function sendElementPickerControl(
+  tabId: number,
+  action: 'confirmElementPickerSelection' | 'cancelElementPicker',
+): Promise<unknown> {
+  return chrome.tabs.sendMessage(tabId, { action });
+}
+
+/** 메시지를 전달 */
 async function sendCallPageAgent(tabId: number, method: string, args?: unknown): Promise<unknown> {
   return chrome.tabs.sendMessage(tabId, { action: 'callPageAgent', method, args });
 }
@@ -61,8 +69,27 @@ async function ensureStartElementPicker(tabId: number): Promise<void> {
   await retryAfterContentScriptInjection(tabId, () => sendStartElementPicker(tabId));
 }
 
+/** 필수 상태를 보장 */
+async function ensureElementPickerControl(
+  tabId: number,
+  action: 'confirmElementPickerSelection' | 'cancelElementPicker',
+): Promise<unknown> {
+  await ensureContentScript(tabId);
+  try {
+    return await sendElementPickerControl(tabId, action);
+  } catch (error) {
+    const firstErrorMessage = toErrorMessage(error);
+    if (!isMissingReceiverError(firstErrorMessage)) {
+      throw error;
+    }
+  }
+
+  return retryAfterContentScriptInjection(tabId, () => sendElementPickerControl(tabId, action));
+}
+
 export {
   ensureContentScript,
   ensureStartElementPicker,
+  ensureElementPickerControl,
   sendCallPageAgent,
 };

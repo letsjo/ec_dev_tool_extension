@@ -10,6 +10,7 @@ describe('bindPanelBootstrapEvents', () => {
     const reactComponentListEl = document.createElement('div');
     const onFetch = vi.fn();
     const onSelectElement = vi.fn();
+    const onPickerShortcutKeyDown = vi.fn();
     const onTogglePayloadMode = vi.fn();
     const onComponentSearchInput = vi.fn();
     const clearPageHoverPreview = vi.fn();
@@ -23,6 +24,7 @@ describe('bindPanelBootstrapEvents', () => {
       getReactComponentListEl: () => reactComponentListEl,
       onFetch,
       onSelectElement,
+      onPickerShortcutKeyDown,
       onTogglePayloadMode,
       onComponentSearchInput,
       clearPageHoverPreview,
@@ -34,6 +36,7 @@ describe('bindPanelBootstrapEvents', () => {
     payloadModeBtnEl.dispatchEvent(new MouseEvent('click'));
     componentSearchInputEl.dispatchEvent(new Event('input'));
     reactComponentListEl.dispatchEvent(new MouseEvent('mouseleave'));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     window.dispatchEvent(new Event('beforeunload'));
 
     expect(onFetch).toHaveBeenCalledTimes(1);
@@ -41,6 +44,7 @@ describe('bindPanelBootstrapEvents', () => {
     expect(onTogglePayloadMode).toHaveBeenCalledTimes(1);
     expect(onComponentSearchInput).toHaveBeenCalledTimes(1);
     expect(clearPageHoverPreview).toHaveBeenCalledTimes(1);
+    expect(onPickerShortcutKeyDown).toHaveBeenCalledTimes(1);
     expect(onBeforeUnload).toHaveBeenCalledTimes(1);
   });
 
@@ -55,6 +59,7 @@ describe('bindPanelBootstrapEvents', () => {
       getReactComponentListEl: () => document.createElement('div'),
       onFetch,
       onSelectElement: vi.fn(),
+      onPickerShortcutKeyDown: vi.fn(),
       onTogglePayloadMode: vi.fn(),
       onComponentSearchInput: vi.fn(),
       clearPageHoverPreview: vi.fn(),
