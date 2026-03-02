@@ -87,17 +87,18 @@ function createElementPickerOverlayController(
     return div;
   }
 
-  /** 현재 상태(포커스 요소 우선, 없으면 마지막 하이라이트)에서 선택 확정을 시도한다. */
+  /** 현재 상태(하이라이트 우선, 없으면 포커스 요소)에서 선택 확정을 시도한다. */
   function confirmSelectionByKeyboard(): boolean {
     if (!overlay) return false;
     const focusedElement = document.activeElement;
     const target =
-      focusedElement instanceof Element &&
+      lastHighlight ??
+      (focusedElement instanceof Element &&
       focusedElement !== document.body &&
       focusedElement !== document.documentElement &&
       focusedElement !== overlay
         ? focusedElement
-        : lastHighlight;
+        : null);
     if (!target) return false;
 
     const { clientX, clientY } = resolveSelectionPoint(target);

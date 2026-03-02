@@ -112,7 +112,7 @@
 1. panel의 `onSelectElement()`이 `startElementPicker` 요청
 2. content가 오버레이 생성 및 hover/click/focus 추적
   - 오버레이가 pointer/mouse/contextmenu/Escape/Enter 이벤트를 consume해 페이지 DOM 이벤트 부작용을 최소화
-3. 클릭 또는 `Enter`(포커스 요소, 없으면 현재 하이라이트 요소) 확정 시 `elementSelected` 메시지 송신
+3. 클릭 또는 `Enter`(현재 하이라이트 요소 우선, 하이라이트가 없으면 포커스 요소) 확정 시 `elementSelected` 메시지 송신
 4. panel `chrome.runtime.onMessage`에서 수신 후:
   - Selected Element/DOM Path UI 업데이트
   - pending runtime refresh scheduler를 reset해 선택 직후 stale background refresh 개입을 최소화

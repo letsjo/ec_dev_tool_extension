@@ -197,4 +197,74 @@ describe('elementPickerOverlay', () => {
     expect(sendElementSelected).toHaveBeenCalledWith(110, 50, target);
     expect(notifyPickerStopped).toHaveBeenCalledWith('selected');
   });
+
+  it('prefers highlighted element over focused element on Enter key', () => {
+    const notifyPickerStopped = vi.fn();
+    const sendElementSelected = vi.fn();
+    const highlightedTarget = document.createElement('button');
+    highlightedTarget.textContent = 'highlighted';
+    highlightedTarget.getBoundingClientRect = () =>
+      ({
+        left: 200,
+        top: 70,
+        width: 30,
+        height: 20,
+        right: 230,
+        bottom: 90,
+        x: 200,
+        y: 70,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect);
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: vi.fn(() => highlightedTarget),
+    });
+
+    const picker = createElementPickerOverlayController({
+      notifyPickerStopped,
+      sendElementSelected,
+    });
+    picker.startPicking();
+
+    const focusedInput = document.createElement('input');
+    focusedInput.getBoundingClientRect = () =>
+      ({
+        left: 10,
+        top: 20,
+        width: 50,
+        height: 30,
+        right: 60,
+        bottom: 50,
+        x: 10,
+        y: 20,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect);
+    document.body.appendChild(focusedInput);
+    focusedInput.focus();
+
+    const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    overlay?.dispatchEvent(
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 215,
+        clientY: 80,
+      }),
+    );
+
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(enterEvent);
+
+    expect(sendElementSelected).toHaveBeenCalledWith(215, 80, highlightedTarget);
+    expect(notifyPickerStopped).toHaveBeenCalledWith('selected');
+    focusedInput.remove();
+  });
 });
