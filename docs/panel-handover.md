@@ -112,6 +112,7 @@
 1. panel의 `onSelectElement()`이 `startElementPicker` 요청
 2. content가 오버레이 생성 및 hover/click/focus 추적
   - 오버레이가 pointer/mouse/contextmenu/Escape/Enter 이벤트를 consume해 페이지 DOM 이벤트 부작용을 최소화
+  - hover/focus target이 바뀌면 `elementPreviewed` 메시지를 보내 `Selected Element / DOM Path / Selected DOM Tree`를 실시간 미리보기 동기화한다. DOM tree fetch는 panel에서 debounce해 과도한 pageAgent 호출을 줄인다.
 3. 클릭 또는 `Enter`(현재 하이라이트 요소 우선, 하이라이트가 없으면 포커스 요소) 확정 시 `elementSelected` 메시지 송신
 4. panel `chrome.runtime.onMessage`에서 수신 후:
   - Selected Element/DOM Path UI 업데이트

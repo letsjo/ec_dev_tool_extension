@@ -2,7 +2,7 @@ import { isPickPoint } from '../../../shared/inspector';
 import { readString } from '../../../shared/readers';
 import type {
   ElementInfo,
-  ElementSelectedMessage,
+  ElementPickerRuntimeMessage,
   PickPoint,
   PickerStartResponse,
 } from '../../../shared/inspector';
@@ -10,6 +10,7 @@ import type {
 interface CreateElementPickerBridgeFlowOptions {
   getInspectedTabId: () => number;
   clearPageHoverPreview: () => void;
+  isPickerModeActive: () => boolean;
   setPickerModeActive: (active: boolean) => void;
   setElementOutput: (text: string) => void;
   setReactStatus: (text: string, isError?: boolean) => void;
@@ -28,6 +29,8 @@ interface SelectedElementSnapshot {
   clickPoint?: PickPoint;
   outputText: string;
 }
+
+const PREVIEW_DOM_TREE_DEBOUNCE_MS = 80;
 
 function buildSelectedElementSnapshot(elementInfo: ElementInfo): SelectedElementSnapshot {
   const selectorText = readString(elementInfo.selector);
@@ -63,6 +66,40 @@ function buildSelectedElementSnapshot(elementInfo: ElementInfo): SelectedElement
  * controller는 의존성만 주입하고, picker 상태/문구 전환 규칙은 이 모듈에서 유지한다.
  */
 export function createElementPickerBridgeFlow(options: CreateElementPickerBridgeFlowOptions) {
+  let previewDomTreeTimer: number | null = null;
+  let queuedPreviewSnapshot: SelectedElementSnapshot | null = null;
+
+  function clearQueuedPreviewDomTree() {
+    if (previewDomTreeTimer !== null) {
+      window.clearTimeout(previewDomTreeTimer);
+      previewDomTreeTimer = null;
+    }
+    queuedPreviewSnapshot = null;
+  }
+
+  function schedulePreviewDomTree(snapshot: SelectedElementSnapshot) {
+    queuedPreviewSnapshot = snapshot;
+    if (previewDomTreeTimer !== null) {
+      return;
+    }
+
+    previewDomTreeTimer = window.setTimeout(() => {
+      // hover/focus 미리보기는 target 변경이 연속으로 발생할 수 있어
+      // DOM tree fetch만 짧게 debounce하고 Selected Element 텍스트는 즉시 갱신한다.
+      previewDomTreeTimer = null;
+      const latestPreviewSnapshot = queuedPreviewSnapshot;
+      queuedPreviewSnapshot = null;
+      if (!latestPreviewSnapshot) {
+        return;
+      }
+      options.fetchDomTree(
+        latestPreviewSnapshot.querySelector,
+        latestPreviewSnapshot.clickPoint,
+        latestPreviewSnapshot.domPath,
+      );
+    }, PREVIEW_DOM_TREE_DEBOUNCE_MS);
+  }
+
   function sendPickerControlAction(
     action: 'confirmElementPickerSelection' | 'cancelElementPicker',
     debugEventName: string,
@@ -135,7 +172,7 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
     sendPickerControlAction('cancelElementPicker', 'picker.shortcut.cancel');
   }
 
-  function onRuntimeMessage(message: ElementSelectedMessage) {
+  function onRuntimeMessage(message: ElementPickerRuntimeMessage) {
     const inspectedTabId = options.getInspectedTabId();
     options.appendDebugLog?.('picker.runtime.message', {
       action: message.action,
@@ -143,6 +180,7 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
       currentTabId: inspectedTabId,
     });
     if (message.action === 'elementPickerStopped' && message.tabId === inspectedTabId) {
+      clearQueuedPreviewDomTree();
       options.clearPageHoverPreview();
       options.setPickerModeActive(false);
       if (message.reason === 'cancelled') {
@@ -158,10 +196,31 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
     }
 
     if (
+      message.action === 'elementPreviewed' &&
+      message.elementInfo &&
+      message.tabId === inspectedTabId
+    ) {
+      if (!options.isPickerModeActive()) {
+        return;
+      }
+      const previewedElement = buildSelectedElementSnapshot(message.elementInfo);
+      options.appendDebugLog?.('picker.element.preview', {
+        querySelector: previewedElement.querySelector,
+        domPath: previewedElement.domPath,
+        clickPoint: previewedElement.clickPoint ?? null,
+      });
+      options.setElementOutput(previewedElement.outputText);
+      options.setReactStatus('요소 미리보기 중… 클릭하거나 Enter로 확정하면 컴포넌트 트리를 조회합니다.');
+      schedulePreviewDomTree(previewedElement);
+      return;
+    }
+
+    if (
       message.action === 'elementSelected' &&
       message.elementInfo &&
       message.tabId === inspectedTabId
     ) {
+      clearQueuedPreviewDomTree();
       options.clearPageHoverPreview();
       options.setPickerModeActive(false);
       options.resetRuntimeRefresh();

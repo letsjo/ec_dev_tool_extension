@@ -50,6 +50,7 @@ export function createPanelRuntimePickerFlow(
     deps.createElementPickerBridgeFlow({
     getInspectedTabId: options.getInspectedTabId,
     clearPageHoverPreview: options.clearPageHoverPreview,
+    isPickerModeActive: options.panelControllerContext.isPickerModeActive,
     setPickerModeActive: options.panelControllerContext.setPickerModeActive,
     setElementOutput: options.setElementOutput,
     setReactStatus: options.setReactStatus,

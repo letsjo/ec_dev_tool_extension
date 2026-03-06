@@ -3,6 +3,7 @@
  * 클릭 또는 Enter(포커스/하이라이트 요소 확정) 시 선택 정보를 panel로 전달한다.
  */
 import {
+  notifyElementPreviewed,
   notifyPickerStopped,
   sendRuntimeMessageSafe,
 } from "./runtimeMessaging";
@@ -13,6 +14,9 @@ import { createElementPickerOverlayController } from "./elementPickerOverlay";
 const elementPickerBridge = createElementPickerBridge();
 const elementPickerOverlay = createElementPickerOverlayController({
   notifyPickerStopped,
+  sendElementPreviewed(clientX, clientY, target) {
+    notifyElementPreviewed(getElementInfo(target, clientX, clientY));
+  },
   sendElementSelected(clientX, clientY, target) {
     sendRuntimeMessageSafe({
       action: "elementSelected",

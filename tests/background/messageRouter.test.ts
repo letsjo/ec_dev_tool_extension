@@ -159,6 +159,28 @@ describe('background messageRouter', () => {
     });
   });
 
+  it('relays elementPreviewed runtime event to panel listeners', async () => {
+    const { runtimeSendMessage } = installChromeMock();
+    const listener = createBackgroundMessageListener();
+
+    const result = await runListener(
+      listener,
+      {
+        action: 'elementPreviewed',
+        elementInfo: { selector: '#preview' },
+      },
+      { tab: { id: 52 } },
+    );
+
+    expect(result.listenerReturn).toBe(false);
+    expect(result.response).toEqual({ ok: true });
+    expect(runtimeSendMessage).toHaveBeenCalledWith({
+      action: 'elementPreviewed',
+      tabId: 52,
+      elementInfo: { selector: '#preview' },
+    });
+  });
+
   it('forwards picker shortcut control actions to content script', async () => {
     const { tabsSendMessage } = installChromeMock();
     tabsSendMessage.mockImplementation((_tabId: number, payload: AnyRecord) => {

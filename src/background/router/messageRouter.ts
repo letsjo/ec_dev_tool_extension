@@ -132,6 +132,16 @@ function createBackgroundMessageListener() {
       return false;
     }
 
+    if (message.action === 'elementPreviewed' && message.elementInfo != null) {
+      relayRuntimeMessage({
+        action: 'elementPreviewed',
+        tabId: sender.tab?.id,
+        elementInfo: message.elementInfo,
+      });
+      sendResponse({ ok: true });
+      return false;
+    }
+
     if (message.action === 'elementPickerStopped') {
       relayRuntimeMessage({
         action: 'elementPickerStopped',

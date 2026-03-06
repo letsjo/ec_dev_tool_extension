@@ -2,6 +2,7 @@ type PickerStopReason = "selected" | "cancelled";
 
 interface CreateElementPickerOverlayControllerArgs {
   notifyPickerStopped: (reason: PickerStopReason) => void;
+  sendElementPreviewed: (clientX: number, clientY: number, target: Element) => void;
   sendElementSelected: (clientX: number, clientY: number, target: Element) => void;
 }
 
@@ -46,6 +47,7 @@ function createElementPickerOverlayController(
 ): ElementPickerOverlayController {
   const {
     notifyPickerStopped,
+    sendElementPreviewed,
     sendElementSelected,
   } = args;
 
@@ -75,6 +77,29 @@ function createElementPickerOverlayController(
       el.style.outline = "2px solid #1a73e8";
       el.classList.add(HIGHLIGHT_CLASS);
     }
+  }
+
+  function isPreviewableElement(target: Element | null): target is HTMLElement {
+    return Boolean(target) && target instanceof HTMLElement && target !== overlay;
+  }
+
+  function updateHighlightPreview(
+    target: Element | null,
+    clientX?: number,
+    clientY?: number,
+  ) {
+    const nextTarget = isPreviewableElement(target) ? target : null;
+    const changed = lastHighlight !== nextTarget;
+    highlight(nextTarget);
+    if (!changed || !nextTarget) {
+      return;
+    }
+
+    const previewPoint =
+      typeof clientX === "number" && typeof clientY === "number"
+        ? { clientX, clientY }
+        : resolveSelectionPoint(nextTarget);
+    sendElementPreviewed(previewPoint.clientX, previewPoint.clientY, nextTarget);
   }
 
   function createOverlay(): HTMLDivElement {
@@ -164,8 +189,7 @@ function createElementPickerOverlayController(
       overlay.style.pointerEvents = "none";
       const el = document.elementFromPoint(e.clientX, e.clientY);
       overlay.style.pointerEvents = "auto";
-      const target = el && el !== overlay ? (el as HTMLElement) : null;
-      highlight(target);
+      updateHighlightPreview(el, e.clientX, e.clientY);
     };
 
     const onClick = (e: MouseEvent) => {
@@ -194,9 +218,7 @@ function createElementPickerOverlayController(
 
     const onFocusIn = (e: FocusEvent) => {
       if (!overlay) return;
-      const target = e.target instanceof HTMLElement ? e.target : null;
-      if (!target || target === overlay) return;
-      highlight(target);
+      updateHighlightPreview(e.target instanceof Element ? e.target : null);
     };
 
     const blockPointerEvent: EventListener = (event) => {
@@ -222,6 +244,15 @@ function createElementPickerOverlayController(
     overlay.addEventListener("contextmenu", onContextMenuHandler, true);
     document.addEventListener("keydown", onKeyDownHandler);
     document.addEventListener("focusin", onFocusInHandler, true);
+
+    const focusedElement = document.activeElement instanceof Element
+      ? document.activeElement
+      : null;
+    // picker 시작 시 이미 포커스된 입력 요소가 있으면 첫 hover 이전에도
+    // Selected Element/DOM Tree 미리보기가 채워지도록 즉시 preview를 보낸다.
+    if (focusedElement && focusedElement !== document.body && focusedElement !== document.documentElement) {
+      updateHighlightPreview(focusedElement);
+    }
   }
 
   return {

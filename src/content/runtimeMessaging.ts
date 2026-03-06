@@ -25,6 +25,14 @@ function notifyPickerStopped(reason: "selected" | "cancelled") {
   });
 }
 
+/** 요소 선택 중 hover/focus 대상 미리보기 정보를 runtime으로 알린다. */
+function notifyElementPreviewed(elementInfo: unknown) {
+  sendRuntimeMessageSafe({
+    action: "elementPreviewed",
+    elementInfo,
+  });
+}
+
 /** 페이지 런타임 변경 이벤트를 runtime으로 알린다. */
 function notifyRuntimeChanged() {
   sendRuntimeMessageSafe({
@@ -33,6 +41,7 @@ function notifyRuntimeChanged() {
 }
 
 export {
+  notifyElementPreviewed,
   notifyPickerStopped,
   notifyRuntimeChanged,
   sendRuntimeMessageSafe,

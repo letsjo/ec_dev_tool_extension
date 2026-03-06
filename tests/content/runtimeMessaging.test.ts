@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  notifyElementPreviewed,
   notifyPickerStopped,
   notifyRuntimeChanged,
   sendRuntimeMessageSafe,
@@ -50,14 +51,19 @@ describe('runtimeMessaging', () => {
     const sendMessage = vi.fn(() => undefined);
     setChromeMock(sendMessage);
 
+    notifyElementPreviewed({ selector: '#preview' });
     notifyPickerStopped('selected');
     notifyRuntimeChanged();
 
     expect(sendMessage).toHaveBeenNthCalledWith(1, {
+      action: 'elementPreviewed',
+      elementInfo: { selector: '#preview' },
+    });
+    expect(sendMessage).toHaveBeenNthCalledWith(2, {
       action: 'elementPickerStopped',
       reason: 'selected',
     });
-    expect(sendMessage).toHaveBeenNthCalledWith(2, {
+    expect(sendMessage).toHaveBeenNthCalledWith(3, {
       action: 'pageRuntimeChanged',
     });
   });

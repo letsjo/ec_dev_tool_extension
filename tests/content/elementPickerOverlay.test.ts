@@ -40,6 +40,7 @@ describe('elementPickerOverlay', () => {
 
     const picker = createElementPickerOverlayController({
       notifyPickerStopped,
+      sendElementPreviewed: vi.fn(),
       sendElementSelected,
     });
     picker.startPicking();
@@ -79,6 +80,7 @@ describe('elementPickerOverlay', () => {
     const notifyPickerStopped = vi.fn();
     const picker = createElementPickerOverlayController({
       notifyPickerStopped,
+      sendElementPreviewed: vi.fn(),
       sendElementSelected: vi.fn(),
     });
     picker.startPicking();
@@ -100,11 +102,99 @@ describe('elementPickerOverlay', () => {
     document.removeEventListener('keydown', pageKeyDownListener);
   });
 
+  it('sends preview when hovered target changes', () => {
+    const notifyPickerStopped = vi.fn();
+    const sendElementPreviewed = vi.fn();
+    const firstTarget = document.createElement('div');
+    const secondTarget = document.createElement('button');
+    const elementFromPoint = vi
+      .fn<(x: number, y: number) => Element | null>()
+      .mockReturnValueOnce(firstTarget)
+      .mockReturnValueOnce(firstTarget)
+      .mockReturnValueOnce(secondTarget);
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: elementFromPoint,
+    });
+
+    const picker = createElementPickerOverlayController({
+      notifyPickerStopped,
+      sendElementPreviewed,
+      sendElementSelected: vi.fn(),
+    });
+    picker.startPicking();
+
+    const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    overlay?.dispatchEvent(
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 10,
+        clientY: 20,
+      }),
+    );
+    overlay?.dispatchEvent(
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 11,
+        clientY: 21,
+      }),
+    );
+    overlay?.dispatchEvent(
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 30,
+        clientY: 40,
+      }),
+    );
+
+    expect(sendElementPreviewed).toHaveBeenCalledTimes(2);
+    expect(sendElementPreviewed).toHaveBeenNthCalledWith(1, 10, 20, firstTarget);
+    expect(sendElementPreviewed).toHaveBeenNthCalledWith(2, 30, 40, secondTarget);
+    picker.stopPicking('cancelled');
+  });
+
+  it('sends preview for current focused element when picker starts', () => {
+    const notifyPickerStopped = vi.fn();
+    const sendElementPreviewed = vi.fn();
+    const focusedInput = document.createElement('input');
+    focusedInput.getBoundingClientRect = () =>
+      ({
+        left: 10,
+        top: 20,
+        width: 50,
+        height: 30,
+        right: 60,
+        bottom: 50,
+        x: 10,
+        y: 20,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect);
+    document.body.appendChild(focusedInput);
+    focusedInput.focus();
+
+    const picker = createElementPickerOverlayController({
+      notifyPickerStopped,
+      sendElementPreviewed,
+      sendElementSelected: vi.fn(),
+    });
+    picker.startPicking();
+
+    expect(sendElementPreviewed).toHaveBeenCalledWith(35, 35, focusedInput);
+    picker.stopPicking('cancelled');
+    focusedInput.remove();
+  });
+
   it('selects focused element on Enter key without mouse click', () => {
     const notifyPickerStopped = vi.fn();
     const sendElementSelected = vi.fn();
     const picker = createElementPickerOverlayController({
       notifyPickerStopped,
+      sendElementPreviewed: vi.fn(),
       sendElementSelected,
     });
     picker.startPicking();
@@ -173,6 +263,7 @@ describe('elementPickerOverlay', () => {
 
     const picker = createElementPickerOverlayController({
       notifyPickerStopped,
+      sendElementPreviewed: vi.fn(),
       sendElementSelected,
     });
     picker.startPicking();
@@ -224,6 +315,7 @@ describe('elementPickerOverlay', () => {
 
     const picker = createElementPickerOverlayController({
       notifyPickerStopped,
+      sendElementPreviewed: vi.fn(),
       sendElementSelected,
     });
     picker.startPicking();

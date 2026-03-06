@@ -27,7 +27,7 @@ export interface ElementInfo {
   clickPoint?: unknown;
 }
 
-export interface ElementSelectedMessage {
+export interface ElementPickerRuntimeMessage {
   action: string;
   tabId?: number;
   elementInfo?: ElementInfo;
