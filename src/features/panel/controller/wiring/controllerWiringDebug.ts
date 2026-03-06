@@ -3,6 +3,7 @@ import type { CallInspectedPageAgent } from '../../bridge/pageAgentClient';
 interface CreateDebugPageAgentCallerOptions {
   appendDebugLog: (eventName: string, payload?: unknown) => void;
   callInspectedPageAgent: CallInspectedPageAgent;
+  nowMs?: () => number;
 }
 
 interface CreateDebugPaneSettersOptions {
@@ -47,21 +48,25 @@ function summarizeDebugPayload(value: unknown): unknown {
 export function createDebugPageAgentCaller({
   appendDebugLog,
   callInspectedPageAgent,
+  nowMs = () => Date.now(),
 }: CreateDebugPageAgentCallerOptions): CallInspectedPageAgent {
   let pageAgentRequestIdSeq = 0;
 
   return (method, args, onDone) => {
     const requestId = pageAgentRequestIdSeq + 1;
     pageAgentRequestIdSeq = requestId;
+    const startedAt = nowMs();
     appendDebugLog('pageAgent.request', {
       requestId,
       method,
       args: summarizeDebugPayload(args),
     });
     callInspectedPageAgent(method, args, (result, errorText) => {
+      const durationMs = Math.max(0, nowMs() - startedAt);
       appendDebugLog('pageAgent.response', {
         requestId,
         method,
+        durationMs,
         hasError: Boolean(errorText),
         errorText: errorText ?? null,
         result: summarizeDebugPayload(result),

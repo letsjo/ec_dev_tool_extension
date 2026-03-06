@@ -30,13 +30,13 @@ npm test
 6. 대상(예: EC Dev Manager)을 선택하고 **데이터 가져오기** 버튼을 누르면 메서드 호출 결과가 표시된다.
 7. **Select element**를 누른 뒤 페이지 요소를 클릭하면, React 컴포넌트 체인(선택 요소 기준)이 표시된다. 클릭 대신 `Enter`를 누르면 현재 하이라이트 요소를 우선 선택하고, 하이라이트가 없을 때만 포커스된 요소를 선택 확정한다. `Esc`는 선택 모드를 취소한다. 이 단축키는 페이지/패널 어느 쪽에 포커스가 있어도 picker 활성 상태라면 동작하도록 중계된다.
 8. 목록에서 컴포넌트를 클릭하면 해당 컴포넌트의 `props`/`state`를 트리 형태로 확인하고, 페이지의 대응 DOM 요소를 자동 하이라이트한다. React 매핑이 없으면 `DomElement` fallback 노드로 선택 요소를 계속 추적한다.
-9. 검색창 옆 **Lite/Full** 버튼으로 React payload 모드를 전환할 수 있다. `Lite`는 빠른 조회, `Full`은 직렬화된 상세 payload를 우선한다.
+9. 검색창 옆 **Lite/Full** 버튼으로 React payload 모드를 전환할 수 있다. `Lite`는 빠른 조회, `Full`은 직렬화된 상세 payload를 우선한다. `Full`에서는 무거운 전체 직렬화가 끝나기 전 background runtime refresh를 잠시 건너뛰어 stale 응답이 현재 트리를 덮어쓰지 않도록 한다.
 10. 함수 값은 링크로 표시되며 클릭 시 DevTools inspect/console 대상으로 이동을 시도한다.
 11. 순환 참조(`Circular`) 값은 참조 노드 형태로 표시되어 트리에서 확장해 확인할 수 있다.
 12. 선택한 요소의 DOM 구조를 **접기/펼치기 가능한 트리**로 확인할 수 있다.
 13. React 컴포넌트 섹션 우측 검색창에서 이름/selector/path 기준으로 목록을 필터링할 수 있다.
 14. 패널 경계선(Components↔Inspector, Selected Element↔DOM Tree)을 드래그해 영역 폭을 조절할 수 있다.
-15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, `Copy`(전체 복사)와 `Clear`(전체 지우기) 버튼으로 기록을 관리할 수 있다. 오류 이벤트는 라인에 `[ERROR]`로 표시되고, 하단 근처를 보고 있을 때만 자동으로 최신 로그를 따라간다. footer에서 Debug Log 패널을 꺼서 `closed` 상태면 로그 적재를 멈추고, summary 접기(open=false)는 열린 상태로 간주해 계속 기록한다.
+15. **Debug Log** 패널에는 액션/브리지 요청/응답 로그가 누적되며, `Copy`(전체 복사)와 `Clear`(전체 지우기) 버튼으로 기록을 관리할 수 있다. `pageAgent.response`에는 요청 소요 시간(`durationMs`)이 함께 남고, `Full` 조회가 3초 이상 이어지면 `reactInspect.fetch.longRunning` 이벤트가 추가된다. 오류 이벤트는 라인에 `[ERROR]`로 표시되고, 하단 근처를 보고 있을 때만 자동으로 최신 로그를 따라간다. footer에서 Debug Log 패널을 꺼서 `closed` 상태면 로그 적재를 멈추고, summary 접기(open=false)는 열린 상태로 간주해 계속 기록한다.
 
 ## 대상 객체 설정
 
@@ -77,7 +77,7 @@ npm test
 │   │       │       ├── controllerWiringLifecycleRefresh.ts # payload mode/fetch preset 결선
 │   │       │       ├── controllerWiringPane.ts        # pane setter/debug 바인딩 결선
 │   │       │       └── controllerWiringReactInspector.ts # react inspector 결선
-│   │       ├── debugLog/                 # Debug Log 누적/복사/초기화 + diagnostics(오류 집계) 플로우
+│   │       ├── debugLog/                 # Debug Log 누적/복사/초기화 플로우
 │   │       ├── workspacePanels.ts        # 워크스페이스 패널 ID/메타 정의
 │   │       └── workspace/
 │   │           ├── layout/

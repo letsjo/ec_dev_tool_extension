@@ -34,6 +34,7 @@ interface CreateReactInspectFetchFlowOptions {
 export function createReactInspectFetchFlow(options: CreateReactInspectFetchFlowOptions) {
   let latestRequestId = 0;
   let foregroundInFlightCount = 0;
+  let latestForegroundRequestId = 0;
 
   function fetchReactInfo(
     selector: string,
@@ -62,9 +63,30 @@ export function createReactInspectFetchFlow(options: CreateReactInspectFetchFlow
     latestRequestId = requestId;
     if (!isBackground) {
       foregroundInFlightCount += 1;
+      latestForegroundRequestId = requestId;
     }
 
+    // Full foreground fetch는 전체 props/hooks 직렬화로 길어질 수 있어
+    // threshold 초과 시 debug log에 장기 실행 이벤트를 남긴다.
+    const longRunningTimer =
+      !isBackground && fetchOptions.lightweight !== true
+        ? window.setTimeout(() => {
+            if (requestId !== latestForegroundRequestId) {
+              return;
+            }
+            options.appendDebugLog?.('reactInspect.fetch.longRunning', {
+              requestId,
+              selector,
+              thresholdMs: 3000,
+              lightweight: false,
+            });
+          }, 3000)
+        : null;
+
     const finish = () => {
+      if (longRunningTimer !== null) {
+        window.clearTimeout(longRunningTimer);
+      }
       if (!isBackground && foregroundInFlightCount > 0) {
         foregroundInFlightCount -= 1;
       }

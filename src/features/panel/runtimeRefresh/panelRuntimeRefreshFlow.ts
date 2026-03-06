@@ -12,6 +12,7 @@ interface CreatePanelRuntimeRefreshFlowOptions {
   getStoredLookup: () => RuntimeRefreshLookup | null;
   setStoredLookup: (lookup: RuntimeRefreshLookup | null) => void;
   runRefresh: (lookup: RuntimeRefreshLookup, background: boolean, onDone: () => void) => void;
+  shouldAllowBackgroundRefresh?: () => boolean;
   setElementOutput: (text: string) => void;
   setDomTreeStatus: (text: string) => void;
   setDomTreeEmpty: (text: string) => void;
@@ -45,7 +46,18 @@ export function createPanelRuntimeRefreshFlow(
     debounceMs: options.debounceMs ?? 250,
     isPickerModeActive: options.isPickerModeActive,
     getLookup: () => deps.resolveRuntimeRefreshLookup(options.getStoredLookup()),
-    runRefresh: options.runRefresh,
+    runRefresh: (lookup, background, onDone) => {
+      // Full payload 직렬화가 진행 중일 때는 background refresh를 건너뛰어
+      // 늦게 도착한 자동 갱신 결과가 현재 foreground 트리를 덮어쓰지 않게 한다.
+      if (background && options.shouldAllowBackgroundRefresh?.() === false) {
+        options.appendDebugLog?.('runtimeRefresh.skip', {
+          reason: 'payloadModeFull',
+        });
+        onDone();
+        return;
+      }
+      options.runRefresh(lookup, background, onDone);
+    },
   });
 
   function onInspectedPageNavigated(url: string) {

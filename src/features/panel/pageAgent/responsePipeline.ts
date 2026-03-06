@@ -20,6 +20,21 @@ export interface ReactInspectApplyOptions {
   statusText?: string;
 }
 
+function isTimeoutErrorText(errorText: string): boolean {
+  const normalized = errorText.toLowerCase();
+  return normalized.includes('응답 시간') || normalized.includes('timeout');
+}
+
+function buildReactInspectErrorStatusText(
+  errorText: string,
+  applyOptions: ReactInspectApplyOptions,
+): string {
+  if (applyOptions.lightweight !== true && isTimeoutErrorText(errorText)) {
+    return 'Full 모드 응답 시간이 초과되었습니다. Lite 모드로 재시도하거나 범위를 좁혀주세요.';
+  }
+  return `실행 오류: ${errorText}`;
+}
+
 interface HandleDomTreeAgentResponseOptions {
   response: unknown;
   errorText?: string;
@@ -79,7 +94,7 @@ export function handleReactInspectAgentResponse(options: HandleReactInspectAgent
   } = options;
 
   if (errorText) {
-    resetReactInspector(`실행 오류: ${errorText}`, true);
+    resetReactInspector(buildReactInspectErrorStatusText(errorText, applyOptions), true);
     return;
   }
 

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PageAgentDoneHandler } from '../../src/features/panel/bridge/pageAgentClient';
 import { createReactInspectFetchFlow } from '../../src/features/panel/reactInspector/flow/fetchFlow';
 import type { ReactComponentInfo } from '../../src/shared/inspector';
@@ -20,6 +20,15 @@ function createComponent(id: string): ReactComponentInfo {
 }
 
 describe('createReactInspectFetchFlow', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it('applies only latest response when reactInspect requests overlap', () => {
     const callbacks: PageAgentDoneHandler[] = [];
     const callInspectedPageAgent = vi.fn(
@@ -111,5 +120,50 @@ describe('createReactInspectFetchFlow', () => {
 
     expect(onDoneForeground).toHaveBeenCalledTimes(1);
     expect(applyReactInspectResult).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs long-running full mode requests after threshold', () => {
+    const callbacks: PageAgentDoneHandler[] = [];
+    const appendDebugLog = vi.fn();
+    const flow = createReactInspectFetchFlow({
+      callInspectedPageAgent: vi.fn(
+        (_method: string, _args: unknown, onDone: PageAgentDoneHandler) => {
+          callbacks.push(onDone);
+        },
+      ),
+      getStoredLookup: () => null,
+      setStoredLookup: vi.fn(),
+      getReactComponents: () => [],
+      getSelectedReactComponentIndex: () => -1,
+      clearPageHoverPreview: vi.fn(),
+      clearPageComponentHighlight: vi.fn(),
+      applyLoadingPaneState: vi.fn(),
+      resetReactInspector: vi.fn(),
+      applyReactInspectResult: vi.fn(),
+      appendDebugLog,
+    });
+
+    flow.fetchReactInfo('#full', undefined, { lightweight: false });
+    vi.advanceTimersByTime(2999);
+    expect(appendDebugLog).not.toHaveBeenCalledWith(
+      'reactInspect.fetch.longRunning',
+      expect.anything(),
+    );
+
+    vi.advanceTimersByTime(1);
+    expect(appendDebugLog).toHaveBeenCalledWith(
+      'reactInspect.fetch.longRunning',
+      expect.objectContaining({
+        requestId: 1,
+        selector: '#full',
+        thresholdMs: 3000,
+        lightweight: false,
+      }),
+    );
+
+    callbacks[0]({
+      components: [createComponent('full')],
+      selectedIndex: 0,
+    });
   });
 });

@@ -104,4 +104,41 @@ describe('createPanelRuntimeRefreshFlow', () => {
     );
     expect(scheduler.refresh).toHaveBeenCalledWith(false);
   });
+
+  it('skips background refresh when payload mode disallows it', () => {
+    const scheduler = createSchedulerStub();
+    let capturedSchedulerOptions: any = null;
+    const runRefresh = vi.fn();
+    const appendDebugLog = vi.fn();
+
+    createPanelRuntimeRefreshFlow(
+      {
+        isPickerModeActive: () => false,
+        getStoredLookup: () => ({ selector: '#saved' }),
+        setStoredLookup: vi.fn(),
+        runRefresh,
+        shouldAllowBackgroundRefresh: () => false,
+        setElementOutput: vi.fn(),
+        setDomTreeStatus: vi.fn(),
+        setDomTreeEmpty: vi.fn(),
+        appendDebugLog,
+      },
+      {
+        resolveRuntimeRefreshLookup: (lookup) => lookup ?? { selector: '' },
+        createRuntimeRefreshScheduler: vi.fn((schedulerOptions: any) => {
+          capturedSchedulerOptions = schedulerOptions;
+          return scheduler;
+        }),
+      },
+    );
+
+    const onDone = vi.fn();
+    capturedSchedulerOptions.runRefresh({ selector: '#next' }, true, onDone);
+
+    expect(runRefresh).not.toHaveBeenCalled();
+    expect(onDone).toHaveBeenCalledTimes(1);
+    expect(appendDebugLog).toHaveBeenCalledWith('runtimeRefresh.skip', {
+      reason: 'payloadModeFull',
+    });
+  });
 });

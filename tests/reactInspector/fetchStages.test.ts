@@ -77,4 +77,28 @@ describe('reactInspector fetch stages', () => {
     expect(finish).toHaveBeenCalledTimes(1);
     expect(resetReactInspector).not.toHaveBeenCalled();
   });
+
+  it('maps full mode timeout to actionable status text', () => {
+    const resetReactInspector = vi.fn();
+    const applyReactInspectResult = vi.fn();
+    const finish = vi.fn();
+
+    applyReactFetchResponseStage({
+      response: null,
+      errorText: '페이지 에이전트 응답 시간이 초과되었습니다.',
+      fetchOptions: {
+        lightweight: false,
+      },
+      resetReactInspector,
+      applyReactInspectResult,
+      finish,
+    });
+
+    expect(resetReactInspector).toHaveBeenCalledWith(
+      'Full 모드 응답 시간이 초과되었습니다. Lite 모드로 재시도하거나 범위를 좁혀주세요.',
+      true,
+    );
+    expect(applyReactInspectResult).not.toHaveBeenCalled();
+    expect(finish).toHaveBeenCalledTimes(1);
+  });
 });

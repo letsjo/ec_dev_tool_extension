@@ -8,16 +8,20 @@ import type { CallInspectedPageAgent } from '../../src/features/panel/bridge/pag
 describe('controllerWiringDebug', () => {
   it('wraps pageAgent calls with request/response debug logs', () => {
     const appendDebugLog = vi.fn();
+    let now = 1_000;
     const callInspectedPageAgent: CallInspectedPageAgent = vi.fn((method, _args, onDone) => {
       if (method === 'ping') {
+        now += 25;
         onDone({ ok: true, payload: [1, 2, 3] }, undefined);
         return;
       }
+      now += 40;
       onDone(null, 'runtime failed');
     });
     const wrappedCall = createDebugPageAgentCaller({
       appendDebugLog,
       callInspectedPageAgent,
+      nowMs: () => now,
     });
 
     const firstDone = vi.fn();
@@ -37,7 +41,12 @@ describe('controllerWiringDebug', () => {
     expect(appendDebugLog).toHaveBeenNthCalledWith(
       2,
       'pageAgent.response',
-      expect.objectContaining({ requestId: 1, method: 'ping', hasError: false }),
+      expect.objectContaining({
+        requestId: 1,
+        method: 'ping',
+        durationMs: 25,
+        hasError: false,
+      }),
     );
     expect(appendDebugLog).toHaveBeenNthCalledWith(
       3,
@@ -47,7 +56,12 @@ describe('controllerWiringDebug', () => {
     expect(appendDebugLog).toHaveBeenNthCalledWith(
       4,
       'pageAgent.response',
-      expect.objectContaining({ requestId: 2, method: 'reactInspect', hasError: true }),
+      expect.objectContaining({
+        requestId: 2,
+        method: 'reactInspect',
+        durationMs: 40,
+        hasError: true,
+      }),
     );
   });
 

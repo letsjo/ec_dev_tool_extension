@@ -61,6 +61,8 @@ export function createPanelControllerRuntime(
       getStoredLookup: options.getStoredLookup,
       setStoredLookup: options.setStoredLookup,
       runRefresh: options.fetchReactInfoForRuntimeRefresh,
+      shouldAllowBackgroundRefresh: () =>
+        options.panelControllerContext.getReactPayloadMode() !== 'full',
       setElementOutput: options.setElementOutput,
       setDomTreeStatus: options.setDomTreeStatus,
       setDomTreeEmpty: options.setDomTreeEmpty,

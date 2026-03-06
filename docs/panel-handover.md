@@ -120,17 +120,18 @@
   - `fetchReactInfo(..., { lightweight: payloadMode==='lite' })` 실행
   - selectionSync highlight는 request epoch를 사용해, 이전 선택에서 늦게 도착한 highlight 응답이 최신 Selected Element/DOM Tree를 덮어쓰지 못하게 차단
   - 액션/브리지 요청/응답은 Debug Log 패널에 누적되며, title의 `Copy`(전체 복사), `Clear`(전체 지우기) 버튼으로 로그를 관리할 수 있다.
+  - `pageAgent.response` 로그에는 `durationMs`가 포함되고, foreground `Full` 조회가 3초를 넘기면 `reactInspect.fetch.longRunning` 이벤트를 추가로 남겨 "느림"과 "응답 없음"을 구분할 수 있게 한다.
   - Debug Log 패널이 footer toggle로 `closed` 상태면 로그 적재를 중단한다. summary 접기(open=false)는 열린 상태로 간주해 기록을 유지한다.
   - 사용자가 로그 하단 근처를 보고 있을 때만 auto-follow를 적용해, 수동 스크롤로 과거 로그를 검토할 때 위치를 유지한다.
   - 오류 이벤트(`.failure/.error`, `hasError/isError/error/errorText`)는 `[ERROR]`로 표시된다.
-  - `fetchDomTree`/`fetchReactInfo`는 latest request id 비교로 늦게 도착한 이전 응답을 폐기해 트리/선택 상태 역전을 방지
+  - `fetchDomTree`/`fetchReactInfo`는 latest request id 비교로 늦게 도착한 이전 응답을 폐기해 트리/선택 상태 역전을 방지하고, `Full` timeout은 "Lite 모드 재시도/범위 축소" 안내 문구로 정규화한다.
 
 ### 5.3 런타임 자동 갱신 흐름
 
 1. main world `reactRuntimeHook.ts`가 `reactRuntimeHookLifecycle.ts`를 통해 `onCommitFiberRoot` 감지 래퍼 설치
 2. content가 `pageRuntimeChanged` 메시지 송신(디바운스/스로틀 적용)
 3. panel이 `runtimeRefresh/scheduler.ts`의 `schedule(true)` 호출
-4. scheduler가 최소 간격을 보장해 payload mode(`Lite`/`Full`)에 맞는 React 재조회를 실행
+4. scheduler가 최소 간격을 보장해 payload mode(`Lite`/`Full`)에 맞는 React 재조회를 실행한다. 단, `Full`에서는 무거운 foreground 직렬화 결과를 stale background refresh가 덮어쓰지 않도록 background runtime refresh를 건너뛴다.
 
 ## 6. pageAgent 공개 메서드 계약
 
