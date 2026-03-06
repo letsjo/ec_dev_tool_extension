@@ -101,8 +101,12 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
   }
 
   function sendPickerControlAction(
-    action: 'confirmElementPickerSelection' | 'cancelElementPicker',
+    action:
+      | 'confirmElementPickerSelection'
+      | 'cancelElementPicker'
+      | 'syncElementPickerPreview',
     debugEventName: string,
+    controlOptions: { ignoreResponseError?: boolean } = {},
   ) {
     const tabId = options.getInspectedTabId();
     chrome.runtime.sendMessage({ action, tabId }, (response?: PickerStartResponse) => {
@@ -112,7 +116,7 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
         });
         return;
       }
-      if (!response?.ok) {
+      if (!response?.ok && controlOptions.ignoreResponseError !== true) {
         options.appendDebugLog?.(`${debugEventName}.error.response`, {
           message: response?.error ?? '요소 선택 제어에 실패했습니다.',
         });
@@ -154,6 +158,11 @@ export function createElementPickerBridgeFlow(options: CreateElementPickerBridge
 
         options.appendDebugLog?.('picker.select.ready');
         options.setPickerModeActive(true);
+        // content가 먼저 보낸 초기 preview가 panel 활성화 전에 도착해 버려도
+        // 현재 하이라이트/포커스 target을 한 번 더 당겨와 preview UI를 맞춘다.
+        sendPickerControlAction('syncElementPickerPreview', 'picker.preview.sync', {
+          ignoreResponseError: true,
+        });
         options.setElementOutput('페이지에서 요소를 클릭하거나 Enter로 확정하세요. (취소: Esc)');
         options.setReactStatus('요소 선택 대기 중… 선택 후 컴포넌트 트리를 조회합니다.');
         options.setDomTreeStatus('요소 선택 대기 중…');

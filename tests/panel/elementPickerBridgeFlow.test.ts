@@ -159,6 +159,63 @@ describe('elementPickerBridgeFlow', () => {
     expect(scheduleRuntimeRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it('requests preview sync after picker becomes active', () => {
+    const originalChrome = (globalThis as { chrome?: unknown }).chrome;
+    const sendMessage = vi.fn(
+      (payload: { action: string }, callback?: (response: { ok: boolean }) => void) => {
+        if (payload.action === 'startElementPicker') {
+          callback?.({ ok: true });
+          return;
+        }
+        if (payload.action === 'syncElementPickerPreview') {
+          callback?.({ ok: false });
+          return;
+        }
+        callback?.({ ok: true });
+      },
+    );
+    try {
+      (globalThis as { chrome?: unknown }).chrome = {
+        runtime: {
+          sendMessage,
+          lastError: undefined,
+        },
+      };
+
+      const setPickerModeActive = vi.fn();
+      const flow = createElementPickerBridgeFlow({
+        getInspectedTabId: () => 9,
+        clearPageHoverPreview: vi.fn(),
+        isPickerModeActive: () => true,
+        setPickerModeActive,
+        setElementOutput: vi.fn(),
+        setReactStatus: vi.fn(),
+        setDomTreeStatus: vi.fn(),
+        setDomTreeEmpty: vi.fn(),
+        fetchDomTree: vi.fn(),
+        fetchReactInfoForElementSelection: vi.fn(),
+        resetRuntimeRefresh: vi.fn(),
+        scheduleRuntimeRefresh: vi.fn(),
+      });
+
+      flow.onSelectElement();
+
+      expect(setPickerModeActive).toHaveBeenCalledWith(true);
+      expect(sendMessage).toHaveBeenNthCalledWith(
+        1,
+        { action: 'startElementPicker', tabId: 9 },
+        expect.any(Function),
+      );
+      expect(sendMessage).toHaveBeenNthCalledWith(
+        2,
+        { action: 'syncElementPickerPreview', tabId: 9 },
+        expect.any(Function),
+      );
+    } finally {
+      (globalThis as { chrome?: unknown }).chrome = originalChrome;
+    }
+  });
+
   it('sends picker shortcut control actions through runtime bridge', () => {
     const originalChrome = (globalThis as { chrome?: unknown }).chrome;
     const sendMessage = vi.fn((_payload: unknown, callback?: (response: { ok: boolean }) => void) => {

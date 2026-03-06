@@ -43,6 +43,14 @@ chrome.runtime.onMessage.addListener((message: { action: string }, _sender, send
     });
     return false;
   }
+  if (message.action === "syncElementPickerPreview") {
+    const previewed = elementPickerOverlay.emitPreviewSnapshot();
+    sendResponse({
+      ok: previewed,
+      error: previewed ? undefined : "현재 미리볼 요소가 없습니다.",
+    });
+    return false;
+  }
   if (message.action === "cancelElementPicker") {
     elementPickerOverlay.stopPicking("cancelled");
     sendResponse({ ok: true });

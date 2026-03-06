@@ -189,6 +189,43 @@ describe('elementPickerOverlay', () => {
     focusedInput.remove();
   });
 
+  it('re-emits current preview target when sync is requested', () => {
+    const notifyPickerStopped = vi.fn();
+    const sendElementPreviewed = vi.fn();
+    const focusedInput = document.createElement('input');
+    focusedInput.getBoundingClientRect = () =>
+      ({
+        left: 10,
+        top: 20,
+        width: 50,
+        height: 30,
+        right: 60,
+        bottom: 50,
+        x: 10,
+        y: 20,
+        toJSON() {
+          return {};
+        },
+      } as DOMRect);
+    document.body.appendChild(focusedInput);
+    focusedInput.focus();
+
+    const picker = createElementPickerOverlayController({
+      notifyPickerStopped,
+      sendElementPreviewed,
+      sendElementSelected: vi.fn(),
+    });
+    picker.startPicking();
+    expect(sendElementPreviewed).toHaveBeenCalledTimes(1);
+
+    expect(picker.emitPreviewSnapshot()).toBe(true);
+    expect(sendElementPreviewed).toHaveBeenCalledTimes(2);
+    expect(sendElementPreviewed).toHaveBeenLastCalledWith(35, 35, focusedInput);
+
+    picker.stopPicking('cancelled');
+    focusedInput.remove();
+  });
+
   it('selects focused element on Enter key without mouse click', () => {
     const notifyPickerStopped = vi.fn();
     const sendElementSelected = vi.fn();

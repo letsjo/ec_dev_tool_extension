@@ -8,7 +8,10 @@ async function sendStartElementPicker(tabId: number): Promise<void> {
 /** 메시지를 전달 */
 async function sendElementPickerControl(
   tabId: number,
-  action: 'confirmElementPickerSelection' | 'cancelElementPicker',
+  action:
+    | 'confirmElementPickerSelection'
+    | 'cancelElementPicker'
+    | 'syncElementPickerPreview',
 ): Promise<unknown> {
   return chrome.tabs.sendMessage(tabId, { action });
 }
@@ -72,7 +75,10 @@ async function ensureStartElementPicker(tabId: number): Promise<void> {
 /** 필수 상태를 보장 */
 async function ensureElementPickerControl(
   tabId: number,
-  action: 'confirmElementPickerSelection' | 'cancelElementPicker',
+  action:
+    | 'confirmElementPickerSelection'
+    | 'cancelElementPicker'
+    | 'syncElementPickerPreview',
 ): Promise<unknown> {
   await ensureContentScript(tabId);
   try {

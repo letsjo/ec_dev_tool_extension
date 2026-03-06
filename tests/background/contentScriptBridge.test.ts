@@ -122,4 +122,18 @@ describe('contentScriptBridge', () => {
     expect(tabsSendMessage).toHaveBeenCalledWith(21, { action: 'confirmElementPickerSelection' });
     expect(result).toEqual({ ok: true });
   });
+
+  it('forwards syncElementPickerPreview control to content script', async () => {
+    const { tabsSendMessage } = installChromeMock();
+    tabsSendMessage.mockImplementation((_tabId: number, payload: AnyRecord) => {
+      if (payload.action === 'pingContentScript') return Promise.resolve({ ok: true });
+      if (payload.action === 'syncElementPickerPreview') return Promise.resolve({ ok: true });
+      return Promise.resolve({ ok: true });
+    });
+
+    const result = await ensureElementPickerControl(21, 'syncElementPickerPreview');
+
+    expect(tabsSendMessage).toHaveBeenCalledWith(21, { action: 'syncElementPickerPreview' });
+    expect(result).toEqual({ ok: true });
+  });
 });

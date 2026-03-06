@@ -42,7 +42,8 @@ function createBackgroundMessageListener() {
 
     if (
       message.action === 'confirmElementPickerSelection' ||
-      message.action === 'cancelElementPicker'
+      message.action === 'cancelElementPicker' ||
+      message.action === 'syncElementPickerPreview'
     ) {
       if (!hasValidTabId(message.tabId)) {
         sendResponse({ ok: false, error: '유효한 탭 ID를 찾지 못했습니다.' });

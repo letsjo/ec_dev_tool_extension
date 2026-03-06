@@ -203,4 +203,27 @@ describe('background messageRouter', () => {
     expect(result.response).toEqual({ ok: true });
     expect(tabsSendMessage).toHaveBeenCalledWith(3, { action: 'confirmElementPickerSelection' });
   });
+
+  it('forwards syncElementPickerPreview control to content script', async () => {
+    const { tabsSendMessage } = installChromeMock();
+    tabsSendMessage.mockImplementation((_tabId: number, payload: AnyRecord) => {
+      if (payload.action === 'pingContentScript') {
+        return Promise.resolve({ ok: true });
+      }
+      if (payload.action === 'syncElementPickerPreview') {
+        return Promise.resolve({ ok: true });
+      }
+      return Promise.resolve({ ok: true });
+    });
+    const listener = createBackgroundMessageListener();
+
+    const result = await runListener(listener, {
+      action: 'syncElementPickerPreview',
+      tabId: 3,
+    });
+
+    expect(result.listenerReturn).toBe(true);
+    expect(result.response).toEqual({ ok: true });
+    expect(tabsSendMessage).toHaveBeenCalledWith(3, { action: 'syncElementPickerPreview' });
+  });
 });

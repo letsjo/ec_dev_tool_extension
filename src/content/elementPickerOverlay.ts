@@ -10,6 +10,7 @@ interface ElementPickerOverlayController {
   startPicking: () => void;
   stopPicking: (reason?: PickerStopReason) => void;
   confirmSelectionByKeyboard: () => boolean;
+  emitPreviewSnapshot: () => boolean;
 }
 
 const OVERLAY_ID = "ec-dev-tool-element-picker-overlay";
@@ -87,11 +88,12 @@ function createElementPickerOverlayController(
     target: Element | null,
     clientX?: number,
     clientY?: number,
+    force = false,
   ) {
     const nextTarget = isPreviewableElement(target) ? target : null;
     const changed = lastHighlight !== nextTarget;
     highlight(nextTarget);
-    if (!changed || !nextTarget) {
+    if ((!changed && !force) || !nextTarget) {
       return;
     }
 
@@ -113,22 +115,38 @@ function createElementPickerOverlayController(
   }
 
   /** 현재 상태(하이라이트 우선, 없으면 포커스 요소)에서 선택 확정을 시도한다. */
-  function confirmSelectionByKeyboard(): boolean {
-    if (!overlay) return false;
+  function resolveCurrentTarget(): Element | null {
+    if (!overlay) return null;
     const focusedElement = document.activeElement;
-    const target =
+    return (
       lastHighlight ??
       (focusedElement instanceof Element &&
       focusedElement !== document.body &&
       focusedElement !== document.documentElement &&
       focusedElement !== overlay
         ? focusedElement
-        : null);
+        : null)
+    );
+  }
+
+  /** 현재 상태(하이라이트 우선, 없으면 포커스 요소)에서 선택 확정을 시도한다. */
+  function confirmSelectionByKeyboard(): boolean {
+    if (!overlay) return false;
+    const target = resolveCurrentTarget();
     if (!target) return false;
 
     const { clientX, clientY } = resolveSelectionPoint(target);
     sendElementSelected(clientX, clientY, target);
     stopPicking("selected");
+    return true;
+  }
+
+  /** panel이 picker 활성화 직후 현재 target preview를 재요청할 때 사용한다. */
+  function emitPreviewSnapshot(): boolean {
+    if (!overlay) return false;
+    const target = resolveCurrentTarget();
+    if (!target) return false;
+    updateHighlightPreview(target, undefined, undefined, true);
     return true;
   }
 
@@ -259,6 +277,7 @@ function createElementPickerOverlayController(
     startPicking,
     stopPicking,
     confirmSelectionByKeyboard,
+    emitPreviewSnapshot,
   };
 }
 
