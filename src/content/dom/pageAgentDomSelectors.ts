@@ -1,5 +1,7 @@
 import type { PickPoint } from '../../shared/inspector';
 
+const ELEMENT_PICKER_OVERLAY_ID = 'ec-dev-tool-element-picker-overlay';
+
 /** 필요한 값/상태를 계산해 반환 */
 function getElementPath(el: Element | null) {
   const segments: string[] = [];
@@ -92,6 +94,19 @@ function resolveTargetElement(selector: string, pickPoint: PickPoint | null | un
   let element: Element | null = null;
   if (pickPoint && typeof pickPoint.x === 'number' && typeof pickPoint.y === 'number') {
     element = document.elementFromPoint(pickPoint.x, pickPoint.y);
+    const overlayElement =
+      element instanceof Element ? element.closest(`#${ELEMENT_PICKER_OVERLAY_ID}`) : null;
+    if (overlayElement instanceof HTMLElement) {
+      // picker preview 중에는 overlay가 elementFromPoint를 가릴 수 있어
+      // 잠시 pointer-events를 내려 실제 아래 target을 다시 해석한다.
+      const previousPointerEvents = overlayElement.style.pointerEvents;
+      overlayElement.style.pointerEvents = 'none';
+      try {
+        element = document.elementFromPoint(pickPoint.x, pickPoint.y);
+      } finally {
+        overlayElement.style.pointerEvents = previousPointerEvents;
+      }
+    }
   }
   if (!element && selector) {
     try {

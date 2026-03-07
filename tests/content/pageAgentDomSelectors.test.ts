@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildCssSelector,
   getElementPath,
@@ -68,5 +68,29 @@ describe('pageAgentDomSelectors', () => {
     expect(resolveTargetElement('##invalid-selector', null)).toBeNull();
 
     target.remove();
+  });
+
+  it('skips picker overlay when resolving by pickPoint', () => {
+    const target = document.createElement('section');
+    target.id = 'selector-target';
+    const overlay = document.createElement('div');
+    overlay.id = 'ec-dev-tool-element-picker-overlay';
+    overlay.style.pointerEvents = 'auto';
+    document.body.append(target, overlay);
+
+    const elementFromPoint = vi
+      .fn<(x: number, y: number) => Element | null>()
+      .mockReturnValueOnce(overlay)
+      .mockReturnValueOnce(target);
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: elementFromPoint,
+    });
+
+    expect(resolveTargetElement('#selector-target', { x: 10, y: 20 })).toBe(target);
+    expect(overlay.style.pointerEvents).toBe('auto');
+
+    target.remove();
+    overlay.remove();
   });
 });

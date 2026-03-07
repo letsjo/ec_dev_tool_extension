@@ -177,7 +177,7 @@ custom hook stack 파싱 유틸은 `src/content/hooks/pageAgentHookStack.ts`로,
 - DOM 모듈 위치: `src/content/dom/**`
 - `pageAgentDomTree.ts`: DOM tree 직렬화(getDomTree) 전담
 - `pageAgentDomHighlight.ts`: component highlight/hover preview 스타일 적용/복원, scrollIntoView, selector+domPath 중복 후보 보정 전담
-- `pageAgentDomSelectors.ts`: DOM selector/path 계산(`buildCssSelector`, `getElementPath`, `resolveTargetElement`) 전담
+- `pageAgentDomSelectors.ts`: DOM selector/path 계산(`buildCssSelector`, `getElementPath`, `resolveTargetElement`) 전담. picker preview 중 `pickPoint`가 overlay를 가리키면 overlay의 `pointer-events`를 잠시 내려 실제 아래 target을 다시 해석한다.
   - `buildCssSelector`는 duplicate id를 감지하면 `#id` 단독 대신 ancestor scoped selector를 생성해 첫 번째 중복 노드 오매칭을 줄인다.
 - `pageAgentDom.ts`: DOM tree/highlight handler 결선과 DOM selector helper 재export 전담
 - `pageAgentDomTree.ts`: unknown request payload를 안전 파싱(selector/pickPoint/domPath)하고 노드 budget 컨텍스트(`visitedNodes`, `truncatedByBudget`)로 직렬화 상태를 추적
